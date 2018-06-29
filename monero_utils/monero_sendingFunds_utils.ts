@@ -33,11 +33,14 @@ const async = require("async");
 const monero_config = require("./monero_config");
 const monero_utils = require("./monero_cryptonote_utils_instance");
 const monero_paymentID_utils = require("./monero_paymentID_utils");
-const JSBigInt = require("../cryptonote_utils/biginteger").BigInteger;
+import BigInt = require("../cryptonote_utils/biginteger");
+
+const JSBigInt = BigInt.BigInteger;
+type JSBigInt = BigInt.BigInteger;
 
 const V7_MIN_MIXIN = 6;
 
-function _mixinToRingsize(mixin) {
+function _mixinToRingsize(mixin: number) {
 	return mixin + 1;
 }
 function minMixin() {
@@ -63,25 +66,27 @@ const DEFAULT_FEE_PRIORITY = 1;
 
 exports.DEFAULT_FEE_PRIORITY = DEFAULT_FEE_PRIORITY;
 
-function calculateFee(feePerKBJSBigInt, numOfBytes, feeMultiplier) {
+function calculateFee(
+	feePerKB: JSBigInt,
+	numOfBytes: number,
+	feeMultiplier: number,
+) {
 	const numberOf_kB_JSBigInt = new JSBigInt((numOfBytes + 1023.0) / 1024.0); // i.e. ceil
 
-	return calculateFeeKb(
-		feePerKBJSBigInt,
-		numberOf_kB_JSBigInt,
-		feeMultiplier,
-	);
+	return calculateFeeKb(feePerKB, numberOf_kB_JSBigInt, feeMultiplier);
 }
-function calculateFeeKb(feePerKBJSBigInt, numOfBytes, feeMultiplier) {
+function calculateFeeKb(
+	feePerKB: JSBigInt,
+	numOfBytes: JSBigInt,
+	feeMultiplier: number,
+) {
 	const numberOf_kB_JSBigInt = new JSBigInt(numOfBytes);
-	const fee = feePerKBJSBigInt
-		.multiply(feeMultiplier)
-		.multiply(numberOf_kB_JSBigInt);
+	const fee = feePerKB.multiply(feeMultiplier).multiply(numberOf_kB_JSBigInt);
 
 	return fee;
 }
 
-function multiplyFeePriority(prio) {
+function multiplyFeePriority(prio: number) {
 	const fee_multiplier = [1, 4, 20, 166];
 
 	const priority = prio || DEFAULT_FEE_PRIORITY;
@@ -94,9 +99,9 @@ function multiplyFeePriority(prio) {
 }
 
 function estimatedTransactionNetworkFee(
-	nonZeroMixinInt,
-	feePerKBJSBigInt,
-	simplePriority,
+	nonZeroMixin: number,
+	feePerKB: JSBigInt,
+	simplePriority: number,
 ) {
 	const numOfInputs = 2; // this might change -- might select inputs
 	const numOfOutputs =
@@ -105,11 +110,11 @@ function estimatedTransactionNetworkFee(
 	// TODO: normalize est tx size fn naming
 	const estimatedTxSize = monero_utils.estimateRctSize(
 		numOfInputs,
-		nonZeroMixinInt,
+		nonZeroMixin,
 		numOfOutputs,
 	);
 	const estFee = calculateFee(
-		feePerKBJSBigInt,
+		feePerKB,
 		estimatedTxSize,
 		multiplyFeePriority(simplePriority),
 	);
@@ -136,31 +141,29 @@ const SendFunds_ProcessStep_MessageSuffix = {
 exports.SendFunds_ProcessStep_MessageSuffix = SendFunds_ProcessStep_MessageSuffix;
 //
 function SendFunds(
-	targetAddress, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
+	targetAddress: string, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
 	nettype,
-	amountorZeroWhenSweep, // number - value will be ignoring for sweep
+	amountorZeroWhenSweep: string, // n value will be ignored for sweep
 	isSweeporZeroWhenAmount, // send true to sweep - amount_orZeroWhenSweep will be ignored
-	senderPublicAddress,
-	senderPrivateKeys,
-	senderPublicKeys,
-	nodeAPI, // TODO: possibly factor this dependency
-	moneroOpenaliasUtils,
-	pid,
-	mixin,
-	simplePriority,
-	updateStatusCb, // (_ stepCode: SendFunds_ProcessStep_Code) -> Void
-	successCb,
-	// success_fn: (
-	//		moneroReady_targetDescription_address?,
-	//		sentAmount?,
-	//		final__payment_id?,
-	//		tx_hash?,
-	//		tx_fee?
-	// )
-	errCb,
-	// failWithErr_fn: (
-	//		err
-	// )
+	senderPublicAddress: string,
+	senderPrivateKeys: string[],
+	senderPublicKeys: string[],
+	nodeAPI: any, // TODO: possibly factor this dependency
+	moneroOpenaliasUtils: any,
+	pid: string,
+	mixin: number,
+	simplePriority: number,
+	updateStatusCb: (
+		status: typeof sendFundStatus[keyof typeof sendFundStatus],
+	) => void,
+	successCb: (
+		targetAddress: string,
+		sentAmount,
+		pid: string,
+		txHash: string,
+		txFee,
+	) => void,
+	errCb: (err: Error) => void,
 ) {
 	const isRingCT = true;
 	const sweeping = isSweeporZeroWhenAmount === true; // rather than, say, undefined
@@ -180,7 +183,7 @@ function SendFunds(
 		[target], // requires a list of descriptions - but SendFunds was
 		// not written with multiple target support as MyMonero does not yet support it
 		nettype,
-		function(_err, _resolved_targets) {
+		function(_err: Error, _resolved_targets) {
 			if (_err) {
 				return errCb(_err);
 			}
