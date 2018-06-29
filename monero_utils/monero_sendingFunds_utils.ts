@@ -269,7 +269,12 @@ export function SendFunds(
 			senderPrivateKeys.spend,
 			mixin,
 			sweeping,
-			function(err, unspentOuts, __unusedOuts, __dynFeePerKB: JSBigInt) {
+			function(
+				err: Error,
+				unspentOuts,
+				__unusedOuts,
+				__dynFeePerKB: JSBigInt,
+			) {
 				if (err) {
 					return errCb(err);
 				}
@@ -537,7 +542,10 @@ export function SendFunds(
 		if (mixin > 0) {
 			// first, grab RandomOuts, then enter __createTx
 			updateStatusCb(sendFundStatus.fetching_decoy_outputs);
-			nodeAPI.RandomOuts(usingOuts, mixin, function(_err, _amount_outs) {
+			nodeAPI.RandomOuts(usingOuts, mixin, function(
+				_err: Error,
+				_amount_outs,
+			) {
 				if (_err) {
 					errCb(_err);
 					return;
@@ -668,7 +676,7 @@ export function SendFunds(
 				senderPublicAddress,
 				senderPrivateKeys.view,
 				serialized_signedTx,
-				function(err) {
+				function(err: Error) {
 					if (err) {
 						return errCb(
 							Error(
@@ -762,7 +770,7 @@ function resolveTargets(
 				);
 			}
 		},
-		(err, resolved_targets) => {
+		(err: Error, resolved_targets) => {
 			cb(err, resolved_targets);
 		},
 	);
