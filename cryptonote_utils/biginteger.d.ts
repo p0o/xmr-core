@@ -256,11 +256,11 @@ declare namespace BigInteger {
 		 * @description  Convert a <BigInteger> to a string.
 		 *
 		 * When *base* is greater than 10, letters are upper case.
-		 * @param {number} base Optional base to represent the number in (default is base 10). Must be between 2 and 36 inclusive, or an Error will be thrown
+		 * @param {number} [base] Optional base to represent the number in (default is base 10). Must be between 2 and 36 inclusive, or an Error will be thrown
 		 * @returns {string} The string representation of the <BigInteger>.
 		 * @memberof BigInteger
 		 */
-		toString(base: number): string;
+		toString(base?: number): string;
 
 		/**
 		 * @description
