@@ -36,6 +36,7 @@
     "keccakjs": "^0.2.1"
   },
   "devDependencies": {
+    "@types/async": "^2.0.49",
     "jest": "^23.1.0"
   },
   "jest": {

@@ -28,16 +28,20 @@
 //
 "use strict";
 //
-const async = require("async");
+import async from "async";
 //
 const monero_config = require("./monero_config");
 const monero_utils = require("./monero_cryptonote_utils_instance");
 const monero_paymentID_utils = require("./monero_paymentID_utils");
 import BigInt = require("../cryptonote_utils/biginteger");
+import { NetType } from "../cryptonote_utils/nettype";
 
 const JSBigInt = BigInt.BigInteger;
 type JSBigInt = BigInt.BigInteger;
-
+type ViewSendKeys = {
+	view: string;
+	spend: string;
+};
 export const V7_MIN_MIXIN = 6;
 
 function _mixinToRingsize(mixin: number) {
@@ -132,17 +136,26 @@ export const SendFunds_ProcessStep_MessageSuffix = {
 	5: "Submitting transaction.",
 };
 
+type RawTarget = {
+	address: string;
+	amount: number;
+};
+
+type ParsedTarget = {
+	address: string;
+	amount: JSBigInt;
+};
 export function SendFunds(
 	targetAddress: string, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
-	nettype,
-	amountorZeroWhenSweep: string, // n value will be ignored for sweep
-	isSweeporZeroWhenAmount, // send true to sweep - amount_orZeroWhenSweep will be ignored
-	senderPublicAddress,
-	senderPrivateKeys,
-	senderPublicKeys,
+	nettype: NetType,
+	amountorZeroWhenSweep: number, // n value will be ignored for sweep
+	isSweeporZeroWhenAmount: boolean, // send true to sweep - amountorZeroWhenSweep will be ignored
+	senderPublicAddress: string,
+	senderPrivateKeys: ViewSendKeys,
+	senderPublicKeys: ViewSendKeys,
 	nodeAPI: any, // TODO: possibly factor this dependency
 	moneroOpenaliasUtils: any,
-	pid: string,
+	pid: string | null,
 	mixin: number,
 	simplePriority: number,
 	updateStatusCb: (
@@ -165,34 +178,35 @@ export function SendFunds(
 	}
 	//
 	// parse & normalize the target descriptions by mapping them to Monero addresses & amounts
-	const target_amount = sweeping ? 0 : amountorZeroWhenSweep;
-	const target = {
+	const targetAmount = sweeping ? 0 : amountorZeroWhenSweep;
+	const target: RawTarget = {
 		address: targetAddress,
-		amount: target_amount,
+		amount: targetAmount,
 	};
-	resolveTargets(
+	parseTargets(
 		moneroOpenaliasUtils,
 		[target], // requires a list of descriptions - but SendFunds was
 		// not written with multiple target support as MyMonero does not yet support it
 		nettype,
-		function(_err: Error, _resolved_targets) {
+		function(_err, _parsedTargets) {
 			if (_err) {
 				return errCb(_err);
 			}
 
-			if (_resolved_targets.length === 0) {
+			if (!_parsedTargets || _parsedTargets.length === 0) {
 				return errCb(Error("You need to enter a valid destination"));
 			}
-			const single_target = _resolved_targets[0];
+
+			const single_target = _parsedTargets[0];
 			if (!single_target) {
 				return errCb(Error("You need to enter a valid destination"));
 			}
 			_prepare_to_send_to_target(single_target);
 		},
 	);
-	function _prepare_to_send_to_target(resolvedTarget) {
-		const _targetAddress = resolvedTarget.address;
-		const _target_amount = resolvedTarget.amount;
+	function _prepare_to_send_to_target(parsedTarget: ParsedTarget) {
+		const _targetAddress = parsedTarget.address;
+		const _target_amount = parsedTarget.amount;
 		//
 		var feelessTotal = new JSBigInt(_target_amount);
 
@@ -692,7 +706,7 @@ export function SendFunds(
 							? parseFloat(
 									monero_utils.formatMoneyFull(_feelessTotal),
 							  )
-							: target_amount,
+							: targetAmount,
 						_pid,
 						tx_hash,
 						tx_fee,
@@ -712,19 +726,22 @@ export function SendFunds(
  *
  * parse & normalize the target descriptions by mapping them to currency (Monero)-ready addresses & amounts
  * @param {*} moneroOpenaliasUtils
- * @param {{address,amount}[]} targetsToResolve
- * @param {*} nettype
- * @param {(err: Error | null, resolvedTargets?: {address,amount}[]) => void } cb
+ * @param {RawTarget[]} targetsToParse
+ * @param {NetType} nettype
+ * @param {(err: Error | null, parsedTargets?: ParsedTarget[]) => void } cb
  */
-function resolveTargets(
-	moneroOpenaliasUtils,
-	targetsToResolve,
-	nettype,
-	cb: (err: Error | null, resolvedTargets?: { address; amount }[]) => void,
+function parseTargets(
+	moneroOpenaliasUtils: any,
+	targetsToParse: RawTarget[],
+	nettype: NetType,
+	cb: (err: Error | null, parsedTargets?: ParsedTarget[]) => void,
 ) {
 	async.mapSeries(
-		targetsToResolve,
-		(target, _cb) => {
+		targetsToParse,
+		(
+			target: RawTarget,
+			_cb: (err: Error | null, res?: ParsedTarget) => void,
+		) => {
 			if (!target.address && !target.amount) {
 				// PSNote: is this check rigorous enough?
 				return _cb(
@@ -734,7 +751,7 @@ function resolveTargets(
 				);
 			}
 			const target_address = target.address;
-			const target_amount: string = target.amount.toString(); // we are converting it to a string here because parseMoney expects a string
+			const target_amount = target.amount.toString(); // we are converting it to a string here because parseMoney expects a string
 			// now verify/parse address and amount
 			if (
 				moneroOpenaliasUtils.DoesStringContainPeriodChar_excludingAsXMRAddress_qualifyingAsPossibleOAAddress(
@@ -770,7 +787,7 @@ function resolveTargets(
 				);
 			}
 		},
-		(err: Error, resolved_targets) => {
+		(err: Error, resolved_targets: ParsedTarget[]) => {
 			cb(err, resolved_targets);
 		},
 	);
@@ -786,8 +803,8 @@ function popRandElement(list) {
 function outputsAndAmountForMixin(
 	targetAmount: JSBigInt,
 	unusedOuts,
-	isRingCT,
-	sweeping,
+	isRingCT: boolean,
+	sweeping: boolean,
 ) {
 	console.log(
 		"Selecting outputs to use. target: " +
