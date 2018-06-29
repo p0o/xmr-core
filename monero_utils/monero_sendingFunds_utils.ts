@@ -38,33 +38,27 @@ import BigInt = require("../cryptonote_utils/biginteger");
 const JSBigInt = BigInt.BigInteger;
 type JSBigInt = BigInt.BigInteger;
 
-const V7_MIN_MIXIN = 6;
+export const V7_MIN_MIXIN = 6;
 
 function _mixinToRingsize(mixin: number) {
 	return mixin + 1;
 }
-function minMixin() {
+
+export function minMixin() {
 	return V7_MIN_MIXIN;
 }
-function minRingSize() {
+export function minRingSize() {
 	return _mixinToRingsize(minMixin());
 }
 
-exports.minMixin = minMixin;
-exports.minRingSize = minRingSize;
-
-function fixedMixin() {
+export function fixedMixin() {
 	return minMixin(); /* using the monero app default to remove MM user identifiers */
 }
-function fixedRingsize() {
+export function fixedRingsize() {
 	return _mixinToRingsize(fixedMixin());
 }
-exports.fixedMixin = fixedMixin;
-exports.fixedRingsize = fixedRingsize;
 
-const DEFAULT_FEE_PRIORITY = 1;
-
-exports.DEFAULT_FEE_PRIORITY = DEFAULT_FEE_PRIORITY;
+export const DEFAULT_FEE_PRIORITY = 1;
 
 function calculateFee(
 	feePerKB: JSBigInt,
@@ -98,7 +92,7 @@ function multiplyFeePriority(prio: number) {
 	return fee_multiplier[priority_idx];
 }
 
-function estimatedTransactionNetworkFee(
+export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
 	feePerKB: JSBigInt,
 	simplePriority: number,
@@ -121,26 +115,24 @@ function estimatedTransactionNetworkFee(
 	//
 	return estFee;
 }
-exports.EstimatedTransaction_networkFee = estimatedTransactionNetworkFee;
-//
-const sendFundStatus = {
+
+export const sendFundStatus = {
 	fetching_latest_balance: 1,
 	calculating_fee: 2,
 	fetching_decoy_outputs: 3, // may get skipped if 0 mixin
 	constructing_transaction: 4, // may go back to .calculatingFee
 	submitting_transaction: 5,
 };
-exports.SendFunds_ProcessStep_Code = sendFundStatus;
-const SendFunds_ProcessStep_MessageSuffix = {
+
+export const SendFunds_ProcessStep_MessageSuffix = {
 	1: "Fetching latest balance.",
 	2: "Calculating fee.",
 	3: "Fetching decoy outputs.",
 	4: "Constructing transaction.", // may go back to .calculatingFee
 	5: "Submitting transaction.",
 };
-exports.SendFunds_ProcessStep_MessageSuffix = SendFunds_ProcessStep_MessageSuffix;
-//
-function SendFunds(
+
+export function SendFunds(
 	targetAddress: string, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
 	nettype,
 	amountorZeroWhenSweep: string, // n value will be ignored for sweep
@@ -702,7 +694,7 @@ function SendFunds(
 		}
 	}
 }
-exports.SendFunds = SendFunds;
+
 //
 /**
  *
