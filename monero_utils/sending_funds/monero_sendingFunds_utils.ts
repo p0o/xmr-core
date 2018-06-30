@@ -26,75 +26,28 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-"use strict";
-//
+
 import async from "async";
-//
-const monero_config = require("./monero_config");
-const monero_utils = require("./monero_cryptonote_utils_instance");
-const monero_paymentID_utils = require("./monero_paymentID_utils");
-import BigInt = require("../cryptonote_utils/biginteger");
-import { NetType } from "../cryptonote_utils/nettype";
-
-const JSBigInt = BigInt.BigInteger;
-type JSBigInt = BigInt.BigInteger;
-type ViewSendKeys = {
-	view: string;
-	spend: string;
-};
-export const V7_MIN_MIXIN = 6;
-
-function _mixinToRingsize(mixin: number) {
-	return mixin + 1;
-}
-
-export function minMixin() {
-	return V7_MIN_MIXIN;
-}
-export function minRingSize() {
-	return _mixinToRingsize(minMixin());
-}
-
-export function fixedMixin() {
-	return minMixin(); /* using the monero app default to remove MM user identifiers */
-}
-export function fixedRingsize() {
-	return _mixinToRingsize(fixedMixin());
-}
-
-export const DEFAULT_FEE_PRIORITY = 1;
-
-function calculateFee(
-	feePerKB: JSBigInt,
-	numOfBytes: number,
-	feeMultiplier: number,
-) {
-	const numberOf_kB = new JSBigInt((numOfBytes + 1023.0) / 1024.0); // i.e. ceil
-
-	return calculateFeeKb(feePerKB, numberOf_kB, feeMultiplier);
-}
-function calculateFeeKb(
-	feePerKB: JSBigInt,
-	numOfBytes: JSBigInt | number,
-	feeMultiplier: number,
-) {
-	const numberOf_kB = new JSBigInt(numOfBytes);
-	const fee = feePerKB.multiply(feeMultiplier).multiply(numberOf_kB);
-
-	return fee;
-}
-
-function multiplyFeePriority(prio: number) {
-	const fee_multiplier = [1, 4, 20, 166];
-
-	const priority = prio || DEFAULT_FEE_PRIORITY;
-
-	if (priority <= 0 || priority > fee_multiplier.length) {
-		throw "fee_multiplier_for_priority: simple_priority out of bounds";
-	}
-	const priority_idx = priority - 1;
-	return fee_multiplier[priority_idx];
-}
+import monero_config from "monero_utils/monero_config";
+import monero_utils from "monero_utils/monero_cryptonote_utils_instance";
+import monero_paymentID_utils from "monero_utils/monero_paymentID_utils";
+import { NetType } from "cryptonote_utils/nettype";
+import {
+	RawTarget,
+	JSBigInt,
+	Pid,
+	ViewSendKeys,
+	ParsedTarget,
+} from "./internal_libs/types";
+import {
+	calculateFee,
+	multiplyFeePriority,
+	calculateFeeKb,
+} from "./internal_libs/fee_utils";
+import { minMixin } from "./mixin_utils";
+import { Status, sendFundStatus } from "./status_update_constants";
+import { ERR } from "./internal_libs/errors";
+import { Log } from "./internal_libs/logger";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -120,65 +73,37 @@ export function estimatedTransactionNetworkFee(
 	return estFee;
 }
 
-export const sendFundStatus = {
-	fetching_latest_balance: 1,
-	calculating_fee: 2,
-	fetching_decoy_outputs: 3, // may get skipped if 0 mixin
-	constructing_transaction: 4, // may go back to .calculatingFee
-	submitting_transaction: 5,
-};
-
-export const SendFunds_ProcessStep_MessageSuffix = {
-	1: "Fetching latest balance.",
-	2: "Calculating fee.",
-	3: "Fetching decoy outputs.",
-	4: "Constructing transaction.", // may go back to .calculatingFee
-	5: "Submitting transaction.",
-};
-
-type RawTarget = {
-	address: string;
-	amount: number;
-};
-
-type ParsedTarget = {
-	address: string;
-	amount: JSBigInt;
-};
 export function SendFunds(
 	targetAddress: string, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
 	nettype: NetType,
 	amountorZeroWhenSweep: number, // n value will be ignored for sweep
-	isSweeporZeroWhenAmount: boolean, // send true to sweep - amountorZeroWhenSweep will be ignored
+	isSweeping: boolean, // send true to sweep - amountorZeroWhenSweep will be ignored
 	senderPublicAddress: string,
 	senderPrivateKeys: ViewSendKeys,
 	senderPublicKeys: ViewSendKeys,
 	nodeAPI: any, // TODO: possibly factor this dependency
 	moneroOpenaliasUtils: any,
-	pid: string | null,
+	pid: Pid,
 	mixin: number,
 	simplePriority: number,
-	updateStatusCb: (
-		status: typeof sendFundStatus[keyof typeof sendFundStatus],
-	) => void,
+	updateStatusCb: (status: Status) => void,
 	successCb: (
 		targetAddress: string,
-		sentAmount,
-		pid: string,
+		sentAmount: number,
+		pid: Pid,
 		txHash: string,
-		txFee,
+		txFee: JSBigInt,
 	) => void,
 	errCb: (err: Error) => void,
 ) {
 	const isRingCT = true;
-	const sweeping = isSweeporZeroWhenAmount === true; // rather than, say, undefined
 
 	if (mixin < minMixin()) {
-		return errCb(Error("Ringsize is below the minimum."));
+		return errCb(ERR.RING.INSUFF);
 	}
 	//
 	// parse & normalize the target descriptions by mapping them to Monero addresses & amounts
-	const targetAmount = sweeping ? 0 : amountorZeroWhenSweep;
+	const targetAmount = isSweeping ? 0 : amountorZeroWhenSweep;
 	const target: RawTarget = {
 		address: targetAddress,
 		amount: targetAmount,
@@ -194,12 +119,12 @@ export function SendFunds(
 			}
 
 			if (!_parsedTargets || _parsedTargets.length === 0) {
-				return errCb(Error("You need to enter a valid destination"));
+				return errCb(ERR.DEST.INVAL);
 			}
 
 			const single_target = _parsedTargets[0];
 			if (!single_target) {
-				return errCb(Error("You need to enter a valid destination"));
+				return errCb(ERR.DEST.INVAL);
 			}
 			_prepare_to_send_to_target(single_target);
 		},
@@ -208,16 +133,14 @@ export function SendFunds(
 		const _targetAddress = parsedTarget.address;
 		const _target_amount = parsedTarget.amount;
 		//
-		var feelessTotal = new JSBigInt(_target_amount);
+		const feelessTotal = new JSBigInt(_target_amount);
 
-		const feeless_total = sweeping
-			? "all"
-			: monero_utils.formatMoney(feelessTotal);
-		console.log(`💬  Total to send, before fee: ${feeless_total}`);
+		Log.Amount.beforeFee(feelessTotal, isSweeping);
 
-		if (!sweeping && feelessTotal.compare(0) <= 0) {
-			return errCb(Error("The amount you've entered is too low"));
+		if (!isSweeping && feelessTotal.compare(0) <= 0) {
+			return errCb(ERR.AMT.INSUFF);
 		}
+
 		//
 		// Derive/finalize some values…
 		let _pid = pid;
@@ -238,15 +161,9 @@ export function SendFunds(
 		// if a payment id is included
 		if (pid) {
 			if (decoded_address.intPaymentId) {
-				return errCb(
-					Error(
-						"Payment ID must be blank when using an Integrated Address",
-					),
-				);
+				return errCb(ERR.PID.NO_INTEG_ADDR);
 			} else if (monero_utils.is_subaddress(_targetAddress, nettype)) {
-				return errCb(
-					Error("Payment ID must be blank when using a Subaddress"),
-				);
+				return errCb(ERR.PID.NO_SUB_ADDR);
 			}
 		}
 
@@ -259,7 +176,7 @@ export function SendFunds(
 		} else if (
 			!monero_paymentID_utils.IsValidPaymentIDOrNoPaymentID(_pid)
 		) {
-			return errCb(Error("Invalid payment ID."));
+			return errCb(ERR.PID.INVAL);
 		}
 
 		_getUsableUnspentOutsForMixin(
@@ -270,10 +187,10 @@ export function SendFunds(
 		);
 	}
 	function _getUsableUnspentOutsForMixin(
-		_targetAddress,
+		_targetAddress: string,
 		_feelessTotal: JSBigInt,
-		_pid, // non-existent or valid
-		_encryptPid, // true or false
+		_pid: Pid,
+		_encryptPid: boolean,
 	) {
 		updateStatusCb(sendFundStatus.fetching_latest_balance);
 		nodeAPI.UnspentOuts(
@@ -282,36 +199,34 @@ export function SendFunds(
 			senderPublicKeys.spend,
 			senderPrivateKeys.spend,
 			mixin,
-			sweeping,
+			isSweeping,
 			function(
 				err: Error,
 				unspentOuts,
-				__unusedOuts,
-				__dynFeePerKB: JSBigInt,
+				_unusedOuts,
+				_dynFeePerKB: JSBigInt,
 			) {
 				if (err) {
 					return errCb(err);
 				}
-				console.log(
-					"Received dynamic per kb fee",
-					monero_utils.formatMoneySymbol(__dynFeePerKB),
-				);
+				Log.Fee.dynPerKB(_dynFeePerKB);
+
 				_proceedTo_constructFundTransferListAndSendFundsByUsingUnusedUnspentOutsForMixin(
 					_targetAddress,
 					_feelessTotal,
 					_pid,
 					_encryptPid,
-					__unusedOuts,
-					__dynFeePerKB,
+					_unusedOuts,
+					_dynFeePerKB,
 				);
 			},
 		);
 	}
 	function _proceedTo_constructFundTransferListAndSendFundsByUsingUnusedUnspentOutsForMixin(
-		_targetAddress,
+		_targetAddress: string,
 		_feelessTotalAmount: JSBigInt,
-		_pid,
-		_encryptPid,
+		_pid: Pid,
+		_encryptPid: boolean,
 		_unusedOuts,
 		_dynamicFeePerKB: JSBigInt,
 	) {
@@ -338,10 +253,10 @@ export function SendFunds(
 		);
 	}
 	function _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
-		_targetAddress,
+		_targetAddress: string,
 		_feelessTotal: JSBigInt,
-		_pid,
-		_encryptPid,
+		_pid: Pid,
+		_encryptPid: boolean,
 		_unusedOuts,
 		_feePerKB: JSBigInt,
 		_estMinNetworkFee: JSBigInt,
@@ -351,31 +266,29 @@ export function SendFunds(
 
 		let estMinNetworkFee = _estMinNetworkFee; // we may change this if isRingCT
 		// const hostingService_chargeAmount = hostedMoneroAPIClient.HostingServiceChargeFor_transactionWithNetworkFee(attemptAt_network_minimumFee)
-		let total_amount: JSBigInt;
-		if (sweeping) {
-			total_amount = new JSBigInt("18450000000000000000"); //~uint64 max
-			console.log("Balance required: all");
+		let totalAmount: JSBigInt;
+		if (isSweeping) {
+			totalAmount = new JSBigInt("18450000000000000000"); //~uint64 max
 		} else {
-			total_amount = _feelessTotal.add(
+			totalAmount = _feelessTotal.add(
 				estMinNetworkFee,
 			); /*.add(hostingService_chargeAmount) NOTE service fee removed for now */
-			console.log(
-				"Balance required: " +
-					monero_utils.formatMoneySymbol(total_amount),
-			);
 		}
+
+		Log.Balance.requiredPreRCT(totalAmount, isSweeping);
+
 		const usableOutputsAndAmounts = outputsAndAmountForMixin(
-			total_amount,
+			totalAmount,
 			_unusedOuts,
 			isRingCT,
-			sweeping,
+			isSweeping,
 		);
 		// v-- now if RingCT compute fee as closely as possible before hand
-		var usingOuts = usableOutputsAndAmounts.usingOuts;
-		var usingOutsAmount = usableOutputsAndAmounts.usingOutsAmount;
-		var remaining_unusedOuts = usableOutputsAndAmounts.remainingUnusedOuts; // this is a copy of the pre-mutation usingOuts
+		const usingOuts = usableOutputsAndAmounts.usingOuts;
+		const usingOutsAmount = usableOutputsAndAmounts.usingOutsAmount;
+		const remainingUnusedOuts = usableOutputsAndAmounts.remainingUnusedOuts; // this is a copy of the pre-mutation usingOuts
 		if (/*usingOuts.length > 1 &&*/ isRingCT) {
-			var newNeededFee = calculateFee(
+			let newNeededFee = calculateFee(
 				_feePerKB,
 				monero_utils.estimateRctSize(usingOuts.length, mixin, 2),
 				multiplyFeePriority(simplePriority),
@@ -384,7 +297,7 @@ export function SendFunds(
 			if (newNeededFee.compare(estMinNetworkFee) < 0) {
 				newNeededFee = estMinNetworkFee;
 			}
-			if (sweeping) {
+			if (isSweeping) {
 				/* 
 				// When/if sending to multiple destinations supported, uncomment and port this:					
 				if (dsts.length !== 1) {
@@ -394,32 +307,20 @@ export function SendFunds(
 				*/
 				_feelessTotal = usingOutsAmount.subtract(newNeededFee);
 				if (_feelessTotal.compare(0) < 1) {
-					const { coinSymbol } = monero_config;
-					const outsAmountStr = monero_utils.formatMoney(
-						usingOutsAmount,
-					);
-					const newNeededFeeStr = monero_utils.formatMoney(
-						newNeededFee,
-					);
-					const errStr = `Your spendable balance is too low. Have ${outsAmountStr} ${coinSymbol} spendable, need ${newNeededFeeStr} ${coinSymbol}.`;
-
-					return errCb(Error(errStr));
+					return errCb(ERR.BAL.insuff(usingOutsAmount, newNeededFee));
 				}
-				total_amount = _feelessTotal.add(newNeededFee);
+				totalAmount = _feelessTotal.add(newNeededFee);
 			} else {
-				total_amount = _feelessTotal.add(newNeededFee);
+				totalAmount = _feelessTotal.add(newNeededFee);
 				// add outputs 1 at a time till we either have them all or can meet the fee
 				while (
-					usingOutsAmount.compare(total_amount) < 0 &&
-					remaining_unusedOuts.length > 0
+					usingOutsAmount.compare(totalAmount) < 0 &&
+					remainingUnusedOuts.length > 0
 				) {
-					const out = popRandElement(remaining_unusedOuts);
-					console.log(
-						"Using output: " +
-							monero_utils.formatMoney(out.amount) +
-							" - " +
-							JSON.stringify(out),
-					);
+					const out = popRandElement(remainingUnusedOuts);
+
+					Log.Output.display(out);
+
 					// and recalculate invalidated values
 					newNeededFee = calculateFee(
 						_feePerKB,
@@ -430,41 +331,30 @@ export function SendFunds(
 						),
 						multiplyFeePriority(simplePriority),
 					);
-					total_amount = _feelessTotal.add(newNeededFee);
+					totalAmount = _feelessTotal.add(newNeededFee);
 				}
 			}
-			console.log(
-				"New fee: " +
-					monero_utils.formatMoneySymbol(newNeededFee) +
-					" for " +
-					usingOuts.length +
-					" inputs",
-			);
+
+			Log.Fee.basedOnInputs(newNeededFee, usingOuts);
+
 			estMinNetworkFee = newNeededFee;
 		}
-		console.log(
-			"~ Balance required: " +
-				monero_utils.formatMoneySymbol(total_amount),
-		);
+
+		Log.Balance.requiredPostRct(totalAmount);
+
 		// Now we can validate available balance with usingOutsAmount (TODO? maybe this check can be done before selecting outputs?)
-		const usingOutsAmount_comparedTo_totalAmount = usingOutsAmount.compare(
-			total_amount,
-		);
-		if (usingOutsAmount_comparedTo_totalAmount < 0) {
-			const { coinSymbol } = monero_config;
-			const usingOutsAmountStr = monero_utils.formatMoney(
-				usingOutsAmount,
-			);
-			const totalAmountIncludingFeesStr = monero_utils.formatMoney(
-				total_amount,
-			);
-			const errStr = `Your spendable balance is too low. Have ${usingOutsAmountStr} ${coinSymbol} spendable, need ${totalAmountIncludingFeesStr} ${coinSymbol}.`;
-			return errCb(Error(errStr));
+		const outsCmpToTotalAmounts = usingOutsAmount.compare(totalAmount);
+		const outsLessThanTotal = outsCmpToTotalAmounts < 0;
+		const outsGreaterThanTotal = outsCmpToTotalAmounts > 0;
+		const outsEqualToTotal = outsCmpToTotalAmounts === 0;
+
+		if (outsLessThanTotal) {
+			return errCb(ERR.BAL.insuff(usingOutsAmount, totalAmount));
 		}
 		// Now we can put together the list of fund transfers we need to perform
-		const fundTransferDescriptions = []; // to build…
+		const fundTargets: ParsedTarget[] = []; // to build…
 		// I. the actual transaction the user is asking to do
-		fundTransferDescriptions.push({
+		fundTargets.push({
 			address: _targetAddress,
 			amount: _feelessTotal,
 		});
@@ -475,59 +365,54 @@ export function SendFunds(
 		//			 amount: hostingService_chargeAmount
 		// })
 		// III. some amount of the total outputs will likely need to be returned to the user as "change":
-		if (usingOutsAmount_comparedTo_totalAmount > 0) {
-			if (sweeping) {
-				throw "Unexpected usingOutsAmount_comparedTo_totalAmount > 0 && sweeping";
+		if (outsGreaterThanTotal) {
+			if (isSweeping) {
+				throw ERR.SWEEP.TOTAL_NEQ_OUTS;
 			}
-			var change_amount = usingOutsAmount.subtract(total_amount);
-			console.log("changeAmount", change_amount);
+			const changeAmount = usingOutsAmount.subtract(totalAmount);
+
+			Log.Amount.change(changeAmount);
+
 			if (isRingCT) {
 				// for RCT we don't presently care about dustiness so add entire change amount
-				console.log(
-					"Sending change of " +
-						monero_utils.formatMoneySymbol(change_amount) +
-						" to " +
-						senderPublicAddress,
-				);
-				fundTransferDescriptions.push({
+				Log.Amount.toSelf(changeAmount, senderPublicAddress);
+
+				fundTargets.push({
 					address: senderPublicAddress,
-					amount: change_amount,
+					amount: changeAmount,
 				});
 			} else {
 				// pre-ringct
 				// do not give ourselves change < dust threshold
-				var changeAmountDivRem = change_amount.divRem(
-					monero_config.dustThreshold,
-				);
-				console.log("💬  changeAmountDivRem", changeAmountDivRem);
-				if (changeAmountDivRem[1].toString() !== "0") {
+				const [
+					changeDivDustQuotient,
+					changeDivDustRemainder,
+				] = changeAmount.divRem(monero_config.dustThreshold);
+
+				Log.Amount.changeAmountDivRem([
+					changeDivDustQuotient,
+					changeDivDustRemainder,
+				]);
+
+				if (!changeDivDustRemainder.isZero()) {
 					// miners will add dusty change to fee
-					console.log(
-						"💬  Miners will add change of " +
-							monero_utils.formatMoneyFullSymbol(
-								changeAmountDivRem[1],
-							) +
-							" to transaction fee (below dust threshold)",
-					);
+					Log.Fee.belowDustThreshold(changeDivDustRemainder);
 				}
-				if (changeAmountDivRem[0].toString() !== "0") {
+				if (!changeDivDustQuotient.isZero()) {
 					// send non-dusty change to our address
-					var usableChange = changeAmountDivRem[0].multiply(
+					const usableChange = changeDivDustQuotient.multiply(
 						monero_config.dustThreshold,
 					);
-					console.log(
-						"💬  Sending change of " +
-							monero_utils.formatMoneySymbol(usableChange) +
-							" to " +
-							senderPublicAddress,
-					);
-					fundTransferDescriptions.push({
+
+					Log.Amount.toSelf(usableChange, senderPublicAddress);
+
+					fundTargets.push({
 						address: senderPublicAddress,
 						amount: usableChange,
 					});
 				}
 			}
-		} else if (usingOutsAmount_comparedTo_totalAmount === 0) {
+		} else if (outsEqualToTotal) {
 			// this should always fire when sweeping
 			if (isRingCT) {
 				// then create random destination to keep 2 outputs always in case of 0 change
@@ -536,22 +421,19 @@ export function SendFunds(
 					nettype,
 				).public_addr;
 
-				console.log(
-					"Sending 0 XMR to a fake address to keep tx uniform (no change exists): " +
-						fakeAddress,
-				);
-				fundTransferDescriptions.push({
+				Log.Output.uniformity(fakeAddress);
+
+				fundTargets.push({
 					address: fakeAddress,
-					amount: 0,
+					amount: JSBigInt.ZERO,
 				});
 			}
 		}
-		console.log(
-			"fundTransferDescriptions so far",
-			fundTransferDescriptions,
-		);
+
+		Log.Target.display(fundTargets);
+
 		if (mixin < 0 || isNaN(mixin)) {
-			return errCb(Error("Invalid mixin"));
+			return errCb(ERR.MIXIN.INVAL);
 		}
 		if (mixin > 0) {
 			// first, grab RandomOuts, then enter __createTx
@@ -575,24 +457,24 @@ export function SendFunds(
 			updateStatusCb(sendFundStatus.constructing_transaction);
 			var signedTx;
 			try {
-				console.log("Destinations: ");
-				monero_utils.printDsts(fundTransferDescriptions);
-				//
-				var realDestViewKey; // need to get viewkey for encrypting here, because of splitting and sorting
+				Log.Target.fullDisplay(fundTargets);
+
+				var targetViewKey; // need to get viewkey for encrypting here, because of splitting and sorting
 				if (_encryptPid) {
-					realDestViewKey = monero_utils.decode_address(
+					targetViewKey = monero_utils.decode_address(
 						_targetAddress,
 						nettype,
 					).view;
-					console.log("got realDestViewKey", realDestViewKey);
+
+					Log.Target.viewKey(targetViewKey);
 				}
 				var splitDestinations = monero_utils.decompose_tx_destinations(
-					fundTransferDescriptions,
+					fundTargets,
 					isRingCT,
 				);
-				console.log("Decomposed destinations:");
-				monero_utils.printDsts(splitDestinations);
-				//
+
+				Log.Target.displayDecomposed(splitDestinations);
+
 				signedTx = monero_utils.create_transaction(
 					senderPublicKeys,
 					senderPrivateKeys,
@@ -603,19 +485,13 @@ export function SendFunds(
 					_estMinNetworkFee,
 					_pid,
 					_encryptPid,
-					realDestViewKey,
+					targetViewKey,
 					0,
 					isRingCT,
 					nettype,
 				);
 			} catch (e) {
-				let errStr;
-				if (e) {
-					errStr = e.toString();
-				} else {
-					errStr = "Failed to create transaction with unknown error.";
-				}
-				return errCb(Error(errStr));
+				return errCb(ERR.TX.failure(e));
 			}
 			console.log("signed tx: ", JSON.stringify(signedTx));
 			//
@@ -702,7 +578,7 @@ export function SendFunds(
 					const tx_fee = final_networkFee; /*.add(hostingService_chargeAmount) NOTE: Service charge removed to reduce bloat for now */
 					successCb(
 						_targetAddress,
-						sweeping
+						isSweeping
 							? parseFloat(
 									monero_utils.formatMoneyFull(_feelessTotal),
 							  )
@@ -793,7 +669,7 @@ function parseTargets(
 	);
 }
 
-function popRandElement(list) {
+function popRandElement<T>(list: T[]) {
 	var idx = Math.floor(Math.random() * list.length);
 	var val = list[idx];
 	list.splice(idx, 1);
