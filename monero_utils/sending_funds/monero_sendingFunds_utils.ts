@@ -27,7 +27,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-import async from "async";
 import monero_config from "monero_utils/monero_config";
 import monero_utils from "monero_utils/monero_cryptonote_utils_instance";
 import monero_paymentID_utils from "monero_utils/monero_paymentID_utils";
@@ -48,6 +47,9 @@ import { minMixin } from "./mixin_utils";
 import { Status, sendFundStatus } from "./status_update_constants";
 import { ERR } from "./internal_libs/errors";
 import { Log } from "./internal_libs/logger";
+import { popRandElement } from "./internal_libs/arr_utils";
+import { selectOutputsAndAmountForMixin } from "./internal_libs/output_selection";
+import { parseTargets } from "./internal_libs/parse_target";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -206,7 +208,7 @@ export function SendFunds(
 				}
 				Log.Fee.dynPerKB(_dynFeePerKB);
 
-				_proceedTo_constructFundTransferListAndSendFundsByUsingUnusedUnspentOutsForMixin(
+				_getEstimatedMinNetworkFee(
 					_targetAddress,
 					_feelessTotal,
 					_pid,
@@ -217,7 +219,7 @@ export function SendFunds(
 			},
 		);
 	}
-	function _proceedTo_constructFundTransferListAndSendFundsByUsingUnusedUnspentOutsForMixin(
+	function _getEstimatedMinNetworkFee(
 		_targetAddress: string,
 		_feelessTotalAmount: JSBigInt,
 		_pid: Pid,
@@ -433,17 +435,17 @@ export function SendFunds(
 		if (mixin > 0) {
 			// first, grab RandomOuts, then enter __createTx
 			updateStatusCb(sendFundStatus.fetchingDecoyOutputs);
-			nodeAPI.RandomOuts(usingOuts, mixin, function(
-				_err: Error,
-				_amount_outs,
-			) {
-				if (_err) {
-					errCb(_err);
-					return;
-				}
-				_createTxAndAttemptToSend(_amount_outs);
-			});
-			return;
+
+			return nodeAPI.RandomOuts(
+				usingOuts,
+				mixin,
+				(_err: Error, _amount_outs) => {
+					if (_err) {
+						return errCb(_err);
+					}
+					_createTxAndAttemptToSend(_amount_outs);
+				},
+			);
 		} else {
 			// mixin === 0: -- PSNOTE: is that even allowed?
 			_createTxAndAttemptToSend();
@@ -571,121 +573,4 @@ export function SendFunds(
 			);
 		}
 	}
-}
-
-/**
- *
- * @description Validate & Normalize passed in target descriptions of {address, amount}.
- *
- * Checks if address is valid along with the amount.
- *
- * parse & normalize the target descriptions by mapping them to currency (Monero)-ready addresses & amounts
- * @param {*} moneroOpenaliasUtils
- * @param {RawTarget[]} targetsToParse
- * @param {NetType} nettype
- * @param {(err: Error | null, parsedTargets?: ParsedTarget[]) => void } cb
- */
-function parseTargets(
-	moneroOpenaliasUtils: any,
-	targetsToParse: RawTarget[],
-	nettype: NetType,
-	cb: (err: Error | null, parsedTargets?: ParsedTarget[]) => void,
-) {
-	async.mapSeries(
-		targetsToParse,
-		(
-			target: RawTarget,
-			_cb: (err: Error | null, res?: ParsedTarget) => void,
-		) => {
-			if (!target.address && !target.amount) {
-				// PSNote: is this check rigorous enough?
-				return _cb(ERR.PARSE_TRGT.EMPTY);
-			}
-			const targetAddress = target.address;
-			const targetAmount = target.amount.toString(); // we are converting it to a string here because parseMoney expects a string
-			// now verify/parse address and amount
-			if (
-				moneroOpenaliasUtils.DoesStringContainPeriodChar_excludingAsXMRAddress_qualifyingAsPossibleOAAddress(
-					targetAddress,
-				)
-			) {
-				return _cb(ERR.PARSE_TRGT.OA_RES);
-			}
-			// otherwise this should be a normal, single Monero public address
-			try {
-				monero_utils.decode_address(targetAddress, nettype); // verify that the address is valid
-			} catch (e) {
-				return _cb(ERR.PARSE_TRGT.decodeAddress(targetAddress, e));
-			}
-			// amount
-			try {
-				const parsedAmount: JSBigInt = monero_utils.parseMoney(
-					targetAmount,
-				);
-				return _cb(null, {
-					address: targetAddress,
-					amount: parsedAmount,
-				});
-			} catch (e) {
-				return _cb(ERR.PARSE_TRGT.amount(targetAmount, e));
-			}
-		},
-		(err: Error, resolvedTargets: ParsedTarget[]) => {
-			cb(err, resolvedTargets);
-		},
-	);
-}
-
-function popRandElement<T>(list: T[]) {
-	const idx = Math.floor(Math.random() * list.length);
-	const val = list[idx];
-	list.splice(idx, 1);
-	return val;
-}
-
-function selectOutputsAndAmountForMixin(
-	targetAmount: JSBigInt,
-	unusedOuts,
-	isRingCT: boolean,
-	sweeping: boolean,
-) {
-	Log.SelectOutsAndAmtForMix.target(targetAmount);
-
-	let usingOutsAmount = new JSBigInt(0);
-	const usingOuts = [];
-	const remainingUnusedOuts = unusedOuts.slice(); // take copy so as to prevent issue if we must re-enter tx building fn if fee too low after building
-	while (
-		usingOutsAmount.compare(targetAmount) < 0 &&
-		remainingUnusedOuts.length > 0
-	) {
-		const out = popRandElement(remainingUnusedOuts);
-		if (!isRingCT && out.rct) {
-			// out.rct is set by the server
-			continue; // skip rct outputs if not creating rct tx
-		}
-		const outAmount = new JSBigInt(out.amount);
-		if (outAmount.compare(monero_config.dustThreshold) < 0) {
-			// amount is dusty..
-			if (!sweeping) {
-				Log.SelectOutsAndAmtForMix.Dusty.notSweeping();
-
-				continue;
-			}
-			if (!out.rct) {
-				Log.SelectOutsAndAmtForMix.Dusty.rct();
-				continue;
-			} else {
-				Log.SelectOutsAndAmtForMix.Dusty.nonRct();
-			}
-		}
-		usingOuts.push(out);
-		usingOutsAmount = usingOutsAmount.add(outAmount);
-
-		Log.SelectOutsAndAmtForMix.usingOut(outAmount, out);
-	}
-	return {
-		usingOuts,
-		usingOutsAmount,
-		remainingUnusedOuts,
-	};
 }
