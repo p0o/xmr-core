@@ -28,7 +28,6 @@ export function selectOutputsAndAmountForMixin(
 			// amount is dusty..
 			if (!sweeping) {
 				Log.SelectOutsAndAmtForMix.Dusty.notSweeping();
-
 				continue;
 			}
 			if (!out.rct) {

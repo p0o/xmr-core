@@ -29,7 +29,6 @@
 
 import monero_config from "monero_utils/monero_config";
 import monero_utils from "monero_utils/monero_cryptonote_utils_instance";
-import monero_paymentID_utils from "monero_utils/monero_paymentID_utils";
 import { NetType } from "cryptonote_utils/nettype";
 import {
 	RawTarget,
@@ -154,6 +153,8 @@ export function SendFunds(
 		_encryptPid: boolean,
 	) {
 		updateStatusCb(sendFundStatus.fetchingLatestBalance);
+
+		//
 		nodeAPI.UnspentOuts(
 			senderPublicAddress,
 			senderPrivateKeys.view,
@@ -180,7 +181,7 @@ export function SendFunds(
 	}
 	function _getEstimatedMinNetworkFee(
 		_targetAddress: string,
-		_feelessTotalAmount: JSBigInt,
+		_feelessTotal: JSBigInt,
 		_pid: Pid,
 		_encryptPid: boolean,
 		_unusedOuts,
@@ -200,7 +201,7 @@ export function SendFunds(
 		// the minimum fee we're attempting to send it off with
 		_attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
 			_targetAddress,
-			_feelessTotalAmount,
+			_feelessTotal,
 			_pid,
 			_encryptPid,
 			_unusedOuts,
@@ -233,23 +234,27 @@ export function SendFunds(
 
 		Log.Balance.requiredPreRCT(totalAmount, isSweeping);
 
-		const usableOutputsAndAmounts = selectOutputsAndAmountForMixin(
+		const {
+			remainingUnusedOuts, // this is a copy of the pre-mutation usingOuts
+			usingOuts,
+			usingOutsAmount,
+		} = selectOutputsAndAmountForMixin(
 			totalAmount,
 			_unusedOuts,
 			isRingCT,
 			isSweeping,
 		);
 		// v-- now if RingCT compute fee as closely as possible before hand
-		const usingOuts = usableOutputsAndAmounts.usingOuts;
-		const usingOutsAmount = usableOutputsAndAmounts.usingOutsAmount;
-		const remainingUnusedOuts = usableOutputsAndAmounts.remainingUnusedOuts; // this is a copy of the pre-mutation usingOuts
+
 		if (/*usingOuts.length > 1 &&*/ isRingCT) {
 			let newNeededFee = calculateFee(
 				_feePerKB,
 				monero_utils.estimateRctSize(usingOuts.length, mixin, 2),
 				multiplyFeePriority(simplePriority),
 			);
-			// if newNeededFee < neededFee, use neededFee instead (should only happen on the 2nd or later times through (due to estimated fee being too low))
+
+			// if newNeededFee < neededFee, use neededFee instead
+			//(should only happen on the 2nd or later times through(due to estimated fee being too low))
 			if (newNeededFee.compare(estMinNetworkFee) < 0) {
 				newNeededFee = estMinNetworkFee;
 			}
@@ -261,14 +266,31 @@ export function SendFunds(
 					return;
 				}
 				*/
+
+				// feeless total is equivalent to all outputs (since its a sweeping tx)
+				// subtracted from the newNeededFee  (either from min tx cost or calculated cost based on outputs)
 				_feelessTotal = usingOutsAmount.subtract(newNeededFee);
+
+				// if the feeless total is less than 0 (so sum of all outputs is still less than network fee)
+				// then reject tx
 				if (_feelessTotal.compare(0) < 1) {
 					return errCb(ERR.BAL.insuff(usingOutsAmount, newNeededFee));
 				}
+
+				// otherwise make the total amount the feeless total + the new fee
 				totalAmount = _feelessTotal.add(newNeededFee);
 			} else {
+				// non sweeting rct tx
+
+				// make the current total amount equivalent to the feeless total and the new needed fee
 				totalAmount = _feelessTotal.add(newNeededFee);
+
 				// add outputs 1 at a time till we either have them all or can meet the fee
+
+				// this case can happen when the fee calculated via outs size
+				// is greater than the minimum tx fee size,
+				// requiring a higher fee, so more outputs (if available)
+				// need to be selected to fufill the difference
 				while (
 					usingOutsAmount.compare(totalAmount) < 0 &&
 					remainingUnusedOuts.length > 0
@@ -293,38 +315,52 @@ export function SendFunds(
 
 			Log.Fee.basedOnInputs(newNeededFee, usingOuts);
 
+			// not really a minNetworkFee now
+			// its max {minNetworkFee, feeCalculatedViaOuts}
 			estMinNetworkFee = newNeededFee;
 		}
 
 		Log.Balance.requiredPostRct(totalAmount);
 
 		// Now we can validate available balance with usingOutsAmount (TODO? maybe this check can be done before selecting outputs?)
+
 		const outsCmpToTotalAmounts = usingOutsAmount.compare(totalAmount);
 		const outsLessThanTotal = outsCmpToTotalAmounts < 0;
 		const outsGreaterThanTotal = outsCmpToTotalAmounts > 0;
 		const outsEqualToTotal = outsCmpToTotalAmounts === 0;
 
+		// what follows is comparision of the sum of outs amounts
+		// vs the total amount actually needed
+		// while also building up a list of addresses to send to
+		// along with the amounts
+
 		if (outsLessThanTotal) {
 			return errCb(ERR.BAL.insuff(usingOutsAmount, totalAmount));
 		}
+
 		// Now we can put together the list of fund transfers we need to perform
+		// not including the tx fee
+		// since that is included in the tx in its own field
 		const fundTargets: ParsedTarget[] = []; // to build…
 		// I. the actual transaction the user is asking to do
 		fundTargets.push({
 			address: _targetAddress,
 			amount: _feelessTotal,
 		});
-		// II. the fee that the hosting provider charges
+
+		// the fee that the hosting provider charges
 		// NOTE: The fee has been removed for RCT until a later date
 		// fundTransferDescriptions.push({
 		//			 address: hostedMoneroAPIClient.HostingServiceFeeDepositAddress(),
 		//			 amount: hostingService_chargeAmount
 		// })
-		// III. some amount of the total outputs will likely need to be returned to the user as "change":
+
+		// some amount of the total outputs will likely need to be returned to the user as "change":
 		if (outsGreaterThanTotal) {
 			if (isSweeping) {
 				throw ERR.SWEEP.TOTAL_NEQ_OUTS;
 			}
+			// where the change amount is whats left after sending to other addresses + fee
 			const changeAmount = usingOutsAmount.subtract(totalAmount);
 
 			Log.Amount.change(changeAmount);
@@ -369,9 +405,12 @@ export function SendFunds(
 				}
 			}
 		} else if (outsEqualToTotal) {
+			// if outputs are equivalent to the total amount
 			// this should always fire when sweeping
+			// since we want to spend all outputs anyway
 			if (isRingCT) {
 				// then create random destination to keep 2 outputs always in case of 0 change
+				// so we dont create 1 output (outlier)
 				const fakeAddress = monero_utils.create_address(
 					monero_utils.random_scalar(),
 					nettype,
@@ -388,13 +427,17 @@ export function SendFunds(
 
 		Log.Target.display(fundTargets);
 
+		// check for invalid mixin level
 		if (mixin < 0 || isNaN(mixin)) {
 			return errCb(ERR.MIXIN.INVAL);
 		}
+
+		// if we want to have mixin for anonyminity
 		if (mixin > 0) {
 			// first, grab RandomOuts, then enter __createTx
 			updateStatusCb(sendFundStatus.fetchingDecoyOutputs);
 
+			// grab random outputs to make a ring signature with
 			return nodeAPI.RandomOuts(
 				usingOuts,
 				mixin,
