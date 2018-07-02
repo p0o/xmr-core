@@ -84,7 +84,6 @@ export function SendFunds(
 	senderPrivateKeys: ViewSendKeys,
 	senderPublicKeys: ViewSendKeys,
 	nodeAPI: any, // TODO: possibly factor this dependency
-	moneroOpenaliasUtils: any,
 	pid: Pid,
 	mixin: number,
 	simplePriority: number,
@@ -110,27 +109,17 @@ export function SendFunds(
 		address: targetAddress,
 		amount: targetAmount,
 	};
-	parseTargets(
-		moneroOpenaliasUtils,
+	const [singleTarget] = parseTargets(
 		[target], // requires a list of descriptions - but SendFunds was
 		// not written with multiple target support as MyMonero does not yet support it
 		nettype,
-		(_err, _parsedTargets) => {
-			if (_err) {
-				return errCb(_err);
-			}
-
-			if (!_parsedTargets || _parsedTargets.length === 0) {
-				return errCb(ERR.DEST.INVAL);
-			}
-
-			const single_target = _parsedTargets[0];
-			if (!single_target) {
-				return errCb(ERR.DEST.INVAL);
-			}
-			_prepare_to_send_to_target(single_target);
-		},
 	);
+
+	if (!singleTarget) {
+		return errCb(ERR.DEST.INVAL);
+	}
+	_prepare_to_send_to_target(singleTarget);
+
 	function _prepare_to_send_to_target(parsedTarget: ParsedTarget) {
 		const _targetAddress = parsedTarget.address;
 		const _target_amount = parsedTarget.amount;
