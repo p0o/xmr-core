@@ -32,11 +32,9 @@
   },
   "homepage": "https://github.com/mymonero/mymonero-core-js#readme",
   "dependencies": {
-    "async": "^2.6.0",
     "keccakjs": "^0.2.1"
   },
   "devDependencies": {
-    "@types/async": "^2.0.49",
     "jest": "^23.1.0"
   },
   "jest": {
