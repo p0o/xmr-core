@@ -69,7 +69,7 @@ export function estimatedTransactionNetworkFee(
 		estimatedTxSize,
 		multiplyFeePriority(simplePriority),
 	);
-	//
+
 	return estFee;
 }
 
@@ -113,7 +113,7 @@ export function SendFunds(
 		[target], // requires a list of descriptions - but SendFunds was
 		// not written with multiple target support as MyMonero does not yet support it
 		nettype,
-		function(_err, _parsedTargets) {
+		(_err, _parsedTargets) => {
 			if (_err) {
 				return errCb(_err);
 			}
@@ -147,7 +147,7 @@ export function SendFunds(
 		let encryptPid = false; // we don't want to encrypt payment ID unless we find an integrated one
 
 		// NOTE: refactor this out, its already done in resolve_targets
-		var decoded_address;
+		let decoded_address;
 		try {
 			decoded_address = monero_utils.decode_address(
 				_targetAddress,
@@ -200,12 +200,7 @@ export function SendFunds(
 			senderPrivateKeys.spend,
 			mixin,
 			isSweeping,
-			function(
-				err: Error,
-				unspentOuts,
-				_unusedOuts,
-				_dynFeePerKB: JSBigInt,
-			) {
+			(err: Error, unspentOuts, _unusedOuts, _dynFeePerKB: JSBigInt) => {
 				if (err) {
 					return errCb(err);
 				}
@@ -455,11 +450,11 @@ export function SendFunds(
 		}
 		function _createTxAndAttemptToSend(mixOuts?: any) {
 			updateStatusCb(sendFundStatus.constructingTransaction);
-			var signedTx;
+			let signedTx;
 			try {
 				Log.Target.fullDisplay(fundTargets);
 
-				var targetViewKey; // need to get viewkey for encrypting here, because of splitting and sorting
+				let targetViewKey; // need to get viewkey for encrypting here, because of splitting and sorting
 				if (_encryptPid) {
 					targetViewKey = monero_utils.decode_address(
 						_targetAddress,
@@ -468,7 +463,7 @@ export function SendFunds(
 
 					Log.Target.viewKey(targetViewKey);
 				}
-				var splitDestinations = monero_utils.decompose_tx_destinations(
+				const splitDestinations = monero_utils.decompose_tx_destinations(
 					fundTargets,
 					isRingCT,
 				);
@@ -556,7 +551,7 @@ export function SendFunds(
 				senderPublicAddress,
 				senderPrivateKeys.view,
 				serializedSignedTx,
-				function(err: Error) {
+				(err: Error) => {
 					if (err) {
 						return errCb(ERR.TX.submitUnknown(err));
 					}
