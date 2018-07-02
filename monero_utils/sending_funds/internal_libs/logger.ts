@@ -51,6 +51,41 @@ export namespace Log {
 					" to transaction fee (below dust threshold)",
 			);
 		}
+
+		export function estLowerThanReal(
+			estMinNetworkFee: JSBigInt,
+			feeActuallyNeededByNetwork: JSBigInt,
+		) {
+			console.log(
+				"💬  Need to reconstruct the tx with enough of a network fee. Previous fee: " +
+					monero_utils.formatMoneyFull(estMinNetworkFee) +
+					" New fee: " +
+					monero_utils.formatMoneyFull(feeActuallyNeededByNetwork),
+			);
+			console.log("Reconstructing tx....");
+		}
+
+		export function txKB(
+			txBlobBytes: number,
+			numOfKB: number,
+			estMinNetworkFee: JSBigInt,
+		) {
+			console.log(
+				txBlobBytes +
+					" bytes <= " +
+					numOfKB +
+					" KB (current fee: " +
+					monero_utils.formatMoneyFull(estMinNetworkFee) +
+					")",
+			);
+		}
+
+		export function successfulTx(finalNetworkFee: JSBigInt) {
+			console.log(
+				"💬  Successful tx generation, submitting tx. Going with final_networkFee of ",
+				monero_utils.formatMoney(finalNetworkFee),
+			);
+		}
 	}
 
 	export namespace Balance {
@@ -111,6 +146,51 @@ export namespace Log {
 
 		export function viewKey(viewKey: string) {
 			console.log("got target address's view key", viewKey);
+		}
+	}
+
+	export namespace Transaction {
+		export function signed(signedTx) {
+			console.log("signed tx: ", JSON.stringify(signedTx));
+		}
+		export function serializedAndHash(serializedTx, txHash) {
+			console.log("tx serialized: " + serializedTx);
+			console.log("Tx hash: " + txHash);
+		}
+	}
+
+	export namespace SelectOutsAndAmtForMix {
+		export function target(targetAmount: JSBigInt) {
+			console.log(
+				"Selecting outputs to use. target: " +
+					monero_utils.formatMoney(targetAmount),
+			);
+		}
+
+		export namespace Dusty {
+			export function notSweeping() {
+				console.log(
+					"Not sweeping, and found a dusty (though maybe mixable) output... skipping it!",
+				);
+			}
+			export function nonRct() {
+				console.log(
+					"Sweeping, and found a dusty but unmixable (non-rct) output... skipping it!",
+				);
+			}
+			export function rct() {
+				console.log(
+					"Sweeping and found a dusty but mixable (rct) amount... keeping it!",
+				);
+			}
+		}
+
+		export function usingOut(outAmount: JSBigInt, out) {
+			console.log(
+				`Using output: ${monero_utils.formatMoney(
+					outAmount,
+				)} - ${JSON.stringify(out)}`,
+			);
 		}
 	}
 }

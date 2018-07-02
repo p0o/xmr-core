@@ -192,7 +192,7 @@ export function SendFunds(
 		_pid: Pid,
 		_encryptPid: boolean,
 	) {
-		updateStatusCb(sendFundStatus.fetching_latest_balance);
+		updateStatusCb(sendFundStatus.fetchingLatestBalance);
 		nodeAPI.UnspentOuts(
 			senderPublicAddress,
 			senderPrivateKeys.view,
@@ -262,7 +262,7 @@ export function SendFunds(
 		_estMinNetworkFee: JSBigInt,
 	) {
 		// Now we need to establish some values for balance validation and to construct the transaction
-		updateStatusCb(sendFundStatus.calculating_fee);
+		updateStatusCb(sendFundStatus.calculatingFee);
 
 		let estMinNetworkFee = _estMinNetworkFee; // we may change this if isRingCT
 		// const hostingService_chargeAmount = hostedMoneroAPIClient.HostingServiceChargeFor_transactionWithNetworkFee(attemptAt_network_minimumFee)
@@ -277,7 +277,7 @@ export function SendFunds(
 
 		Log.Balance.requiredPreRCT(totalAmount, isSweeping);
 
-		const usableOutputsAndAmounts = outputsAndAmountForMixin(
+		const usableOutputsAndAmounts = selectOutputsAndAmountForMixin(
 			totalAmount,
 			_unusedOuts,
 			isRingCT,
@@ -437,7 +437,7 @@ export function SendFunds(
 		}
 		if (mixin > 0) {
 			// first, grab RandomOuts, then enter __createTx
-			updateStatusCb(sendFundStatus.fetching_decoy_outputs);
+			updateStatusCb(sendFundStatus.fetchingDecoyOutputs);
 			nodeAPI.RandomOuts(usingOuts, mixin, function(
 				_err: Error,
 				_amount_outs,
@@ -454,7 +454,7 @@ export function SendFunds(
 			_createTxAndAttemptToSend();
 		}
 		function _createTxAndAttemptToSend(mixOuts?: any) {
-			updateStatusCb(sendFundStatus.constructing_transaction);
+			updateStatusCb(sendFundStatus.constructingTransaction);
 			var signedTx;
 			try {
 				Log.Target.fullDisplay(fundTargets);
@@ -482,7 +482,7 @@ export function SendFunds(
 					usingOuts,
 					mixOuts,
 					mixin,
-					_estMinNetworkFee,
+					estMinNetworkFee,
 					_pid,
 					_encryptPid,
 					targetViewKey,
@@ -493,54 +493,49 @@ export function SendFunds(
 			} catch (e) {
 				return errCb(ERR.TX.failure(e));
 			}
-			console.log("signed tx: ", JSON.stringify(signedTx));
-			//
-			var serialized_signedTx;
-			var tx_hash;
+
+			Log.Transaction.signed(signedTx);
+
+			let serializedSignedTx;
+			let txHash;
+			// pre rct
 			if (signedTx.version === 1) {
-				serialized_signedTx = monero_utils.serialize_tx(signedTx);
-				tx_hash = monero_utils.cn_fast_hash(serialized_signedTx);
+				serializedSignedTx = monero_utils.serialize_tx(signedTx);
+				txHash = monero_utils.cn_fast_hash(serializedSignedTx);
 			} else {
+				// rct
 				const raw_tx_and_hash = monero_utils.serialize_rct_tx_with_hash(
 					signedTx,
 				);
-				serialized_signedTx = raw_tx_and_hash.raw;
-				tx_hash = raw_tx_and_hash.hash;
+				serializedSignedTx = raw_tx_and_hash.raw;
+				txHash = raw_tx_and_hash.hash;
 			}
-			console.log("tx serialized: " + serialized_signedTx);
-			console.log("Tx hash: " + tx_hash);
-			//
+
+			Log.Transaction.serializedAndHash(serializedSignedTx, txHash);
+
 			// work out per-kb fee for transaction and verify that it's enough
-			var txBlobBytes = serialized_signedTx.length / 2;
-			var numKB = Math.floor(txBlobBytes / 1024);
+			const txBlobBytes = serializedSignedTx.length / 2;
+			let numOfKB = Math.floor(txBlobBytes / 1024);
 			if (txBlobBytes % 1024) {
-				numKB++;
+				numOfKB++;
 			}
-			console.log(
-				txBlobBytes +
-					" bytes <= " +
-					numKB +
-					" KB (current fee: " +
-					monero_utils.formatMoneyFull(_estMinNetworkFee) +
-					")",
-			);
+
+			Log.Fee.txKB(txBlobBytes, numOfKB, estMinNetworkFee);
+
 			const feeActuallyNeededByNetwork = calculateFeeKb(
 				_feePerKB,
-				numKB,
+				numOfKB,
 				multiplyFeePriority(simplePriority),
 			);
 			// if we need a higher fee
-			if (feeActuallyNeededByNetwork.compare(_estMinNetworkFee) > 0) {
-				console.log(
-					"💬  Need to reconstruct the tx with enough of a network fee. Previous fee: " +
-						monero_utils.formatMoneyFull(_estMinNetworkFee) +
-						" New fee: " +
-						monero_utils.formatMoneyFull(
-							feeActuallyNeededByNetwork,
-						),
+			if (feeActuallyNeededByNetwork.compare(estMinNetworkFee) > 0) {
+				Log.Fee.estLowerThanReal(
+					estMinNetworkFee,
+					feeActuallyNeededByNetwork,
 				);
+
 				// this will update status back to .calculatingFee
-				_attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
+				return _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
 					_targetAddress,
 					_feelessTotal,
 					_pid,
@@ -549,33 +544,23 @@ export function SendFunds(
 					_feePerKB,
 					feeActuallyNeededByNetwork, // we are re-entering this codepath after changing this feeActuallyNeededByNetwork
 				);
-				//
-				return;
 			}
 
 			// generated with correct per-kb fee
-			const final_networkFee = _estMinNetworkFee; // just to make things clear
-			console.log(
-				"💬  Successful tx generation, submitting tx. Going with final_networkFee of ",
-				monero_utils.formatMoney(final_networkFee),
-			);
+			const finalNetworkFee = estMinNetworkFee; // just to make things clear
 
-			updateStatusCb(sendFundStatus.submitting_transaction);
+			Log.Fee.successfulTx(finalNetworkFee);
+			updateStatusCb(sendFundStatus.submittingTransaction);
 
 			nodeAPI.SubmitSerializedSignedTransaction(
 				senderPublicAddress,
 				senderPrivateKeys.view,
-				serialized_signedTx,
+				serializedSignedTx,
 				function(err: Error) {
 					if (err) {
-						return errCb(
-							Error(
-								"Something unexpected occurred when submitting your transaction: " +
-									err,
-							),
-						);
+						return errCb(ERR.TX.submitUnknown(err));
 					}
-					const tx_fee = final_networkFee; /*.add(hostingService_chargeAmount) NOTE: Service charge removed to reduce bloat for now */
+					const tx_fee = finalNetworkFee; /*.add(hostingService_chargeAmount) NOTE: Service charge removed to reduce bloat for now */
 					successCb(
 						_targetAddress,
 						isSweeping
@@ -584,16 +569,15 @@ export function SendFunds(
 							  )
 							: targetAmount,
 						_pid,
-						tx_hash,
+						txHash,
 						tx_fee,
-					); // 🎉
+					);
 				},
 			);
 		}
 	}
 }
 
-//
 /**
  *
  * @description Validate & Normalize passed in target descriptions of {address, amount}.
@@ -620,80 +604,66 @@ function parseTargets(
 		) => {
 			if (!target.address && !target.amount) {
 				// PSNote: is this check rigorous enough?
-				return _cb(
-					Error(
-						"Please supply a target address and a target amount.",
-					),
-				);
+				return _cb(ERR.PARSE_TRGT.EMPTY);
 			}
-			const target_address = target.address;
-			const target_amount = target.amount.toString(); // we are converting it to a string here because parseMoney expects a string
+			const targetAddress = target.address;
+			const targetAmount = target.amount.toString(); // we are converting it to a string here because parseMoney expects a string
 			// now verify/parse address and amount
 			if (
 				moneroOpenaliasUtils.DoesStringContainPeriodChar_excludingAsXMRAddress_qualifyingAsPossibleOAAddress(
-					target_address,
+					targetAddress,
 				)
 			) {
-				return _cb(
-					Error(
-						"You must resolve this OpenAlias address to a Monero address before calling SendFunds",
-					),
-				);
+				return _cb(ERR.PARSE_TRGT.OA_RES);
 			}
 			// otherwise this should be a normal, single Monero public address
 			try {
-				monero_utils.decode_address(target_address, nettype); // verify that the address is valid
+				monero_utils.decode_address(targetAddress, nettype); // verify that the address is valid
 			} catch (e) {
-				return _cb(
-					Error(`Couldn't decode address ${target_address} : ${e}`),
-				);
+				return _cb(ERR.PARSE_TRGT.decodeAddress(targetAddress, e));
 			}
 			// amount
 			try {
-				const parsed_amount: JSBigInt = monero_utils.parseMoney(
-					target_amount,
+				const parsedAmount: JSBigInt = monero_utils.parseMoney(
+					targetAmount,
 				);
 				return _cb(null, {
-					address: target_address,
-					amount: parsed_amount,
+					address: targetAddress,
+					amount: parsedAmount,
 				});
 			} catch (e) {
-				return _cb(
-					Error(`Couldn't parse amount ${target_amount} : ${e}`),
-				);
+				return _cb(ERR.PARSE_TRGT.amount(targetAmount, e));
 			}
 		},
-		(err: Error, resolved_targets: ParsedTarget[]) => {
-			cb(err, resolved_targets);
+		(err: Error, resolvedTargets: ParsedTarget[]) => {
+			cb(err, resolvedTargets);
 		},
 	);
 }
 
 function popRandElement<T>(list: T[]) {
-	var idx = Math.floor(Math.random() * list.length);
-	var val = list[idx];
+	const idx = Math.floor(Math.random() * list.length);
+	const val = list[idx];
 	list.splice(idx, 1);
 	return val;
 }
 
-function outputsAndAmountForMixin(
+function selectOutputsAndAmountForMixin(
 	targetAmount: JSBigInt,
 	unusedOuts,
 	isRingCT: boolean,
 	sweeping: boolean,
 ) {
-	console.log(
-		"Selecting outputs to use. target: " +
-			monero_utils.formatMoney(targetAmount),
-	);
-	var usingOutsAmount = new JSBigInt(0);
+	Log.SelectOutsAndAmtForMix.target(targetAmount);
+
+	let usingOutsAmount = new JSBigInt(0);
 	const usingOuts = [];
 	const remainingUnusedOuts = unusedOuts.slice(); // take copy so as to prevent issue if we must re-enter tx building fn if fee too low after building
 	while (
 		usingOutsAmount.compare(targetAmount) < 0 &&
 		remainingUnusedOuts.length > 0
 	) {
-		var out = popRandElement(remainingUnusedOuts);
+		const out = popRandElement(remainingUnusedOuts);
 		if (!isRingCT && out.rct) {
 			// out.rct is set by the server
 			continue; // skip rct outputs if not creating rct tx
@@ -702,29 +672,21 @@ function outputsAndAmountForMixin(
 		if (outAmount.compare(monero_config.dustThreshold) < 0) {
 			// amount is dusty..
 			if (!sweeping) {
-				console.log(
-					"Not sweeping, and found a dusty (though maybe mixable) output... skipping it!",
-				);
+				Log.SelectOutsAndAmtForMix.Dusty.notSweeping();
+
 				continue;
 			}
 			if (!out.rct) {
-				console.log(
-					"Sweeping, and found a dusty but unmixable (non-rct) output... skipping it!",
-				);
+				Log.SelectOutsAndAmtForMix.Dusty.rct();
 				continue;
 			} else {
-				console.log(
-					"Sweeping and found a dusty but mixable (rct) amount... keeping it!",
-				);
+				Log.SelectOutsAndAmtForMix.Dusty.nonRct();
 			}
 		}
 		usingOuts.push(out);
 		usingOutsAmount = usingOutsAmount.add(outAmount);
-		console.log(
-			`Using output: ${monero_utils.formatMoney(
-				outAmount,
-			)} - ${JSON.stringify(out)}`,
-		);
+
+		Log.SelectOutsAndAmtForMix.usingOut(outAmount, out);
 	}
 	return {
 		usingOuts,

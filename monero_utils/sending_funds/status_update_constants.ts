@@ -1,9 +1,9 @@
 export const sendFundStatus = {
-	fetching_latest_balance: 1,
-	calculating_fee: 2,
-	fetching_decoy_outputs: 3, // may get skipped if 0 mixin
-	constructing_transaction: 4, // may go back to .calculatingFee
-	submitting_transaction: 5,
+	fetchingLatestBalance: 1,
+	calculatingFee: 2,
+	fetchingDecoyOutputs: 3, // may get skipped if 0 mixin
+	constructingTransaction: 4, // may go back to .calculatingFee
+	submittingTransaction: 5,
 };
 
 export const sendFundsStatusToMessage = {

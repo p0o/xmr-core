@@ -52,5 +52,28 @@ export namespace ERR {
 
 			return Error(errStr);
 		}
+		export function submitUnknown(err: Error) {
+			return Error(
+				"Something unexpected occurred when submitting your transaction: " +
+					err,
+			);
+		}
+	}
+
+	export namespace PARSE_TRGT {
+		export const EMPTY = Error(
+			"Please supply a target address and a target amount.",
+		);
+		export const OA_RES = Error(
+			"You must resolve this OpenAlias address to a Monero address before calling SendFunds",
+		);
+
+		export function decodeAddress(targetAddress: string, err: Error) {
+			return Error(`Couldn't decode address ${targetAddress} : ${err}`);
+		}
+
+		export function amount(targetAmount: string, err: Error) {
+			return Error(`Couldn't parse amount ${targetAmount} : ${err}`);
+		}
 	}
 }
