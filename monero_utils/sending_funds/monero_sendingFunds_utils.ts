@@ -147,9 +147,9 @@ export function SendFunds(
 		let encryptPid = false; // we don't want to encrypt payment ID unless we find an integrated one
 
 		// NOTE: refactor this out, its already done in resolve_targets
-		let decoded_address;
+		let decodedAddress;
 		try {
-			decoded_address = monero_utils.decode_address(
+			decodedAddress = monero_utils.decode_address(
 				_targetAddress,
 				nettype,
 			);
@@ -160,7 +160,7 @@ export function SendFunds(
 		// assert that the target address is not of type integrated nor subaddress
 		// if a payment id is included
 		if (pid) {
-			if (decoded_address.intPaymentId) {
+			if (decodedAddress.intPaymentId) {
 				return errCb(ERR.PID.NO_INTEG_ADDR);
 			} else if (monero_utils.is_subaddress(_targetAddress, nettype)) {
 				return errCb(ERR.PID.NO_SUB_ADDR);
@@ -170,8 +170,8 @@ export function SendFunds(
 		// if the target address is integrated
 		// then encrypt the payment id
 		// and make sure its also valid
-		if (decoded_address.intPaymentId) {
-			_pid = decoded_address.intPaymentId;
+		if (decodedAddress.intPaymentId) {
+			_pid = decodedAddress.intPaymentId;
 			encryptPid = true;
 		} else if (
 			!monero_paymentID_utils.IsValidPaymentIDOrNoPaymentID(_pid)
