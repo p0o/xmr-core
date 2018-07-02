@@ -50,6 +50,7 @@ import { Log } from "./internal_libs/logger";
 import { popRandElement } from "./internal_libs/arr_utils";
 import { selectOutputsAndAmountForMixin } from "./internal_libs/output_selection";
 import { parseTargets } from "./internal_libs/parse_target";
+import { checkAddressAndPidValidity } from "./internal_libs/pid_utils";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -118,13 +119,14 @@ export function SendFunds(
 	if (!singleTarget) {
 		return errCb(ERR.DEST.INVAL);
 	}
+
 	_prepare_to_send_to_target(singleTarget);
 
 	function _prepare_to_send_to_target(parsedTarget: ParsedTarget) {
 		const _targetAddress = parsedTarget.address;
-		const _target_amount = parsedTarget.amount;
+		const _targetAmount = parsedTarget.amount;
 		//
-		const feelessTotal = new JSBigInt(_target_amount);
+		const feelessTotal = new JSBigInt(_targetAmount);
 
 		Log.Amount.beforeFee(feelessTotal, isSweeping);
 
@@ -132,43 +134,11 @@ export function SendFunds(
 			return errCb(ERR.AMT.INSUFF);
 		}
 
-		//
-		// Derive/finalize some values…
-		let _pid = pid;
-		let encryptPid = false; // we don't want to encrypt payment ID unless we find an integrated one
-
-		// NOTE: refactor this out, its already done in resolve_targets
-		let decodedAddress;
-		try {
-			decodedAddress = monero_utils.decode_address(
-				_targetAddress,
-				nettype,
-			);
-		} catch (e) {
-			return errCb(Error(e.toString()));
-		}
-
-		// assert that the target address is not of type integrated nor subaddress
-		// if a payment id is included
-		if (pid) {
-			if (decodedAddress.intPaymentId) {
-				return errCb(ERR.PID.NO_INTEG_ADDR);
-			} else if (monero_utils.is_subaddress(_targetAddress, nettype)) {
-				return errCb(ERR.PID.NO_SUB_ADDR);
-			}
-		}
-
-		// if the target address is integrated
-		// then encrypt the payment id
-		// and make sure its also valid
-		if (decodedAddress.intPaymentId) {
-			_pid = decodedAddress.intPaymentId;
-			encryptPid = true;
-		} else if (
-			!monero_paymentID_utils.IsValidPaymentIDOrNoPaymentID(_pid)
-		) {
-			return errCb(ERR.PID.INVAL);
-		}
+		const { encryptPid, pid: _pid } = checkAddressAndPidValidity(
+			_targetAddress,
+			nettype,
+			pid,
+		);
 
 		_getUsableUnspentOutsForMixin(
 			_targetAddress,
