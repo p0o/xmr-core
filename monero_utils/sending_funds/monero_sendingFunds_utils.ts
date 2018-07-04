@@ -50,6 +50,7 @@ import { popRandElement } from "./internal_libs/arr_utils";
 import { selectOutputsAndAmountForMixin } from "./internal_libs/output_selection";
 import { parseTargets } from "./internal_libs/parse_target";
 import { checkAddressAndPidValidity } from "./internal_libs/pid_utils";
+import { WrappedNodeApi } from "./async_node_api";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -75,7 +76,15 @@ export function estimatedTransactionNetworkFee(
 	return estFee;
 }
 
-export function SendFunds(
+type SendFundsRet = {
+	targetAddress: string;
+	sentAmount: number;
+	pid: Pid;
+	txHash: string;
+	txFee: JSBigInt;
+};
+
+export async function SendFunds(
 	targetAddress: string, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
 	nettype: NetType,
 	amountorZeroWhenSweep: number, // n value will be ignored for sweep
@@ -87,20 +96,13 @@ export function SendFunds(
 	pid: Pid,
 	mixin: number,
 	simplePriority: number,
-	updateStatusCb: (status: Status) => void,
-	successCb: (
-		targetAddress: string,
-		sentAmount: number,
-		pid: Pid,
-		txHash: string,
-		txFee: JSBigInt,
-	) => void,
-	errCb: (err: Error) => void,
-) {
+	updateStatus: (status: Status) => void,
+): Promise<SendFundsRet> {
+	const api = new WrappedNodeApi(nodeAPI);
 	const isRingCT = true;
 
 	if (mixin < minMixin()) {
-		return errCb(ERR.RING.INSUFF);
+		throw ERR.RING.INSUFF;
 	}
 	//
 	// parse & normalize the target descriptions by mapping them to Monero addresses & amounts
@@ -116,100 +118,58 @@ export function SendFunds(
 	);
 
 	if (!singleTarget) {
-		return errCb(ERR.DEST.INVAL);
+		throw ERR.DEST.INVAL;
 	}
 
-	_prepare_to_send_to_target(singleTarget);
+	const { address, amount } = singleTarget;
+	const feelessTotal = new JSBigInt(amount);
 
-	function _prepare_to_send_to_target(parsedTarget: ParsedTarget) {
-		const _targetAddress = parsedTarget.address;
-		const _targetAmount = parsedTarget.amount;
-		//
-		const feelessTotal = new JSBigInt(_targetAmount);
+	Log.Amount.beforeFee(feelessTotal, isSweeping);
 
-		Log.Amount.beforeFee(feelessTotal, isSweeping);
-
-		if (!isSweeping && feelessTotal.compare(0) <= 0) {
-			return errCb(ERR.AMT.INSUFF);
-		}
-
-		const { encryptPid, pid: _pid } = checkAddressAndPidValidity(
-			_targetAddress,
-			nettype,
-			pid,
-		);
-
-		_getUsableUnspentOutsForMixin(
-			_targetAddress,
-			feelessTotal,
-			_pid,
-			encryptPid,
-		);
+	if (!isSweeping && feelessTotal.compare(0) <= 0) {
+		throw ERR.AMT.INSUFF;
 	}
-	function _getUsableUnspentOutsForMixin(
-		_targetAddress: string,
-		_feelessTotal: JSBigInt,
-		_pid: Pid,
-		_encryptPid: boolean,
-	) {
-		updateStatusCb(sendFundStatus.fetchingLatestBalance);
 
-		//
-		nodeAPI.UnspentOuts(
-			senderPublicAddress,
-			senderPrivateKeys.view,
-			senderPublicKeys.spend,
-			senderPrivateKeys.spend,
-			mixin,
-			isSweeping,
-			(err: Error, unspentOuts, _unusedOuts, _dynFeePerKB: JSBigInt) => {
-				if (err) {
-					return errCb(err);
-				}
-				Log.Fee.dynPerKB(_dynFeePerKB);
+	const { encryptPid, pid: _pid } = checkAddressAndPidValidity(
+		address,
+		nettype,
+		pid,
+	);
 
-				_getEstimatedMinNetworkFee(
-					_targetAddress,
-					_feelessTotal,
-					_pid,
-					_encryptPid,
-					_unusedOuts,
-					_dynFeePerKB,
-				);
-			},
-		);
-	}
-	function _getEstimatedMinNetworkFee(
-		_targetAddress: string,
-		_feelessTotal: JSBigInt,
-		_pid: Pid,
-		_encryptPid: boolean,
-		_unusedOuts,
-		_dynamicFeePerKB: JSBigInt,
-	) {
-		// status: constructing transaction…
-		const _feePerKB = _dynamicFeePerKB;
-		// Transaction will need at least 1KB fee (or 13KB for RingCT)
-		const _minNetworkTxSizeKb = /*isRingCT ? */ 13; /* : 1*/
-		const _estMinNetworkFee = calculateFeeKb(
-			_feePerKB,
-			_minNetworkTxSizeKb,
-			multiplyFeePriority(simplePriority),
-		);
-		// now we're going to try using this minimum fee but the function will be called again
-		// if we find after constructing the whole tx that it is larger in kb than
-		// the minimum fee we're attempting to send it off with
-		_attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
-			_targetAddress,
-			_feelessTotal,
-			_pid,
-			_encryptPid,
-			_unusedOuts,
-			_feePerKB, // obtained from server, so passed in
-			_estMinNetworkFee,
-		);
-	}
-	function _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
+	updateStatus(sendFundStatus.fetchingLatestBalance);
+
+	const { dynamicFeePerKB, unusedOuts } = await api.unspentOuts(
+		senderPublicAddress,
+		senderPrivateKeys,
+		senderPublicKeys,
+		mixin,
+		isSweeping,
+	);
+
+	// status: constructing transaction…
+	const feePerKB = dynamicFeePerKB;
+	// Transaction will need at least 1KB fee (or 13KB for RingCT)
+	const minNetworkTxSizeKb = /*isRingCT ? */ 13; /* : 1*/
+	const _estMinNetworkFee = calculateFeeKb(
+		feePerKB,
+		minNetworkTxSizeKb,
+		multiplyFeePriority(simplePriority),
+	);
+
+	// now we're going to try using this minimum fee but the function will be called again
+	// if we find after constructing the whole tx that it is larger in kb than
+	// the minimum fee we're attempting to send it off with
+	return await _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
+		address,
+		feelessTotal,
+		_pid,
+		encryptPid,
+		unusedOuts,
+		feePerKB, // obtained from server, so passed in
+		_estMinNetworkFee,
+	);
+
+	async function _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
 		_targetAddress: string,
 		_feelessTotal: JSBigInt,
 		_pid: Pid,
@@ -219,7 +179,7 @@ export function SendFunds(
 		_estMinNetworkFee: JSBigInt,
 	) {
 		// Now we need to establish some values for balance validation and to construct the transaction
-		updateStatusCb(sendFundStatus.calculatingFee);
+		updateStatus(sendFundStatus.calculatingFee);
 
 		let estMinNetworkFee = _estMinNetworkFee; // we may change this if isRingCT
 		// const hostingService_chargeAmount = hostedMoneroAPIClient.HostingServiceChargeFor_transactionWithNetworkFee(attemptAt_network_minimumFee)
@@ -274,7 +234,7 @@ export function SendFunds(
 				// if the feeless total is less than 0 (so sum of all outputs is still less than network fee)
 				// then reject tx
 				if (_feelessTotal.compare(0) < 1) {
-					return errCb(ERR.BAL.insuff(usingOutsAmount, newNeededFee));
+					throw ERR.BAL.insuff(usingOutsAmount, newNeededFee);
 				}
 
 				// otherwise make the total amount the feeless total + the new fee
@@ -335,7 +295,7 @@ export function SendFunds(
 		// along with the amounts
 
 		if (outsLessThanTotal) {
-			return errCb(ERR.BAL.insuff(usingOutsAmount, totalAmount));
+			throw ERR.BAL.insuff(usingOutsAmount, totalAmount);
 		}
 
 		// Now we can put together the list of fund transfers we need to perform
@@ -429,31 +389,26 @@ export function SendFunds(
 
 		// check for invalid mixin level
 		if (mixin < 0 || isNaN(mixin)) {
-			return errCb(ERR.MIXIN.INVAL);
+			throw ERR.MIXIN.INVAL;
 		}
 
 		// if we want to have mixin for anonyminity
 		if (mixin > 0) {
 			// first, grab RandomOuts, then enter __createTx
-			updateStatusCb(sendFundStatus.fetchingDecoyOutputs);
+			updateStatus(sendFundStatus.fetchingDecoyOutputs);
 
 			// grab random outputs to make a ring signature with
-			return nodeAPI.RandomOuts(
-				usingOuts,
-				mixin,
-				(_err: Error, _amount_outs) => {
-					if (_err) {
-						return errCb(_err);
-					}
-					_createTxAndAttemptToSend(_amount_outs);
-				},
-			);
+			const { amount_outs } = await api.randomOuts(usingOuts, mixin);
+
+			return await _createTxAndAttemptToSend(amount_outs);
 		} else {
 			// mixin === 0: -- PSNOTE: is that even allowed?
-			_createTxAndAttemptToSend();
+			return await _createTxAndAttemptToSend();
 		}
-		function _createTxAndAttemptToSend(mixOuts?: any) {
-			updateStatusCb(sendFundStatus.constructingTransaction);
+		async function _createTxAndAttemptToSend(
+			mixOuts?: any,
+		): Promise<SendFundsRet> {
+			updateStatus(sendFundStatus.constructingTransaction);
 			let signedTx;
 			try {
 				Log.Target.fullDisplay(fundTargets);
@@ -490,7 +445,7 @@ export function SendFunds(
 					nettype,
 				);
 			} catch (e) {
-				return errCb(ERR.TX.failure(e));
+				throw ERR.TX.failure(e);
 			}
 
 			Log.Transaction.signed(signedTx);
@@ -534,7 +489,7 @@ export function SendFunds(
 				);
 
 				// this will update status back to .calculatingFee
-				return _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
+				return await _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
 					_targetAddress,
 					_feelessTotal,
 					_pid,
@@ -549,30 +504,24 @@ export function SendFunds(
 			const finalNetworkFee = estMinNetworkFee; // just to make things clear
 
 			Log.Fee.successfulTx(finalNetworkFee);
-			updateStatusCb(sendFundStatus.submittingTransaction);
+			updateStatus(sendFundStatus.submittingTransaction);
 
-			nodeAPI.SubmitSerializedSignedTransaction(
+			await api.submitSerializedSignedTransaction(
 				senderPublicAddress,
-				senderPrivateKeys.view,
+				senderPrivateKeys,
 				serializedSignedTx,
-				(err: Error) => {
-					if (err) {
-						return errCb(ERR.TX.submitUnknown(err));
-					}
-					const tx_fee = finalNetworkFee; /*.add(hostingService_chargeAmount) NOTE: Service charge removed to reduce bloat for now */
-					successCb(
-						_targetAddress,
-						isSweeping
-							? parseFloat(
-									monero_utils.formatMoneyFull(_feelessTotal),
-							  )
-							: targetAmount,
-						_pid,
-						txHash,
-						tx_fee,
-					);
-				},
 			);
+			const txFee = finalNetworkFee; /*.add(hostingService_chargeAmount) NOTE: Service charge removed to reduce bloat for now */
+			const ret: SendFundsRet = {
+				pid: _pid,
+				sentAmount: isSweeping
+					? parseFloat(monero_utils.formatMoneyFull(_feelessTotal))
+					: targetAmount,
+				targetAddress: _targetAddress,
+				txFee,
+				txHash,
+			};
+			return ret;
 		}
 	}
 }
