@@ -4,6 +4,21 @@ import { ERR } from "./errors";
 import monero_utils from "monero_utils/monero_cryptonote_utils_instance";
 import { possibleOAAddress } from "./open_alias_lite";
 
+/**
+ * @description Map through the provided targets and normalize each address/amount pair
+ *
+ * Addresses are checked to see if they may belong to an OpenAlias address, and rejected if so.
+ * Then they are validated by attempting to decode them.
+ *
+ * Amounts are attempted to be parsed from string value to BigInt value
+ *
+ * The validated address / parsed amount pairs are then returned
+ *
+ * @export
+ * @param {RawTarget[]} targetsToParse
+ * @param {NetType} nettype
+ * @returns {ParsedTarget[]}
+ */
 export function parseTargets(
 	targetsToParse: RawTarget[],
 	nettype: NetType,

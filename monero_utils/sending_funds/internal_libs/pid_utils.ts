@@ -3,6 +3,30 @@ import monero_paymentID_utils from "monero_utils/monero_paymentID_utils";
 import { NetType } from "cryptonote_utils/nettype";
 import { ERR } from "./errors";
 
+/**
+ *
+ *  @description
+ *  Attempts to decode the provided address based on its nettype to break it down into its components
+ *  {pubSend, pubView, integratedPaymentId}
+ *
+ * Then based on the decoded values, determines if the payment ID (if supplied) should be encrypted or not.
+ *
+ * If a payment ID is not supplied, it may be grabbed from the integratedPaymentId component of the decoded
+ * address if provided.
+ *
+ * At each step, invariants are enforced to prevent the following scenarios.
+ *
+ *
+ * 1. Supplied PID + Integrated PID
+ * 2. Supplied PID + Sending to subaddress
+ * 3. Invalid supplied PID
+ *
+ *
+ * @export
+ * @param {string} address
+ * @param {NetType} nettype
+ * @param {(string | null)} pid
+ */
 export function checkAddressAndPidValidity(
 	address: string,
 	nettype: NetType,

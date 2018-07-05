@@ -55,12 +55,12 @@ export class WrappedNodeApi {
 	}
 
 	public randomOuts(usingOuts, mixin: number) {
-		return new Promise<{ amount_outs }>((resolve, reject) => {
+		return new Promise<{ mixOuts }>((resolve, reject) => {
 			this.api.RandomOuts(
 				usingOuts,
 				mixin,
-				(err: Error, amount_outs) =>
-					err ? reject(err) : resolve({ amount_outs }),
+				(err: Error, mixOuts) =>
+					err ? reject(err) : resolve({ mixOuts }),
 			);
 		});
 	}

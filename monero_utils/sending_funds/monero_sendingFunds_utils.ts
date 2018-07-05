@@ -42,7 +42,10 @@ import { Log } from "./internal_libs/logger";
 import { parseTargets } from "./internal_libs/parse_target";
 import { checkAddressAndPidValidity } from "./internal_libs/pid_utils";
 import { WrappedNodeApi } from "./internal_libs/async_node_api";
-import { _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee } from "./internal_libs/construct_tx_and_send";
+import {
+	getRestOfTxData,
+	createTxAndAttemptToSend,
+} from "./internal_libs/construct_tx_and_send";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -96,7 +99,7 @@ export async function SendFunds(
 	if (mixin < minMixin()) {
 		throw ERR.RING.INSUFF;
 	}
-	//
+
 	// parse & normalize the target descriptions by mapping them to Monero addresses & amounts
 	const targetAmount = isSweeping ? 0 : amountorZeroWhenSweep;
 	const target: RawTarget = {
@@ -122,11 +125,7 @@ export async function SendFunds(
 		throw ERR.AMT.INSUFF;
 	}
 
-	const { encryptPid, pid } = checkAddressAndPidValidity(
-		address,
-		nettype,
-		pidToParse,
-	);
+	const pidData = checkAddressAndPidValidity(address, nettype, pidToParse);
 
 	updateStatus(sendFundStatus.fetchingLatestBalance);
 
@@ -140,7 +139,6 @@ export async function SendFunds(
 		isSweeping,
 	);
 
-	// status: constructing transaction…
 	const feePerKB = dynamicFeePerKB;
 	// Transaction will need at least 1KB fee (or 13KB for RingCT)
 	const minNetworkTxSizeKb = /*isRingCT ? */ 13; /* : 1*/
@@ -150,36 +148,96 @@ export async function SendFunds(
 		multiplyFeePriority(simplePriority),
 	);
 
-	// now we're going to try using this minimum fee but the function will be called again
-	// if we find after constructing the whole tx that it is larger in kb than
-	// the minimum fee we're attempting to send it off with
+	// construct commonly used parameters
+	const senderkeys = {
+		senderAddress,
+		senderPublicKeys,
+		senderPrivateKeys,
+	};
 
-	return await _attempt_to_constructFundTransferListAndSendFunds_findingLowestNetworkFee(
-		{
-			senderAddress,
-			senderPublicKeys,
-			senderPrivateKeys,
+	const targetData = {
+		targetAddress,
+		targetAmount,
+	};
 
-			targetAddress,
-			targetAmount,
+	const feeMeta = {
+		simplePriority,
+		feelessTotal,
+		feePerKB, // obtained from server, so passed in
+	};
 
-			pid,
-			encryptPid,
+	const txMeta = {
+		isRingCT,
+		isSweeping,
+		nettype,
+	};
+
+	const externApis = {
+		updateStatus,
+		api,
+	};
+
+	// begin the network fee with the smallest fee possible
+	let networkFee = estMinNetworkFee;
+
+	while (true) {
+		// now we're going to try using this minimum fee but the function will be called again
+		// if we find after constructing the whole tx that it is larger in kb than
+		// the minimum fee we're attempting to send it off with
+		const {
+			mixOuts,
+			fundTargets,
+			newFee,
+			usingOuts,
+		} = await getRestOfTxData({
+			...senderkeys,
+			...targetData,
 
 			mixin,
 			unusedOuts,
 
-			simplePriority,
-			feelessTotal,
-			feePerKB, // obtained from server, so passed in
-			networkFee: estMinNetworkFee,
+			...feeMeta,
+			networkFee,
 
-			isRingCT,
-			isSweeping,
+			...txMeta,
+			...externApis,
+		});
+		networkFee = newFee; // reassign network fee to the new fee returned
 
-			updateStatus,
-			api,
-			nettype,
-		},
-	);
+		const { txFee, txHash, success } = await createTxAndAttemptToSend({
+			...senderkeys,
+			...targetData,
+			fundTargets,
+			...pidData,
+
+			mixin,
+			mixOuts,
+			usingOuts,
+
+			...feeMeta,
+			networkFee,
+
+			...txMeta,
+			...externApis,
+		});
+
+		if (success) {
+			const sentAmount = isSweeping
+				? parseFloat(monero_utils.formatMoneyFull(feelessTotal))
+				: targetAmount;
+
+			return {
+				pid: pidData.pid,
+				sentAmount,
+				targetAddress,
+				txFee,
+				txHash,
+			};
+		} else {
+			// if the function call failed
+			// means that we need a higher fee that was returned
+			// so reassign network fee to it
+			networkFee = txFee;
+		}
+	}
 }
