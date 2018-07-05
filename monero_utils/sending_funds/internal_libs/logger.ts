@@ -89,7 +89,7 @@ export namespace Log {
 	}
 
 	export namespace Balance {
-		export function requiredPreRCT(
+		export function requiredBase(
 			totalAmount: JSBigInt,
 			isSweeping: boolean,
 		) {
