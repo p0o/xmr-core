@@ -1,5 +1,5 @@
 import monero_utils from "monero_utils/monero_cryptonote_utils_instance";
-import { JSBigInt, ParsedTarget } from "./types";
+import { JSBigInt, ParsedTarget, Output } from "./types";
 
 export namespace Log {
 	export namespace Amount {
@@ -35,7 +35,10 @@ export namespace Log {
 				monero_utils.formatMoneySymbol(dynFeePerKB),
 			);
 		}
-		export function basedOnInputs(newNeededFee: JSBigInt, usingOuts) {
+		export function basedOnInputs(
+			newNeededFee: JSBigInt,
+			usingOuts: Output[],
+		) {
 			console.log(
 				"New fee: " +
 					monero_utils.formatMoneySymbol(newNeededFee) +
@@ -119,7 +122,7 @@ export namespace Log {
 			);
 		}
 
-		export function display(out) {
+		export function display(out: Output) {
 			console.log(
 				"Using output: " +
 					monero_utils.formatMoney(out.amount) +
@@ -139,7 +142,7 @@ export namespace Log {
 			monero_utils.printDsts(fundTargets);
 		}
 
-		export function displayDecomposed(splitDestinations) {
+		export function displayDecomposed(splitDestinations: ParsedTarget[]) {
 			console.log("Decomposed destinations:");
 			monero_utils.printDsts(splitDestinations);
 		}
@@ -153,7 +156,10 @@ export namespace Log {
 		export function signed(signedTx) {
 			console.log("signed tx: ", JSON.stringify(signedTx));
 		}
-		export function serializedAndHash(serializedTx, txHash) {
+		export function serializedAndHash(
+			serializedTx: string,
+			txHash: string,
+		) {
 			console.log("tx serialized: " + serializedTx);
 			console.log("Tx hash: " + txHash);
 		}
@@ -185,7 +191,7 @@ export namespace Log {
 			}
 		}
 
-		export function usingOut(outAmount: JSBigInt, out) {
+		export function usingOut(outAmount: JSBigInt, out: Output) {
 			console.log(
 				`Using output: ${monero_utils.formatMoney(
 					outAmount,

@@ -328,10 +328,11 @@ function makeSignedTx(params: ConstructTxParams) {
 			nettype,
 		);
 
-		const splitDestinations = monero_utils.decompose_tx_destinations(
+		const splitDestinations: ParsedTarget[] = monero_utils.decompose_tx_destinations(
 			fundTargets,
 			isRingCT,
 		);
+		Log.Target.displayDecomposed(splitDestinations);
 
 		const signedTx = monero_utils.create_transaction(
 			senderPublicKeys,
@@ -358,12 +359,17 @@ function makeSignedTx(params: ConstructTxParams) {
 }
 
 function getSerializedTxAndHash(signedTx) {
+	type ReturnVal = {
+		serializedSignedTx: string;
+		txHash: string;
+	};
+
 	// pre rct
 	if (signedTx.version === 1) {
 		const serializedSignedTx = monero_utils.serialize_tx(signedTx);
 		const txHash = monero_utils.cn_fast_hash(serializedSignedTx);
 
-		const ret = {
+		const ret: ReturnVal = {
 			serializedSignedTx,
 			txHash,
 		};
@@ -376,7 +382,7 @@ function getSerializedTxAndHash(signedTx) {
 	else {
 		const { raw, hash } = monero_utils.serialize_rct_tx_with_hash(signedTx);
 
-		const ret = {
+		const ret: ReturnVal = {
 			serializedSignedTx: raw,
 			txHash: hash,
 		};
@@ -387,7 +393,7 @@ function getSerializedTxAndHash(signedTx) {
 	}
 }
 
-function getTxSize(serializedSignedTx, estMinNetworkFee: JSBigInt) {
+function getTxSize(serializedSignedTx: string, estMinNetworkFee: JSBigInt) {
 	// work out per-kb fee for transaction and verify that it's enough
 	const txBlobBytes = serializedSignedTx.length / 2;
 	let numOfKB = Math.floor(txBlobBytes / 1024);

@@ -1,6 +1,13 @@
 import { WrappedNodeApi } from "../async_node_api";
 import { NetType } from "cryptonote_utils/nettype";
-import { ViewSendKeys, JSBigInt, ParsedTarget, Pid } from "../types";
+import {
+	ViewSendKeys,
+	JSBigInt,
+	ParsedTarget,
+	Pid,
+	Output,
+	AmountOutput,
+} from "../types";
 import { Status } from "../../status_update_constants";
 
 export type GetFundTargetsAndFeeParams = {
@@ -12,7 +19,7 @@ export type GetFundTargetsAndFeeParams = {
 	targetAmount: number;
 
 	mixin: number;
-	unusedOuts;
+	unusedOuts: Output[];
 
 	simplePriority: number;
 	feelessTotal: JSBigInt;
@@ -40,9 +47,9 @@ export type CreateTxAndAttemptToSendParams = {
 	pid: Pid; // unused
 	encryptPid: boolean;
 
-	mixOuts?: any;
+	mixOuts?: AmountOutput[];
 	mixin: number;
-	usingOuts;
+	usingOuts: Output[];
 
 	simplePriority: number;
 	feelessTotal: JSBigInt;

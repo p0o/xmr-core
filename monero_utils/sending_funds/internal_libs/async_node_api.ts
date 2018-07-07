@@ -1,4 +1,4 @@
-import { ViewSendKeys, JSBigInt } from "./types";
+import { ViewSendKeys, JSBigInt, Output, AmountOutput } from "./types";
 import { Log } from "./logger";
 import { ERR } from "./errors";
 
@@ -16,8 +16,7 @@ export class WrappedNodeApi {
 		isSweeping: boolean,
 	) {
 		type ResolveVal = {
-			unspentOuts;
-			unusedOuts;
+			unusedOuts: Output[];
 			dynamicFeePerKB: JSBigInt;
 		};
 
@@ -26,8 +25,8 @@ export class WrappedNodeApi {
 			const { spend: pubSend } = publicKeys;
 			const handler = (
 				err: Error,
-				unspentOuts,
-				unusedOuts,
+				_: Output[], // unspent outs, the original copy of unusedOuts
+				unusedOuts: Output[],
 				dynamicFeePerKB: JSBigInt,
 			) => {
 				if (err) {
@@ -36,7 +35,6 @@ export class WrappedNodeApi {
 
 				Log.Fee.dynPerKB(dynamicFeePerKB);
 				return resolve({
-					unspentOuts,
 					unusedOuts,
 					dynamicFeePerKB,
 				});
@@ -54,12 +52,12 @@ export class WrappedNodeApi {
 		});
 	}
 
-	public randomOuts(usingOuts, mixin: number) {
-		return new Promise<{ mixOuts }>((resolve, reject) => {
+	public randomOuts(usingOuts: Output[], mixin: number) {
+		return new Promise<{ mixOuts: AmountOutput[] }>((resolve, reject) => {
 			this.api.RandomOuts(
 				usingOuts,
 				mixin,
-				(err: Error, mixOuts) =>
+				(err: Error, mixOuts: AmountOutput[]) =>
 					err ? reject(err) : resolve({ mixOuts }),
 			);
 		});
@@ -68,7 +66,7 @@ export class WrappedNodeApi {
 	public submitSerializedSignedTransaction(
 		address: string,
 		privateKeys: ViewSendKeys,
-		serializedSignedTx,
+		serializedSignedTx: string,
 	) {
 		return new Promise<void>((resolve, reject) => {
 			this.api.SubmitSerializedSignedTransaction(

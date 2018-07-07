@@ -1,5 +1,12 @@
 import { NetType } from "cryptonote_utils/nettype";
-import { ParsedTarget, JSBigInt, Pid, ViewSendKeys } from "../types";
+import {
+	ParsedTarget,
+	JSBigInt,
+	Pid,
+	ViewSendKeys,
+	Output,
+	AmountOutput,
+} from "../types";
 
 export type ConstructTxParams = {
 	senderPublicKeys: ViewSendKeys;
@@ -11,9 +18,9 @@ export type ConstructTxParams = {
 	pid: Pid;
 	encryptPid: boolean;
 
-	mixOuts?: any;
+	mixOuts?: AmountOutput[];
 	mixin: number;
-	usingOuts;
+	usingOuts: Output[];
 
 	networkFee: JSBigInt;
 
@@ -27,8 +34,8 @@ export type TotalAmtAndEstFeeParams = {
 	baseTotalAmount: JSBigInt;
 
 	mixin: number;
-	remainingUnusedOuts;
-	usingOuts;
+	remainingUnusedOuts: Output[];
+	usingOuts: Output[];
 
 	simplePriority: number;
 	feelessTotal: JSBigInt;
@@ -42,8 +49,8 @@ export type TotalAmtAndEstFeeParams = {
 export type EstRctFeeAndAmtParams = {
 	mixin: number;
 	usingOutsAmount: JSBigInt;
-	remainingUnusedOuts;
-	usingOuts;
+	remainingUnusedOuts: Output[];
+	usingOuts: Output[];
 
 	simplePriority: number;
 	feelessTotal: JSBigInt;

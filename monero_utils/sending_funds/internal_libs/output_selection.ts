@@ -1,18 +1,18 @@
-import { JSBigInt } from "./types";
+import { JSBigInt, Output } from "./types";
 import { popRandElement } from "./arr_utils";
 import { Log } from "./logger";
 import monero_config from "monero_utils/monero_config";
 
 export function selectOutputsAndAmountForMixin(
 	targetAmount: JSBigInt,
-	unusedOuts,
+	unusedOuts: Output[],
 	isRingCT: boolean,
 	sweeping: boolean,
 ) {
 	Log.SelectOutsAndAmtForMix.target(targetAmount);
 
 	let usingOutsAmount = new JSBigInt(0);
-	const usingOuts = [];
+	const usingOuts: Output[] = [];
 	const remainingUnusedOuts = unusedOuts.slice(); // take copy so as to prevent issue if we must re-enter tx building fn if fee too low after building
 	while (
 		usingOutsAmount.compare(targetAmount) < 0 &&
