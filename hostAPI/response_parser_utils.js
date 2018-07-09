@@ -53,7 +53,7 @@ function Parsed_AddressInfo__sync(
 	const spent_outputs = data.spent_outputs || [];
 	//
 	for (let spent_output of spent_outputs) {
-		var key_image = monero_keyImage_cache_utils.Lazy_KeyImage(
+		var key_image = monero_keyImage_cache_utils.keyImage(
 			keyImage_cache,
 			spent_output.tx_pub_key,
 			spent_output.out_index,
@@ -192,7 +192,7 @@ function Parsed_AddressTransactions__sync(
 	for (let i = 0; i < transactions.length; ++i) {
 		if ((transactions[i].spent_outputs || []).length > 0) {
 			for (var j = 0; j < transactions[i].spent_outputs.length; ++j) {
-				var key_image = monero_keyImage_cache_utils.Lazy_KeyImage(
+				var key_image = monero_keyImage_cache_utils.keyImage(
 					keyImage_cache,
 					transactions[i].spent_outputs[j].tx_pub_key,
 					transactions[i].spent_outputs[j].out_index,
@@ -389,7 +389,7 @@ function Parsed_UnspentOuts__sync(
 				);
 				continue;
 			}
-			var key_image = monero_keyImage_cache_utils.Lazy_KeyImage(
+			var key_image = monero_keyImage_cache_utils.keyImage(
 				keyImage_cache,
 				beforeSplice__tx_pub_key,
 				beforeSplice__index,
