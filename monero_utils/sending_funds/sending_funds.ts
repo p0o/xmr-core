@@ -180,6 +180,10 @@ export async function SendFunds(
 	// begin the network fee with the smallest fee possible
 	let networkFee = estMinNetworkFee;
 
+	// this loop should only execute at most twice
+	// 1st execution to generate the inital transaction
+	// 2nd execution if the initial transaction's fee is greater than
+	// what the predicted tx fee would be
 	while (true) {
 		// now we're going to try using this minimum fee but the function will be called again
 		// if we find after constructing the whole tx that it is larger in kb than
