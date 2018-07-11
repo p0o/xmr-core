@@ -25,13 +25,11 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-"use strict";
-//
-const JSBigInt = require("../cryptonote_utils/biginteger").BigInteger;
-const monero_utils = require("../monero_utils/monero_cryptonote_utils_instance");
-const key_image_utils = require("../monero_utils/key_image_utils");
-//
+
+import { JSBigInt, Omit } from "types";
+import monero_utils from "../monero_utils/monero_cryptonote_utils_instance";
+import { genKeyImage, KeyImageCache } from "../monero_utils/key_image_utils";
+
 function Parsed_AddressInfo__sync(
 	keyImage_cache,
 	data,
@@ -150,7 +148,7 @@ exports.Parsed_AddressInfo = Parsed_AddressInfo;
 exports.Parsed_AddressInfo__keyImageManaged = Parsed_AddressInfo__keyImageManaged; // in case you can't send a mutable key image cache dictionary
 exports.Parsed_AddressInfo__sync__keyImageManaged = Parsed_AddressInfo__sync__keyImageManaged; // in case you can't send a mutable key image cache dictionary
 exports.Parsed_AddressInfo__sync = Parsed_AddressInfo__sync;
-//
+
 function Parsed_AddressTransactions(
 	keyImage_cache,
 	data,
@@ -170,108 +168,202 @@ function Parsed_AddressTransactions(
 	);
 	fn(null, returnValuesByKey);
 }
+
+interface SpentOutput {
+	amount: string;
+	key_image: string;
+	tx_pub_key: string;
+	out_index: number;
+	mixin?: number;
+}
+
+interface AddressTransactionsTx {
+	id: number;
+	hash?: string;
+	timestamp?: string;
+	total_received?: string;
+	total_sent?: string;
+	unlock_time?: number;
+	height?: number;
+	coinbase?: boolean;
+	mempool?: boolean;
+	mixin?: number;
+	spent_outputs?: SpentOutput[];
+	payment_id?: string;
+}
+
+interface AddressTransactions {
+	total_received?: string;
+	scanned_height?: number;
+	scanned_block_height?: number;
+	start_height?: number;
+	transaction_height?: number;
+	blockchain_height?: number;
+	transactions?: AddressTransactionsTx[];
+}
+
+function normalizeAddressTransactions(
+	data: AddressTransactions,
+): Required<AddressTransactions> {
+	const defaultObj: Required<AddressTransactions> = {
+		scanned_height: 0,
+		scanned_block_height: 0,
+		start_height: 0,
+		transaction_height: 0,
+		blockchain_height: 0,
+		transactions: [] as AddressTransactionsTx[],
+		total_received: "0",
+	};
+	return { ...defaultObj, ...data };
+}
+
+interface NormalizedTransaction extends Required<AddressTransactionsTx> {
+	amount: string;
+	approx_float_amount: number;
+}
+
+function normalizeTransaction(
+	tx: AddressTransactionsTx,
+): NormalizedTransaction {
+	const defaultObj: NormalizedTransaction = {
+		amount: "0",
+		approx_float_amount: 0,
+		hash: "",
+		height: 0,
+		id: 0,
+		mempool: false,
+		coinbase: false,
+		mixin: 0,
+		spent_outputs: [] as SpentOutput[],
+		timestamp: "",
+		total_received: "0",
+		total_sent: "0",
+		unlock_time: 0,
+		payment_id: "",
+	};
+
+	const mergedObj = { ...defaultObj, ...tx };
+
+	return mergedObj;
+}
+
+function isKeyImageEqual({ key_image }: SpentOutput, keyImage: string) {
+	return key_image === keyImage;
+}
+
+/**
+ *
+ * @description Validates that the sum of total received and total sent is greater than 1
+ * @param {NormalizedTransaction} { total_received, total_sent}
+ */
+function zeroTransactionAmount({
+	total_received,
+	total_sent,
+}: NormalizedTransaction) {
+	return new JSBigInt(total_received).add(total_sent).compare(0) <= 0;
+}
+
+function calculateTransactionAmount({
+	total_received,
+	total_sent,
+}: NormalizedTransaction) {
+	return new JSBigInt(total_received).subtract(total_sent).toString();
+}
+
+function estimateTransactionAmount({ amount }: NormalizedTransaction) {
+	return parseFloat(monero_utils.formatMoney(amount));
+}
+
 function Parsed_AddressTransactions__sync(
-	keyImage_cache,
-	data,
-	address,
-	view_key__private,
-	spend_key__public,
-	spend_key__private,
+	keyImage_cache: KeyImageCache,
+	data: AddressTransactions,
+	address: string,
+	privViewKey: string,
+	pubSpendKey: string,
+	spend_key__private: string,
 ) {
-	const account_scanned_height = data.scanned_height || 0;
-	const account_scanned_block_height = data.scanned_block_height || 0;
-	const account_scan_start_height = data.start_height || 0;
-	const transaction_height = data.transaction_height || 0;
-	const blockchain_height = data.blockchain_height || 0;
-	//
-	const transactions = data.transactions || [];
-	//
+	const {
+		blockchain_height,
+		scanned_block_height: account_scanned_block_height,
+		scanned_height: account_scanned_height,
+		start_height: account_scan_start_height,
+		total_received,
+		transaction_height,
+		transactions,
+	} = normalizeAddressTransactions(data);
+
 	// TODO: rewrite this with more clarity if possible
 	for (let i = 0; i < transactions.length; ++i) {
-		if ((transactions[i].spent_outputs || []).length > 0) {
-			for (var j = 0; j < transactions[i].spent_outputs.length; ++j) {
-				var key_image = key_image_utils.keyImage(
-					keyImage_cache,
-					transactions[i].spent_outputs[j].tx_pub_key,
-					transactions[i].spent_outputs[j].out_index,
-					address,
-					view_key__private,
-					spend_key__public,
-					spend_key__private,
-				);
-				if (transactions[i].spent_outputs[j].key_image !== key_image) {
-					// console.log('Output used as mixin, ignoring (' + transactions[i].spent_outputs[j].key_image + '/' + key_image + ')')
-					transactions[i].total_sent = new JSBigInt(
-						transactions[i].total_sent,
-					)
-						.subtract(transactions[i].spent_outputs[j].amount)
-						.toString();
-					transactions[i].spent_outputs.splice(j, 1);
-					j--;
-				}
+		const transaction = normalizeTransaction(transactions[i]);
+
+		for (let j = 0; j < transaction.spent_outputs.length; ++j) {
+			const keyImage = genKeyImage(
+				keyImage_cache,
+				transaction.spent_outputs[j].tx_pub_key,
+				transaction.spent_outputs[j].out_index,
+				address,
+				privViewKey,
+				pubSpendKey,
+				spend_key__private,
+			);
+
+			if (!isKeyImageEqual(transaction.spent_outputs[j], keyImage)) {
+				// console.log('Output used as mixin, ignoring (' + transaction.spent_outputs[j].key_image + '/' + key_image + ')')
+				transaction.total_sent = new JSBigInt(transaction.total_sent)
+					.subtract(transaction.spent_outputs[j].amount)
+					.toString();
+
+				transaction.spent_outputs.splice(j, 1);
+				j--;
 			}
 		}
-		if (
-			new JSBigInt(transactions[i].total_received || 0)
-				.add(transactions[i].total_sent || 0)
-				.compare(0) <= 0
-		) {
+		if (zeroTransactionAmount(transaction)) {
 			transactions.splice(i, 1);
 			i--;
 			continue;
 		}
-		transactions[i].amount = new JSBigInt(
-			transactions[i].total_received || 0,
-		)
-			.subtract(transactions[i].total_sent || 0)
-			.toString();
-		transactions[i].approx_float_amount = parseFloat(
-			monero_utils.formatMoney(transactions[i].amount),
+
+		transaction.amount = calculateTransactionAmount(transaction);
+
+		transaction.approx_float_amount = estimateTransactionAmount(
+			transaction,
 		);
-		transactions[i].timestamp = transactions[i].timestamp;
-		const record__payment_id = transactions[i].payment_id;
-		if (typeof record__payment_id !== "undefined" && record__payment_id) {
-			if (record__payment_id.length == 16) {
-				// short (encrypted) pid
-				if (transactions[i].approx_float_amount < 0) {
-					// outgoing
-					delete transactions[i]["payment_id"]; // need to filter these out .. because the server can't filter out short (encrypted) pids on outgoing txs
-				}
-			}
+
+		const record__payment_id = transaction.payment_id;
+
+		const outgoingTxWithEncPid =
+			record__payment_id &&
+			record__payment_id.length === 16 &&
+			transaction.approx_float_amount < 0;
+		if (outgoingTxWithEncPid) {
+			delete transaction.payment_id; // need to filter these out .. because the server can't filter out short (encrypted) pids on outgoing txs
 		}
 	}
-	transactions.sort(function(a, b) {
-		if (a.mempool == true) {
-			if (b.mempool != true) {
+
+	transactions.sort((a, b) => {
+		if (a.mempool) {
+			if (!b.mempool) {
 				return -1; // a first
 			}
 			// both mempool - fall back to .id compare
-		} else if (b.mempool == true) {
+		} else if (b.mempool) {
 			return 1; // b first
 		}
 		return b.id - a.id;
 	});
-	// prepare transactions to be serialized
-	for (let transaction of transactions) {
-		transaction.amount = transaction.amount.toString(); // JSBigInt -> String
-		if (
-			typeof transaction.total_sent !== "undefined" &&
-			transaction.total_sent !== null
-		) {
-			transaction.total_sent = transaction.total_sent.toString();
-		}
-	}
+
 	// on the other side, we convert transactions timestamp to Date obj
-	const returnValuesByKey = {
-		account_scanned_height: account_scanned_height,
-		account_scanned_block_height: account_scanned_block_height,
-		account_scan_start_height: account_scan_start_height,
-		transaction_height: transaction_height,
-		blockchain_height: blockchain_height,
+
+	return {
+		account_scanned_height,
+		account_scanned_block_height,
+		account_scan_start_height,
+		transaction_height,
+		blockchain_height,
 		serialized_transactions: transactions,
 	};
-	return returnValuesByKey;
 }
+
 function Parsed_AddressTransactions__sync__keyImageManaged(
 	data,
 	address,
