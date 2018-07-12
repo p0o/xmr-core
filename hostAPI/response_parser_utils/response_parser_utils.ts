@@ -176,17 +176,8 @@ export function parseAddressTransactions(
 }
 
 /**
- * @description
- * 	For each unspent output
- * 		For each spend_key_image of the current unspent output
- *			If the generated key image is equal to one of them spend_key_images
- *				Then remove that current unspent output
- *				Then check if the next unspent output exists (since we just shortened the unspent output list by 1)
- *					If it does exist
- *						Then skip the rest of the spend_key_images (since we now know this output belongs to us)
- *			Else,
- *				That spend_key_image was used as a mixin to that output (it doesnt belong to us)
- *
+ * @description Go through each (possibly) unspent out and remove ones that have been spent before
+ * by computing a key image per unspent output and checking if they match any spend_key_images
  * @param {string} address
  * @param {KeyImageCache} [keyImageCache=getKeyImageCache(address)]
  * @param {UnspentOuts} data
