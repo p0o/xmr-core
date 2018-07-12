@@ -231,6 +231,8 @@ export function parseUnspentOuts(
 				unspentOuts.splice(i, 1);
 
 				const afterSplice = unspentOuts[i];
+
+				// skip rest of spend_key_images
 				if (afterSplice) {
 					j = afterSplice.spend_key_images.length;
 				}
