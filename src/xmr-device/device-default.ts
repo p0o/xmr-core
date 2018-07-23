@@ -1,5 +1,5 @@
 import {
-	Device,
+	HWDevice,
 	IAccountKeys,
 	PublicAddress,
 	DeviceMode,
@@ -26,7 +26,7 @@ import { encode_ecdh, decode_ecdh } from "xmr-crypto-ops/rct";
 import { cn_fast_hash } from "xmr-fast-hash";
 import { sc_mulsub } from "xmr-crypto-ops/primitive_ops";
 
-export class DefaultDevice implements Device {
+export class DefaultDevice implements HWDevice {
 	private name: string;
 
 	constructor() {
@@ -148,9 +148,7 @@ export class DefaultDevice implements Device {
 		return crypto.primitive_ops.sc_add(a, b);
 	}
 
-	public async generate_keys(
-		recoveryKey: SecretKey | undefined,
-	): Promise<KeyPair> {
+	public async generate_keys(recoveryKey?: SecretKey): Promise<KeyPair> {
 		if (recoveryKey) {
 			return generate_keys(recoveryKey);
 		}

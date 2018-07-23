@@ -21,6 +21,7 @@ import { random_scalar } from "xmr-rand";
 import { commit } from "xmr-crypto-ops/rct";
 import { get_pre_mlsag_hash } from "./utils";
 import { verBulletProof } from "./components/bullet_proofs";
+import { HWDevice } from "xmr-device/types";
 
 const RCTTypeFull = 1;
 const RCTTypeSimple = 2;
@@ -47,6 +48,7 @@ export function genRct(
 	amountKeys: string[],
 	indices: number[],
 	txnFee: string,
+	hwdev: HWDevice,
 ) {
 	if (outAmounts.length !== amountKeys.length) {
 		throw Error("different number of amounts/amount_keys");

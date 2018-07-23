@@ -35,7 +35,7 @@ export function generate_keys(seed: string): KeyPair {
 	};
 }
 
-export function valid_keys(
+export function verify_keys(
 	view_pub: string,
 	view_sec: string,
 	spend_pub: string,

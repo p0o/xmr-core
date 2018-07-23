@@ -42,7 +42,7 @@ export interface IAccountKeys {
 	m_account_address: PublicAddress;
 	m_spend_secret_key: string;
 	m_view_secret_key: string;
-	m_device: Device;
+	m_device: HWDevice;
 }
 
 export interface ISubaddressIndex {
@@ -53,7 +53,7 @@ export interface ISubaddressIndex {
 
 // device.hpp
 
-export interface Device {
+export interface HWDevice {
 	/* ======================================================================= */
 	/*                              SETUP/TEARDOWN                             */
 	/* ======================================================================= */
@@ -211,7 +211,7 @@ export interface Device {
 	 * @returns {Promise<KeyPair>}
 	 * @memberof Device
 	 */
-	generate_keys(recoveryKey: SecretKey | undefined): Promise<KeyPair>;
+	generate_keys(recoveryKey?: SecretKey): Promise<KeyPair>;
 
 	/**
 	 *
