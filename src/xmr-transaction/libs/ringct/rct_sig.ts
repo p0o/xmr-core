@@ -1,4 +1,3 @@
-import { encode_ecdh, decode_ecdh } from "xmr-crypto-ops/rct";
 import { proveRange, verRange } from "./components/prove_range";
 import {
 	proveRctMG,
@@ -13,15 +12,15 @@ import {
 	sc_add,
 	sc_sub,
 	ge_add,
-	ge_scalarmult,
 	ge_double_scalarmult_base_vartime,
 } from "xmr-crypto-ops/primitive_ops";
 import { d2s } from "xmr-str-utils/integer-strings";
 import { random_scalar } from "xmr-rand";
-import { commit } from "xmr-crypto-ops/rct";
+import { commit, scalarmultH } from "xmr-crypto-ops/rct";
 import { get_pre_mlsag_hash } from "./utils";
 import { verBulletProof } from "./components/bullet_proofs";
-import { HWDevice } from "xmr-device/types";
+import { HWDevice, CtKeyV } from "xmr-device/types";
+import { DefaultDevice } from "xmr-device/device-default";
 
 const RCTTypeFull = 1;
 const RCTTypeSimple = 2;
@@ -29,7 +28,7 @@ const RCTTypeSimple = 2;
 //message is normal prefix hash
 //inSk is vector of x,a
 //kimg is vector of kimg
-//destinations is vector of pubkeys (we skip and proxy outAmounts instead)
+//destinations is vector of pubkeys
 //inAmounts is vector of strings
 //outAmounts is vector of strings
 //mixRing is matrix of pubkey, commit (dest, mask)
@@ -38,10 +37,11 @@ const RCTTypeSimple = 2;
 //txnFee is string, with its endian not swapped (e.g d2s is not called before passing it in as an argument)
 //to this function
 
-export function genRct(
+export async function genRct(
 	message: string,
 	inSk: SecretCommitment[],
-	kimg: string[],
+	kimgs: string[],
+	destinations: string[],
 	inAmounts: (BigInt | string)[],
 	outAmounts: (BigInt | string)[],
 	mixRing: RingMember[][],
@@ -80,24 +80,22 @@ export function genRct(
 	};
 
 	let sumout = Z;
-	const cmObj = {
-		C: "",
-		mask: "",
-	};
 
-	const nrings = 64; //for base 2/current
+	const outSk: CtKeyV = [];
 	let i;
 	//compute range proofs, etc
 	for (i = 0; i < outAmounts.length; i++) {
-		const teststart = new Date().getTime();
-		rv.p.rangeSigs[i] = proveRange(cmObj, outAmounts[i], nrings);
-		const testfinish = new Date().getTime() - teststart;
-		console.log("Time take for range proof " + i + ": " + testfinish);
-		rv.outPk[i] = cmObj.C;
+		const { C, mask, sig } = proveRange(outAmounts[i]);
+		rv.outPk[i] = { dest: destinations[i], mask: C };
+		outSk[i] = { mask, dest: "" };
+		rv.p.rangeSigs[i] = sig;
+
 		// the mask is the sum
-		sumout = sc_add(sumout, cmObj.mask);
-		rv.ecdhInfo[i] = encode_ecdh(
-			{ mask: cmObj.mask, amount: d2s(outAmounts[i]) },
+		sumout = sc_add(sumout, outSk[i].mask);
+
+		// encode the amount commitment for the receiver so that they can retrive blinding factor + amount later
+		rv.ecdhInfo[i] = await hwdev.ecdhEncode(
+			{ mask, amount: d2s(outAmounts[i]) }, //blinding factor y and amount b in C = yG + bH
 			amountKeys[i],
 		);
 	}
@@ -108,7 +106,7 @@ export function genRct(
 			throw Error("mismatched inAmounts/inSk");
 		}
 
-		const ai = []; // blinding factor
+		const ai: string[] = []; // blinding factor
 		let sumpouts = Z;
 		//create pseudoOuts
 		for (i = 0; i < inAmounts.length - 1; i++) {
@@ -120,44 +118,50 @@ export function genRct(
 
 		ai[i] = sc_sub(sumout, sumpouts);
 		rv.pseudoOuts[i] = commit(d2s(inAmounts[i]), ai[i]);
-		const full_message = get_pre_mlsag_hash(rv);
+		const pre_mlsag_hash = await get_pre_mlsag_hash(rv, mixRing, hwdev);
 		for (i = 0; i < inAmounts.length; i++) {
 			rv.p.MGs.push(
-				proveRctMG(
-					full_message,
+				await proveRctMG(
+					pre_mlsag_hash,
 					mixRing[i],
 					inSk[i],
-					kimg[i],
+					kimgs[i],
 					ai[i],
 					rv.pseudoOuts[i],
 					indices[i],
+					hwdev,
 				),
 			);
 		}
 	} else {
+		//get sum of input commitments to use in MLSAG
 		let sumC = I;
-		//get sum of output commitments to use in MLSAG
 		for (i = 0; i < rv.outPk.length; i++) {
-			sumC = ge_add(sumC, rv.outPk[i]);
+			sumC = ge_add(sumC, rv.outPk[i].mask);
 		}
-		sumC = ge_add(sumC, ge_scalarmult(H, d2s(rv.txnFee)));
-		const full_message = get_pre_mlsag_hash(rv);
+
+		const txnfeeKey = scalarmultH(d2s(rv.txnFee));
+
+		sumC = ge_add(sumC, txnfeeKey);
+		const pre_mlsag_hash = await get_pre_mlsag_hash(rv, mixRing, hwdev);
 		rv.p.MGs.push(
-			proveRctMG(
-				full_message,
+			await proveRctMG(
+				pre_mlsag_hash,
 				mixRing[0],
 				inSk[0],
-				kimg[0],
+				kimgs[0],
 				sumout,
 				sumC,
 				indices[0],
+				hwdev,
 			),
 		);
 	}
 	return rv;
 }
+const defaultHwDev = new DefaultDevice()
 
-export function verRct(
+export async function verRct(
 	rv: RCTSignatures,
 	semantics: boolean,
 	mixRing: RingMember[][],
@@ -172,7 +176,7 @@ export function verRct(
 		throw Error("verRct called on non-full rctSig");
 	}
 	if (semantics) {
-		//RCTTypeFullBulletproof checks not implemented
+		// RCTTypeFullBulletproof checks not implemented
 		// RCTTypeFull checks
 		if (rv.outPk.length !== rv.p.rangeSigs.length) {
 			throw Error("Mismatched sizes of outPk and rv.p.rangeSigs");
@@ -196,7 +200,7 @@ export function verRct(
 					results[i] = verBulletProof((rv.p as any).bulletproofs[i]);
 				} else {
 					// mask -> C if public
-					results[i] = verRange(rv.outPk[i], rv.p.rangeSigs[i]);
+					results[i] = verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]);
 				}
 			}
 
@@ -211,13 +215,13 @@ export function verRct(
 			}
 		} else {
 			// compute txn fee
-			const txnFeeKey = ge_scalarmult(H, d2s(rv.txnFee));
+			const txnFeeKey = scalarmultH(d2s(rv.txnFee));
 			const mgVerd = verRctMG(
 				rv.p.MGs[0],
 				mixRing,
 				rv.outPk,
 				txnFeeKey,
-				get_pre_mlsag_hash(rv),
+				await get_pre_mlsag_hash(rv, mixRing, defaultHwDev),
 				kimg,
 			);
 			console.log("mg sig verified?", mgVerd);
@@ -235,7 +239,7 @@ export function verRct(
 
 //ver RingCT simple
 //assumes only post-rct style inputs (at least for max anonymity)
-export function verRctSimple(
+export async function verRctSimple(
 	rv: RCTSignatures,
 	semantics: boolean,
 	mixRing: RingMember[][],
@@ -290,10 +294,10 @@ export function verRctSimple(
 		if (semantics) {
 			let sumOutpks = identity();
 			for (let i = 0; i < rv.outPk.length; i++) {
-				sumOutpks = ge_add(sumOutpks, rv.outPk[i]); // add all of the output commitments
+				sumOutpks = ge_add(sumOutpks, rv.outPk[i].mask); // add all of the output commitments
 			}
 
-			const txnFeeKey = ge_scalarmult(H, d2s(rv.txnFee));
+			const txnFeeKey = scalarmultH(d2s(rv.txnFee));
 			sumOutpks = ge_add(txnFeeKey, sumOutpks); // add txnfeekey
 
 			let sumPseudoOuts = identity();
@@ -314,7 +318,7 @@ export function verRctSimple(
 					results[i] = verBulletProof((rv.p as any).bulletproofs[i]);
 				} else {
 					// mask -> C if public
-					results[i] = verRange(rv.outPk[i], rv.p.rangeSigs[i]);
+					results[i] = verRange(rv.outPk[i].mask, rv.p.rangeSigs[i]);
 				}
 			}
 
@@ -328,7 +332,7 @@ export function verRctSimple(
 				}
 			}
 		} else {
-			const message = get_pre_mlsag_hash(rv);
+			const message = await  get_pre_mlsag_hash(rv, mixRing, defaultHwDev);
 			const results = [];
 			for (let i = 0; i < mixRing.length; i++) {
 				results[i] = verRctMGSimple(
@@ -362,7 +366,12 @@ export function verRctSimple(
 //   uses the attached ecdh info to find the amounts represented by each output commitment
 //   must know the destination private key to find the correct amount, else will return a random number
 
-export function decodeRct(rv: RCTSignatures, sk: string, i: number) {
+export async function decodeRct(
+	rv: RCTSignatures,
+	sk: string,
+	i: number,
+	hwdev: HWDevice,
+) {
 	// where RCTTypeFull is 0x01 and  RCTTypeFullBulletproof is 0x03
 	if (rv.type !== 0x01 && rv.type !== 0x03) {
 		throw Error("verRct called on non-full rctSig");
@@ -376,9 +385,9 @@ export function decodeRct(rv: RCTSignatures, sk: string, i: number) {
 
 	// mask amount and mask
 	const ecdh_info = rv.ecdhInfo[i];
-	const { mask, amount } = decode_ecdh(ecdh_info, sk);
+	const { mask, amount } = await hwdev.ecdhDecode(ecdh_info, sk);
 
-	const C = rv.outPk[i];
+	const C = rv.outPk[i].mask;
 	const Ctmp = ge_double_scalarmult_base_vartime(amount, H, mask);
 
 	console.log("[decodeRct]", C, Ctmp);
@@ -390,7 +399,12 @@ export function decodeRct(rv: RCTSignatures, sk: string, i: number) {
 	return { amount, mask };
 }
 
-export function decodeRctSimple(rv: RCTSignatures, sk: string, i: number) {
+export async function decodeRctSimple(
+	rv: RCTSignatures,
+	sk: string,
+	i: number,
+	hwdev: HWDevice,
+) {
 	if (rv.type !== 0x02 && rv.type !== 0x04) {
 		throw Error("verRct called on full rctSig");
 	}
@@ -403,9 +417,9 @@ export function decodeRctSimple(rv: RCTSignatures, sk: string, i: number) {
 
 	// mask amount and mask
 	const ecdh_info = rv.ecdhInfo[i];
-	const { mask, amount } = decode_ecdh(ecdh_info, sk);
+	const { mask, amount } = await hwdev.ecdhDecode(ecdh_info, sk);
 
-	const C = rv.outPk[i];
+	const C = rv.outPk[i].mask;
 	const Ctmp = ge_double_scalarmult_base_vartime(amount, H, mask);
 
 	console.log("[decodeRctSimple]", C, Ctmp);

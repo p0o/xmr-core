@@ -1,6 +1,6 @@
 import { BigInt } from "biginteger";
 import { genBorromean, verifyBorromean } from "./borromean";
-import { CommitMask, RangeSignature } from "./types";
+import { RangeSignature } from "./types";
 import { identity, H2, Z, I } from "xmr-crypto-ops/constants";
 import {
 	ge_sub,
@@ -17,55 +17,45 @@ import { d2b } from "xmr-str-utils/integer-strings";
 //	 and Ci is a commitment to either 0 or s^i, i=0,...,n
 //	 thus this proves that "amount" is in [0, s^n] (we assume s to be 4) (2 for now with v2 txes)
 //	 mask is a such that C = aG + bH, and b = amount
-//commitMaskObj = {C: commit, mask: mask}
 
-export function proveRange(
-	commitMaskObj: CommitMask,
-	amount: string | BigInt,
-	nrings: number,
-) {
+export function proveRange(amount: string | BigInt) {
 	let C = I; //identity
 	let mask = Z; //zero scalar
 
 	// bitstring representation of amount
-	const indices = d2b(amount); //base 2 for now
+	const indices = d2b(amount);
 	const Ci: string[] = [];
 
 	const ai: string[] = [];
 	const PM: string[][] = [[], []];
 
 	//start at index and fill PM left and right -- PM[0] holds Ci
-	for (let i = 0; i < nrings; i++) {
+	for (let i = 0; i < 64; i++) {
 		ai[i] = random_scalar();
 
 		if (+indices[i] === 1) {
-			PM[1][i] = ge_scalarmult_base(ai[i]);
-			PM[0][i] = ge_add(PM[1][i], H2[i]);
+			// if b[i] === 1
+			PM[1][i] = ge_scalarmult_base(ai[i]); //  yG
+			PM[0][i] = ge_add(PM[1][i], H2[i]); // yG + H2[i]
 		} else {
-			PM[0][i] = ge_scalarmult_base(ai[i]);
-			PM[1][i] = ge_sub(PM[0][i], H2[i]);
+			PM[0][i] = ge_scalarmult_base(ai[i]); // yG
+			PM[1][i] = ge_sub(PM[0][i], H2[i]); // yG - H2[i]
 		}
 		mask = sc_add(mask, ai[i]);
 	}
-	/*
-		* some more payload stuff here
-		*/
-	//copy commitments to sig and sum them to commitment
-	for (let i = 0; i < nrings; i++) {
-		//if (i < nrings - 1) //for later version
+
+	// copy commitments to sig and sum them to commitment
+	for (let i = 0; i < 64; i++) {
 		Ci[i] = PM[0][i];
 		C = ge_add(C, Ci[i]);
 	}
 
 	const sig: RangeSignature = {
 		Ci,
-		bsig: genBorromean(ai, PM, indices, nrings),
+		bsig: genBorromean(ai, PM, indices), // create a borromean signature to avoid amount ambiguity
 	};
-	//exp: exponent //doesn't exist for now
 
-	commitMaskObj.C = C;
-	commitMaskObj.mask = mask;
-	return sig;
+	return { C, mask, sig };
 }
 
 //proveRange and verRange
@@ -76,12 +66,12 @@ export function proveRange(
 //   mask is a such that C = aG + bH, and b = amount
 //verRange verifies that \sum Ci = C and that each Ci is a commitment to 0 or 2^i
 
-export function verRange(C: string, as: RangeSignature, nrings = 64) {
+export function verRange(C: string, as: RangeSignature) {
 	try {
 		let CiH = []; // len 64
 		let asCi = []; // len 64
 		let Ctmp = identity();
-		for (let i = 0; i < nrings; i++) {
+		for (let i = 0; i < 64; i++) {
 			CiH[i] = ge_sub(as.Ci[i], H2[i]);
 			asCi[i] = as.Ci[i];
 			Ctmp = ge_add(Ctmp, as.Ci[i]);

@@ -351,8 +351,8 @@ async function construct_tx(
 		if (d.amount.compare(0) < 0) {
 			throw Error("dst.amount < 0"); //amount can be zero if no change
 		}
-		const keys = decode_address(d.address, nettype);
-		return { ...d, keys };
+		const pubkeys = decode_address(d.address, nettype);
+		return { ...d, pubkeys };
 	});
 
 	const outputs_money = dstsWithKeys.reduce<BigInt>(
@@ -380,26 +380,26 @@ async function construct_tx(
 					);
 				}
 				txkey.pub = await hwdev.scalarmultKey(
-					dstWKey.keys.spend,
+					dstWKey.pubkeys.spend,
 					txkey.sec,
 				);
 			}
 
-			const out_derivation =
-				dstWKey.keys.view === keys.view.pub
+			const output_derivation =
+				dstWKey.pubkeys.view === keys.view.pub
 					? await hwdev.generate_key_derivation(
 							txkey.pub,
 							keys.view.sec,
 					  ) // send change to ourselves, derivation = a*R
 					: await hwdev.generate_key_derivation(
-							dstWKey.keys.view,
+							dstWKey.pubkeys.view,
 							txkey.sec,
-					  ); // sending to the recipient,  derivation = r*A (or s*C in the subaddress scheme)
+					  ); // sending to the recipient, derivation = r*A (or s*C in the subaddress scheme)
 
 			const out_eph_public_key = await hwdev.derive_public_key(
-				out_derivation,
+				output_derivation,
 				output_index,
-				dstWKey.keys.spend,
+				dstWKey.pubkeys.spend,
 			);
 
 			const out = {
@@ -415,15 +415,15 @@ async function construct_tx(
 				? [
 						...amountKeys,
 						await hwdev.derivation_to_scalar(
-							out_derivation,
+							output_derivation,
 							output_index,
 						),
 				  ]
 				: amountKeys;
 
 			hwdev.add_output_key_mapping(
-				dstWKey.keys.view,
-				dstWKey.keys.spend,
+				dstWKey.pubkeys.view,
+				dstWKey.pubkeys.spend,
 				is_subaddress(dstWKey.address, nettype),
 				output_index,
 				nextAmountKeys[nextAmountKeys.length - 1],
@@ -506,11 +506,12 @@ async function construct_tx(
 			tx.vout[i].amount = "0"; //zero out all rct outputs
 		}
 		const tx_prefix_hash = get_tx_prefix_hash(tx);
-		tx.rct_signatures = genRct(
+		tx.rct_signatures = await genRct(
 			tx_prefix_hash,
 			inSk,
 			keyimages,
-			/*destinations, */ inAmounts,
+			dsts.map(d => d.address),
+			inAmounts,
 			outAmounts,
 			mixRing,
 			amountKeys,

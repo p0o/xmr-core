@@ -26,6 +26,11 @@ export interface PublicAddress {
 	spend_public_key: PublicKey;
 }
 
+// if it's  representing a private ctkey then "dest" contains the secret key of the address
+// while "mask" contains a where C = aG + bH is CT pedersen commitment and b is the amount
+// store b, the amount, separately
+// if it's representing a public ctkey, then "dest" = P the address, mask = C the commitment
+
 interface CtKey {
 	dest: string;
 	mask: string;

@@ -2,14 +2,11 @@ import {
 	generate_key_derivation,
 	derive_public_key,
 	derive_secret_key,
-	derivation_to_scalar,
 } from "./derivation";
 import CNCrypto = require("xmr-vendor/cn_crypto");
-import { KEY_SIZE, STRUCT_SIZES, I } from "./constants";
+import { KEY_SIZE, STRUCT_SIZES } from "./constants";
 import { hextobin, bintohex } from "xmr-str-utils/hex-strings";
-import { hash_to_ec, hash_to_scalar } from "./hash_ops";
-import { sc_sub } from "./primitive_ops";
-import { Keys } from "xmr-types";
+import { hash_to_ec } from "./hash_ops";
 
 export function derive_key_image_from_tx(
 	tx_pub: string,

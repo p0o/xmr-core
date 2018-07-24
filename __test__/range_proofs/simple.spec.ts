@@ -37,8 +37,10 @@ import {
 } from "xmr-transaction/libs/ringct";
 import { BigInt } from "biginteger";
 import { random_scalar } from "xmr-rand";
+import { random_keypair } from "xmr-key-utils";
+import { DefaultDevice } from "xmr-device/device-default";
 
-it("should test ringct simple transactions", () => {
+it("should test ringct simple transactions", async () => {
 	//Ring CT Stuff
 	//ct range proofs
 	// ctkey vectors
@@ -46,8 +48,8 @@ it("should test ringct simple transactions", () => {
 		inPk = [],
 		outamounts = [], // output amounts
 		inamounts = [], // input amounts
-		amount_keys = [];
-
+		amount_keys = [],
+		destinations = [];
 	//add fake input 3000
 	//inSk is secret data
 	//inPk is public data
@@ -70,9 +72,11 @@ it("should test ringct simple transactions", () => {
 
 	outamounts.push(new BigInt(5000));
 	amount_keys.push(hash_to_scalar(Z));
+	destinations.push(random_keypair().pub);
 
 	outamounts.push(new BigInt(999));
 	amount_keys.push(hash_to_scalar(Z));
+	destinations.push(random_keypair().pub);
 
 	const message = random_scalar();
 	const txnFee = "1";
@@ -93,20 +97,24 @@ it("should test ringct simple transactions", () => {
 		generate_key_image(inPk[1].dest, inSk[1].x),
 	];
 
-	const s = genRct(
+	const defaultHwDev = new DefaultDevice();
+
+	const s = await genRct(
 		message,
 		inSk,
 		kimg,
+		destinations,
 		inamounts,
 		outamounts,
 		mixRings,
 		amount_keys,
 		indices,
 		txnFee,
+		defaultHwDev,
 	);
 
-	expect(verRctSimple(s, true, mixRings, kimg)).toEqual(true);
-	expect(verRctSimple(s, false, mixRings, kimg)).toEqual(true);
+	expect(await verRctSimple(s, true, mixRings, kimg)).toEqual(true);
+	expect(await verRctSimple(s, false, mixRings, kimg)).toEqual(true);
 
-	decodeRctSimple(s, amount_keys[1], 1);
+	await decodeRctSimple(s, amount_keys[1], 1, defaultHwDev);
 });

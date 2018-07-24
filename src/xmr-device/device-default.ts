@@ -315,9 +315,6 @@ export class DefaultDevice implements HWDevice {
 		if (alpha.length !== rows) {
 			throw Error("alpha size does not match rows");
 		}
-		if (ss.length !== rows) {
-			throw Error("ss size does not match rows");
-		}
 
 		for (let j = 0; j < rows; j++) {
 			ss[j] = sc_mulsub(c, xx[j], alpha[j]);

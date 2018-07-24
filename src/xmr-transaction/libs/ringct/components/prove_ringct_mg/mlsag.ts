@@ -1,14 +1,13 @@
-import { array_hash_to_scalar } from "xmr-crypto-ops/hash_ops";
+import { array_hash_to_scalar, hashToPoint } from "xmr-crypto-ops/hash_ops";
 import {
 	ge_double_scalarmult_base_vartime,
 	ge_double_scalarmult_postcomp_vartime,
 	sc_sub,
-	sc_mulsub,
 	ge_scalarmult_base,
 } from "xmr-crypto-ops/primitive_ops";
 import { random_scalar } from "xmr-rand";
-import { generate_key_image } from "xmr-crypto-ops/key_image";
 import { MGSig } from "./types";
+import { HWDevice } from "xmr-device/types";
 
 // Gen creates a signature which proves that for some column in the keymatrix "pk"
 //	 the signer knows a secret key for each row in that column
@@ -16,12 +15,13 @@ import { MGSig } from "./types";
 // this is a simplied MLSAG_Gen function to reflect that
 // because we don't want to force same secret column for all inputs
 
-export function MLSAG_Gen(
+export async function MLSAG_Gen(
 	message: string,
 	pk: string[][],
 	xx: string[],
 	kimg: string,
 	index: number,
+	hwdev: HWDevice,
 ) {
 	const cols = pk.length; //ring size
 	let i;
@@ -59,21 +59,21 @@ export function MLSAG_Gen(
 	toHash[0] = message;
 
 	//secret index (pubkey section)
+	const Hi = hashToPoint(pk[index][0]);
+	const { a, aG, aHP, II } = await hwdev.mlsag_prepare(Hi, xx[0]);
 
-	alpha[0] = random_scalar(); //need to save alphas for later
+	alpha[0] = a; //need to save alphas for later
 	toHash[1] = pk[index][0]; //secret index pubkey
 
-	// this is the keyimg anyway  const H1 = hashToPoint(pk[index][0]) // Hp(K_in)
-	//  rv.II[0] = ge_scalarmult(H1, xx[0]) // k_in.Hp(K_in)
+	toHash[2] = aG; //dsRow L, a.G
+	toHash[3] = aHP; //dsRow R (key image check)
 
-	toHash[2] = ge_scalarmult_base(alpha[0]); //dsRow L, a.G
-	toHash[3] = generate_key_image(pk[index][0], alpha[0]); //dsRow R (key image check)
-	//secret index (commitment section)
+	//secret index (commitment section) / nds rows
 	alpha[1] = random_scalar();
 	toHash[4] = pk[index][1]; //secret index commitment
 	toHash[5] = ge_scalarmult_base(alpha[1]); //ndsRow L
 
-	c_old = array_hash_to_scalar(toHash);
+	c_old = await hwdev.mlsag_hash(toHash);
 
 	i = (index + 1) % cols;
 	if (i === 0) {
@@ -103,15 +103,15 @@ export function MLSAG_Gen(
 			pk[i][1],
 			rv.ss[i][1],
 		);
-		c_old = array_hash_to_scalar(toHash); //hash to get next column c
+		c_old = await hwdev.mlsag_hash(toHash); //hash to get next column c
 		i = (i + 1) % cols;
 		if (i === 0) {
 			rv.cc = c_old;
 		}
 	}
-	for (i = 0; i < rows; i++) {
-		rv.ss[index][i] = sc_mulsub(c_old, xx[i], alpha[i]);
-	}
+
+	await hwdev.mlsag_sign(c_old, xx, alpha, rows, 1, rv.ss[index]);
+
 	return rv;
 }
 

@@ -2,6 +2,7 @@ import {
 	ge_double_scalarmult_base_vartime,
 	sc_sub,
 	sc_add,
+	ge_scalarmult,
 } from "./primitive_ops";
 import { H, I } from "./constants";
 import { valid_hex } from "xmr-str-utils/hex-strings";
@@ -94,4 +95,8 @@ export async function generate_key_image_helper(
 		},
 		key_image,
 	};
+}
+
+export function scalarmultH(scalar: string) {
+	return ge_scalarmult(H, scalar);
 }

@@ -9,6 +9,7 @@ import {
 	MLSAG_Gen,
 	MLSAG_ver,
 } from "xmr-transaction/libs/ringct/components/prove_ringct_mg";
+import { DefaultDevice } from "xmr-device/device-default";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //
@@ -38,7 +39,7 @@ import {
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-it("MG_sigs", () => {
+it("MG_sigs", async () => {
 	function skvGen(len: number) {
 		const skVec: string[] = [];
 		for (let i = 0; i < len; i++) {
@@ -89,10 +90,10 @@ it("MG_sigs", () => {
 		// our secret vector of [onetimesec, z]
 		sk[j] = xm[ind][j];
 	}
-
+	const defaultHwDev = new DefaultDevice();
 	let message = identity();
 	let kimg = ge_scalarmult(hashToPoint(P[ind][0]), sk[0]);
-	let rv = MLSAG_Gen(message, P, sk, kimg, ind);
+	let rv = await MLSAG_Gen(message, P, sk, kimg, ind, defaultHwDev);
 	let c = MLSAG_ver(message, P, rv, kimg);
 
 	expect(c).toEqual(true);
@@ -109,7 +110,7 @@ it("MG_sigs", () => {
 
 	sk[1] = skGen(); //assume we don't know one of the private keys..
 	kimg = ge_scalarmult(hashToPoint(P[ind][0]), sk[0]);
-	rv = MLSAG_Gen(message, P, sk, kimg, ind);
+	rv = await MLSAG_Gen(message, P, sk, kimg, ind, defaultHwDev);
 	c = MLSAG_ver(message, P, rv, kimg);
 
 	expect(c).toEqual(false);

@@ -4,6 +4,7 @@ import { identity } from "xmr-crypto-ops/constants";
 
 import { MGSig } from "./types";
 import { MLSAG_Gen, MLSAG_ver } from "./mlsag";
+import { CtKeyV, HWDevice } from "xmr-device/types";
 
 //Ring-ct MG sigs
 //Prove:
@@ -21,6 +22,7 @@ export function proveRctMG(
 	mask: string,
 	Cout: string,
 	index: number,
+	hwdev: HWDevice,
 ) {
 	const cols = pubs.length;
 	if (cols < 3) {
@@ -36,7 +38,7 @@ export function proveRctMG(
 	}
 
 	const xx = [inSk.x, sc_sub(inSk.a, mask)];
-	return MLSAG_Gen(message, PK, xx, kimg, index);
+	return MLSAG_Gen(message, PK, xx, kimg, index, hwdev);
 }
 
 //Ring-ct MG sigs
@@ -51,7 +53,7 @@ export function proveRctMG(
 export function verRctMG(
 	mg: MGSig,
 	pubs: RingMember[][],
-	outPk: string[],
+	outPk: CtKeyV,
 	txnFeeKey: string,
 	message: string,
 	kimg: string,
@@ -82,7 +84,7 @@ export function verRctMG(
 		M[i][0] = pubs[0][i].dest;
 		M[i][1] = ge_add(M[i][1] || identity(), pubs[0][i].mask); // start with input commitment
 		for (let j = 0; j < outPk.length; j++) {
-			M[i][1] = ge_sub(M[i][1], outPk[j]); // subtract all output commitments
+			M[i][1] = ge_sub(M[i][1], outPk[j].mask); // subtract all output commitments
 		}
 		M[i][1] = ge_sub(M[i][1], txnFeeKey); // subtract txnfee
 	}

@@ -46,7 +46,6 @@ function randomBit() {
 
 //Tests for Borromean signatures
 //#boro true one, false one, C != sum Ci, and one out of the range..
-const N = 64;
 let xv: string[] = [], // vector of secret keys, 1 per ring (nrings)
 	P1v: string[] = [], //key64, arr of commitments Ci
 	P2v: string[] = [], //key64
@@ -58,9 +57,9 @@ export function generate_parameters() {
 	if (generated) {
 		const indiCopy = [...indi];
 
-		return { xv, P1v, P2v, indi: indiCopy, N };
+		return { xv, P1v, P2v, indi: indiCopy };
 	} else {
-		for (let j = 0; j < N; j++) {
+		for (let j = 0; j < 64; j++) {
 			indi[j] = randomBit(); /*?.*/
 
 			xv[j] = skGen(); /*?.*/
@@ -75,6 +74,6 @@ export function generate_parameters() {
 			P2v[j] = ge_sub(P1v[j], H2[j]); /*?.*/
 		}
 		generated = true;
-		return { xv, P1v, P2v, indi, N };
+		return { xv, P1v, P2v, indi };
 	}
 }

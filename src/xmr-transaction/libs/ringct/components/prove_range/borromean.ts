@@ -18,20 +18,19 @@ export function genBorromean(
 	xv: string[],
 	pm: string[][],
 	iv: string[] | string,
-	nrings: number,
 ) {
-	if (xv.length !== nrings) {
+	if (xv.length !== 64) {
 		throw Error("wrong xv length " + xv.length);
 	}
 	if (pm.length !== 2) {
 		throw Error("wrong pm size " + pm.length);
 	}
 	for (let i = 0; i < pm.length; i++) {
-		if (pm[i].length !== nrings) {
+		if (pm[i].length !== 64) {
 			throw Error("wrong pm[" + i + "] length " + pm[i].length);
 		}
 	}
-	if (iv.length !== nrings) {
+	if (iv.length !== 64) {
 		throw Error("wrong iv length " + iv.length);
 	}
 	for (let i = 0; i < iv.length; i++) {
@@ -40,7 +39,7 @@ export function genBorromean(
 		}
 	}
 	//signature struct
-	// in the case of size 2 and nrings 64
+	// in the case of size 2
 	// bb.s = [[64], [64]]
 
 	const bb: BorromeanSignature = {
@@ -53,7 +52,7 @@ export function genBorromean(
 	//compute starting at the secret index to the last row
 	let index;
 	const alpha = [];
-	for (let i = 0; i < nrings; i++) {
+	for (let i = 0; i < 64; i++) {
 		index = parseInt(iv[i]);
 		alpha[i] = random_scalar();
 		L[index][i] = ge_scalarmult_base(alpha[i]);
@@ -70,13 +69,13 @@ export function genBorromean(
 
 	//hash last row to create ee
 	let ltemp = "";
-	for (let i = 0; i < nrings; i++) {
+	for (let i = 0; i < 64; i++) {
 		ltemp += L[1][i];
 	}
 	bb.ee = hash_to_scalar(ltemp);
 	//compute the rest from 0 to secret index
 
-	for (let i = 0; i < nrings; i++) {
+	for (let i = 0; i < 64; i++) {
 		let cc = bb.ee;
 		if (+iv[i] === 1) {
 			bb.s[0][i] = random_scalar();
