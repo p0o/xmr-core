@@ -34,7 +34,8 @@
   "homepage": "https://github.com/mymonero/mymonero-core-js#readme",
   "dependencies": {
     "keccakjs": "^0.2.1",
-    "moment": "^2.22.2"
+    "moment": "^2.22.2",
+    "u2f-api": "^1.0.6"
   },
   "devDependencies": {
     "jest": "^23.1.0",
@@ -54,7 +55,9 @@
     "transform": {
       "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
-    "modulePaths": ["<rootDir>/src" ],
+    "modulePaths": [
+      "<rootDir>/src"
+    ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.ts$",
     "coveragePathIgnorePatterns": [
       "/node_modules/",

@@ -3355,6 +3355,10 @@ typescript@^2.9.2:
   version "2.9.2"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.9.2.tgz#1cbf61d05d6b96269244eb6a3bce4bd914e0f00c"
 
+u2f-api@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/u2f-api/-/u2f-api-1.0.6.tgz#fdde2a0788fcf7d8d273aa8688b217625961f866"
+
 uglify-js@^2.6:
   version "2.8.29"
   resolved "https://registry.yarnpkg.com/uglify-js/-/uglify-js-2.8.29.tgz#29c5733148057bb4e1f75df35b7a9cb72e6a59dd"

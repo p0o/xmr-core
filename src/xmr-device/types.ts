@@ -14,11 +14,11 @@ export type EcPoint = string;
 export type SecretKey = EcScalar;
 export type PublicKey = EcPoint;
 
-type SecretKeys = [SecretKey, SecretKey];
+export type SecretKeys = { viewKey: EcScalar; spendKey: EcScalar };
 
 export type KeyDerivation = EcPoint;
 
-type ChachaKey = string;
+export type ChachaKey = string;
 export type PublicSpendKey = PublicKey;
 
 export interface PublicAddress {
