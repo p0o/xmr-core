@@ -295,15 +295,15 @@ export function validateAndConstructFundTargets(
 
 //#region constructTx
 
-export function constructTx(params: ConstructTxParams) {
-	const { signedTx } = makeSignedTx(params);
+export async function constructTx(params: ConstructTxParams) {
+	const { signedTx } = await makeSignedTx(params);
 	const { serializedSignedTx, txHash } = getSerializedTxAndHash(signedTx);
 	const { numOfKB } = getTxSize(serializedSignedTx, params.networkFee);
 
 	return { numOfKB, txHash, serializedSignedTx };
 }
 
-function makeSignedTx(params: ConstructTxParams) {
+async function makeSignedTx(params: ConstructTxParams) {
 	try {
 		const {
 			senderPublicKeys,
@@ -340,7 +340,7 @@ function makeSignedTx(params: ConstructTxParams) {
 		);
 		Log.Target.displayDecomposed(splitDestinations);
 
-		const signedTx = create_transaction(
+		const signedTx = await create_transaction(
 			senderPublicKeys,
 			senderPrivateKeys,
 			splitDestinations,

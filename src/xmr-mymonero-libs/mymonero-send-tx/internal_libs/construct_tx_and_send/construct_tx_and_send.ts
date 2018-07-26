@@ -164,7 +164,7 @@ export async function createTxAndAttemptToSend(
 
 	updateStatus(sendFundStatus.constructingTransaction);
 
-	const { numOfKB, serializedSignedTx, txHash } = constructTx(params);
+	const { numOfKB, serializedSignedTx, txHash } = await constructTx(params);
 
 	const txFee = calculateFeeKb(
 		feePerKB,

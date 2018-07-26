@@ -12,25 +12,13 @@ import {
 	Keys,
 } from "xmr-types";
 import { BigInt } from "biginteger";
-import { valid_keys, random_keypair } from "xmr-key-utils";
-import { zeroCommit } from "xmr-crypto-ops/rctOps";
+import { zeroCommit, generate_key_image_helper } from "xmr-crypto-ops/rct";
 import { d2s } from "xmr-str-utils/integer-strings";
 import { formatMoney, formatMoneyFull } from "xmr-money/formatters";
-import {
-	INTEGRATED_ID_SIZE,
-	ENCRYPTED_PAYMENT_ID_TAIL,
-} from "xmr-constants/address";
-import { cn_fast_hash } from "xmr-fast-hash";
-import {
-	generate_key_derivation,
-	derive_public_key,
-	derivation_to_scalar,
-} from "xmr-crypto-ops/derivation";
-import { hex_xor } from "xmr-str-utils/hex-strings";
+import { INTEGRATED_ID_SIZE } from "xmr-constants/address";
+
 import { I } from "xmr-crypto-ops/constants";
-import { generate_key_image_helper_rct } from "xmr-crypto-ops/key_image";
 import { decode_address, is_subaddress } from "xmr-address-utils";
-import { ge_scalarmult } from "xmr-crypto-ops/primitive_ops";
 
 import {
 	get_payment_id_nonce,
@@ -41,6 +29,7 @@ import {
 } from "./libs/utils";
 import { generate_ring_signature } from "./libs/non-ringct";
 import { genRct } from "./libs/ringct";
+import { DefaultDevice } from "xmr-device/device-default";
 
 const UINT64_MAX = new BigInt(2).pow(64);
 
@@ -51,15 +40,16 @@ interface SourceOutput {
 }
 
 interface Source {
-	amount: string;
-	outputs: SourceOutput[];
-	real_out_tx_key: string;
-	real_out: number;
-	real_out_in_tx: number;
-	mask?: string | null;
+	amount: string; //money
+	outputs: SourceOutput[]; //index + key + optional ringct commitment
+	real_output_pub_tx_key: string; //incoming real tx public key
+	real_output_index: number; //index in outputs vector of real output_entry
+	real_output_in_tx_index: number; //index in transaction outputs vector
+	mask?: string | null; //ringct amount mask
 }
+const hwdev = new DefaultDevice();
 
-export function create_transaction(
+export async function create_transaction(
 	pub_keys: ViewSendKeys,
 	sec_keys: ViewSendKeys,
 	dsts: ParsedTarget[],
@@ -69,7 +59,7 @@ export function create_transaction(
 	fee_amount: BigInt,
 	payment_id: Pid,
 	pid_encrypt: boolean,
-	realDestViewKey: string | undefined,
+	destViewKeyPub: string | undefined,
 	unlock_time: number,
 	rct: boolean,
 	nettype: NetType,
@@ -105,12 +95,8 @@ export function create_transaction(
 		},
 	};
 	if (
-		!valid_keys(
-			keys.view.pub,
-			keys.view.sec,
-			keys.spend.pub,
-			keys.spend.sec,
-		)
+		!(await hwdev.verify_keys(keys.view.sec, keys.view.pub)) ||
+		!(await hwdev.verify_keys(keys.spend.sec, keys.spend.pub))
 	) {
 		throw Error("Invalid secret keys!");
 	}
@@ -133,9 +119,9 @@ export function create_transaction(
 		const src: Source = {
 			amount: outputs[i].amount,
 			outputs: [],
-			real_out: 0,
-			real_out_in_tx: 0,
-			real_out_tx_key: "",
+			real_output_index: 0,
+			real_output_in_tx_index: 0,
+			real_output_pub_tx_key: "",
 		};
 
 		if (mix_outs.length !== 0) {
@@ -155,53 +141,57 @@ export function create_transaction(
 					continue;
 				}
 
-				const oe: SourceOutput = {
+				const output_entry: SourceOutput = {
 					index: out.global_index.toString(),
 					key: out.public_key,
 				};
 
 				if (rct) {
 					if (out.rct) {
-						oe.commit = out.rct.slice(0, 64); //add commitment from rct mix outs
+						output_entry.commit = out.rct.slice(0, 64); //add commitment from rct mix outs
 					} else {
 						if (outputs[i].rct) {
 							throw Error("mix rct outs missing commit");
 						}
-						oe.commit = zeroCommit(d2s(src.amount)); //create identity-masked commitment for non-rct mix input
+						output_entry.commit = zeroCommit(d2s(src.amount)); //create identity-masked commitment for non-rct mix input
 					}
 				}
-				src.outputs.push(oe);
+				src.outputs.push(output_entry);
 				j++;
 			}
 		}
-		const real_oe: SourceOutput = {
+		const real_output_entry: SourceOutput = {
 			index: outputs[i].global_index.toString(),
 			key: outputs[i].public_key,
 		};
 
 		if (rct) {
 			if (outputs[i].rct) {
-				real_oe.commit = outputs[i].rct.slice(0, 64); //add commitment for real input
+				real_output_entry.commit = outputs[i].rct.slice(0, 64); //add commitment for real input
 			} else {
-				real_oe.commit = zeroCommit(d2s(src.amount)); //create identity-masked commitment for non-rct input
+				real_output_entry.commit = zeroCommit(d2s(src.amount)); //create identity-masked commitment for non-rct input
 			}
 		}
 
 		let real_index = src.outputs.length;
 		for (j = 0; j < src.outputs.length; j++) {
-			if (new BigInt(real_oe.index).compare(src.outputs[j].index) < 0) {
+			if (
+				new BigInt(real_output_entry.index).compare(
+					src.outputs[j].index,
+				) < 0
+			) {
 				real_index = j;
 				break;
 			}
 		}
 		// Add real_oe to outputs
-		src.outputs.splice(real_index, 0, real_oe);
-		src.real_out_tx_key = outputs[i].tx_pub_key;
+		src.outputs.splice(real_index, 0, real_output_entry);
+		src.real_output_pub_tx_key = outputs[i].tx_pub_key;
 		// Real output entry index
-		src.real_out = real_index;
-		src.real_out_in_tx = outputs[i].index;
+		src.real_output_index = real_index;
+		src.real_output_in_tx_index = outputs[i].index;
 		if (rct) {
-			// if rct, slice encrypted, otherwise will be set by generate_key_image_helper_rct
+			// if rct, slice encrypted, otherwise will be set by generate_key_image_helper
 			src.mask = outputs[i].rct ? outputs[i].rct.slice(64, 128) : null;
 		}
 		sources.push(src);
@@ -230,27 +220,27 @@ export function create_transaction(
 		fee_amount,
 		payment_id,
 		pid_encrypt,
-		realDestViewKey,
+		destViewKeyPub,
 		unlock_time,
 		rct,
 		nettype,
 	);
 }
 
-function construct_tx(
+async function construct_tx(
 	keys: Keys,
 	sources: Source[],
 	dsts: ParsedTarget[],
 	fee_amount: BigInt,
 	payment_id: string | null,
 	pid_encrypt: boolean,
-	realDestViewKey: string | undefined,
+	destViewKeyPub: string | undefined,
 	unlock_time: number,
 	rct: boolean,
 	nettype: NetType,
 ) {
 	//we move payment ID stuff here, because we need txkey to encrypt
-	const txkey = random_keypair();
+	const txkey = await hwdev.generate_keys(); // uses default device always
 	console.log(txkey);
 	let extra = "";
 	if (payment_id) {
@@ -263,17 +253,17 @@ function construct_tx(
 		}
 		console.log("Adding payment id: " + payment_id);
 		if (pid_encrypt) {
-			if (!realDestViewKey) {
-				throw Error("RealDestViewKey not found");
+			if (!destViewKeyPub) {
+				throw Error("destViewKeyPub not found");
 			}
-			//get the derivation from our passed viewkey, then hash that + tail to get encryption key
-			const pid_key = cn_fast_hash(
-				generate_key_derivation(realDestViewKey, txkey.sec) +
-					ENCRYPTED_PAYMENT_ID_TAIL.toString(16),
-			).slice(0, INTEGRATED_ID_SIZE * 2);
-			console.log("Txkeys:", txkey, "Payment ID key:", pid_key);
-			payment_id = hex_xor(payment_id, pid_key);
+
+			payment_id = await hwdev.encrypt_payment_id(
+				payment_id,
+				destViewKeyPub,
+				txkey.sec,
+			);
 		}
+
 		const nonce = get_payment_id_nonce(payment_id, pid_encrypt);
 		console.log("Extra nonce: " + nonce);
 		extra = add_nonce_to_extra(extra, nonce);
@@ -302,28 +292,34 @@ function construct_tx(
 
 	//run the for loop twice to sort ins by key image
 	//first generate key image and other construction data to sort it all in one go
-	const sourcesWithKeyImgAndKeys = sources.map((source, idx) => {
-		console.log(idx + ": " + formatMoneyFull(source.amount));
-		if (source.real_out >= source.outputs.length) {
-			throw Error("real index >= outputs.length");
-		}
-		const { key_image, in_ephemeral } = generate_key_image_helper_rct(
-			keys,
-			source.real_out_tx_key,
-			source.real_out_in_tx,
-			source.mask,
-		); //mask will be undefined for non-rct
+	const sourcesWithKeyImgAndKeys = await Promise.all(
+		sources.map(async (source, idx) => {
+			console.log(idx + ": " + formatMoneyFull(source.amount));
+			if (source.real_output_index >= source.outputs.length) {
+				throw Error("real index >= outputs.length");
+			}
+			const { key_image, in_ephemeral } = await generate_key_image_helper(
+				keys,
+				source.real_output_pub_tx_key,
+				source.real_output_in_tx_index,
+				source.mask,
+				hwdev,
+			); //mask will be undefined for non-rct
 
-		if (in_ephemeral.pub !== source.outputs[source.real_out].key) {
-			throw Error("in_ephemeral.pub != source.real_out.key");
-		}
+			if (
+				in_ephemeral.pub !==
+				source.outputs[source.real_output_index].key
+			) {
+				throw Error("in_ephemeral.pub !== source.real_out.key");
+			}
 
-		return {
-			...source,
-			key_image,
-			in_ephemeral,
-		};
-	});
+			return {
+				...source,
+				key_image,
+				in_ephemeral,
+			};
+		}),
+	);
 
 	//sort ins
 	sourcesWithKeyImgAndKeys.sort((a, b) => {
@@ -339,7 +335,7 @@ function construct_tx(
 	);
 
 	//copy the sorted sourcesWithKeyImgAndKeys data to tx
-	const vin = sourcesWithKeyImgAndKeys.map(source => {
+	tx.vin = sourcesWithKeyImgAndKeys.map(source => {
 		const input_to_key = {
 			type: "input_to_key",
 			amount: source.amount,
@@ -351,14 +347,12 @@ function construct_tx(
 		return input_to_key;
 	});
 
-	tx.vin = vin;
-
 	const dstsWithKeys = dsts.map(d => {
 		if (d.amount.compare(0) < 0) {
 			throw Error("dst.amount < 0"); //amount can be zero if no change
 		}
-		const keys = decode_address(d.address, nettype);
-		return { ...d, keys };
+		const pubkeys = decode_address(d.address, nettype);
+		return { ...d, pubkeys };
 	});
 
 	const outputs_money = dstsWithKeys.reduce<BigInt>(
@@ -373,8 +367,10 @@ function construct_tx(
 
 	const ret: Ret = { amountKeys: [], vout: [] };
 	//amountKeys is rct only
-	const { amountKeys, vout } = dstsWithKeys.reduce<Ret>(
-		({ amountKeys, vout }, dstWKey, out_index) => {
+	const { amountKeys, vout } = await dstsWithKeys.reduce<Promise<Ret>>(
+		async (accu, dstWKey, output_index) => {
+			const { amountKeys, vout } = await accu;
+
 			// R = rD for subaddresses
 			if (is_subaddress(dstWKey.address, nettype)) {
 				if (payment_id) {
@@ -383,18 +379,27 @@ function construct_tx(
 						"Payment ID must not be supplied when sending to a subaddress",
 					);
 				}
-				txkey.pub = ge_scalarmult(dstWKey.keys.spend, txkey.sec);
+				txkey.pub = await hwdev.scalarmultKey(
+					dstWKey.pubkeys.spend,
+					txkey.sec,
+				);
 			}
-			// send change to ourselves
-			const out_derivation =
-				dstWKey.keys.view === keys.view.pub
-					? generate_key_derivation(txkey.pub, keys.view.sec)
-					: generate_key_derivation(dstWKey.keys.view, txkey.sec);
 
-			const out_ephemeral_pub = derive_public_key(
-				out_derivation,
-				out_index,
-				dstWKey.keys.spend,
+			const output_derivation =
+				dstWKey.pubkeys.view === keys.view.pub
+					? await hwdev.generate_key_derivation(
+							txkey.pub,
+							keys.view.sec,
+					  ) // send change to ourselves, derivation = a*R
+					: await hwdev.generate_key_derivation(
+							dstWKey.pubkeys.view,
+							txkey.sec,
+					  ); // sending to the recipient, derivation = r*A (or s*C in the subaddress scheme)
+
+			const out_eph_public_key = await hwdev.derive_public_key(
+				output_derivation,
+				output_index,
+				dstWKey.pubkeys.spend,
 			);
 
 			const out = {
@@ -402,21 +407,34 @@ function construct_tx(
 				// txout_to_key
 				target: {
 					type: "txout_to_key",
-					key: out_ephemeral_pub,
+					key: out_eph_public_key,
 				},
 			};
-
+			// cryptonote_tx_utils L#413
 			const nextAmountKeys = rct
 				? [
 						...amountKeys,
-						derivation_to_scalar(out_derivation, out_index),
+						await hwdev.derivation_to_scalar(
+							output_derivation,
+							output_index,
+						),
 				  ]
 				: amountKeys;
+
+			hwdev.add_output_key_mapping(
+				dstWKey.pubkeys.view,
+				dstWKey.pubkeys.spend,
+				is_subaddress(dstWKey.address, nettype),
+				output_index,
+				nextAmountKeys[nextAmountKeys.length - 1],
+				out_eph_public_key,
+			);
+
 			const nextVout = [...vout, out];
 			const nextVal: Ret = { amountKeys: nextAmountKeys, vout: nextVout };
 			return nextVal;
 		},
-		ret,
+		Promise.resolve(ret),
 	);
 
 	tx.vout = vout;
@@ -442,7 +460,7 @@ function construct_tx(
 				tx.vin[i].k_image,
 				src_keys,
 				in_contexts[i].sec,
-				sourcesWithKeyImgAndKeys[i].real_out,
+				sourcesWithKeyImgAndKeys[i].real_output_index,
 			);
 			return sigs;
 		});
@@ -457,6 +475,7 @@ function construct_tx(
 
 		tx.vin.forEach((input, i) => {
 			keyimages.push(input.k_image);
+
 			inSk.push({
 				x: in_contexts[i].sec,
 				a: in_contexts[i].mask,
@@ -478,7 +497,7 @@ function construct_tx(
 				};
 			});
 
-			indices.push(sourcesWithKeyImgAndKeys[i].real_out);
+			indices.push(sourcesWithKeyImgAndKeys[i].real_output_index);
 		});
 
 		const outAmounts = [];
@@ -487,16 +506,18 @@ function construct_tx(
 			tx.vout[i].amount = "0"; //zero out all rct outputs
 		}
 		const tx_prefix_hash = get_tx_prefix_hash(tx);
-		tx.rct_signatures = genRct(
+		tx.rct_signatures = await genRct(
 			tx_prefix_hash,
 			inSk,
 			keyimages,
-			/*destinations, */ inAmounts,
+			dsts.map(d => d.address),
+			inAmounts,
 			outAmounts,
 			mixRing,
 			amountKeys,
 			indices,
 			fee_amount.toString(),
+			hwdev,
 		);
 	}
 	console.log(tx);

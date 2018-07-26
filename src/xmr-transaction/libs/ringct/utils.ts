@@ -2,14 +2,24 @@ import { serialize_rct_base } from "./serialization";
 import { cn_fast_hash } from "xmr-fast-hash";
 import { serialize_range_proofs } from "./components/prove_range";
 import { RCTSignatures } from "./types";
+import { HWDevice, KeyV } from "xmr-device/types";
+import { RingMember } from "xmr-types";
 
-export function get_pre_mlsag_hash(rv: RCTSignatures) {
-	let hashes = "";
-	hashes += rv.message;
-	hashes += cn_fast_hash(serialize_rct_base(rv));
-	const buf = serialize_range_proofs(rv);
-	hashes += cn_fast_hash(buf);
-	return cn_fast_hash(hashes);
+export function get_pre_mlsag_hash(
+	rv: RCTSignatures,
+	mixRing: RingMember[][],
+	hwdev: HWDevice,
+) {
+	let hashes: KeyV = [];
+	hashes.push(rv.message);
+	const ss = serialize_rct_base(rv);
+	hashes.push(cn_fast_hash(ss));
+	hashes.push(cn_fast_hash(serialize_range_proofs(rv)));
+	// if simple
+	const inputs_size = rv.type === 0x02 ? mixRing.length : mixRing[0].length;
+	const outputs_size = rv.ecdhInfo.length;
+
+	return hwdev.mlsag_prehash(ss, inputs_size, outputs_size, hashes, rv.outPk);
 }
 
 export function estimateRctSize(

@@ -52,7 +52,7 @@ export function serialize_rct_base(rv: RCTSignatures) {
 		buf += rv.ecdhInfo[i].amount;
 	}
 	for (let i = 0; i < rv.outPk.length; i++) {
-		buf += rv.outPk[i];
+		buf += rv.outPk[i].mask;
 	}
 	return buf;
 }

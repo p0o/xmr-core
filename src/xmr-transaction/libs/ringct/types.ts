@@ -1,11 +1,12 @@
 import { RangeSignature } from "./components/prove_range";
 import { MGSig } from "./components/prove_ringct_mg";
-import { Commit } from "./components/ecdh";
+import { Commit } from "xmr-types";
+import { CtKeyV } from "xmr-device/types";
 
 export interface RCTSignatures {
 	type: number;
 	message: string;
-	outPk: string[];
+	outPk: CtKeyV;
 	p: {
 		rangeSigs: RangeSignature[];
 		MGs: MGSig[];

@@ -18,80 +18,77 @@ export function genBorromean(
 	xv: string[],
 	pm: string[][],
 	iv: string[] | string,
-	size: number,
-	nrings: number,
 ) {
-	if (xv.length !== nrings) {
+	if (xv.length !== 64) {
 		throw Error("wrong xv length " + xv.length);
 	}
-	if (pm.length !== size) {
+	if (pm.length !== 2) {
 		throw Error("wrong pm size " + pm.length);
 	}
 	for (let i = 0; i < pm.length; i++) {
-		if (pm[i].length !== nrings) {
+		if (pm[i].length !== 64) {
 			throw Error("wrong pm[" + i + "] length " + pm[i].length);
 		}
 	}
-	if (iv.length !== nrings) {
+	if (iv.length !== 64) {
 		throw Error("wrong iv length " + iv.length);
 	}
 	for (let i = 0; i < iv.length; i++) {
-		if (+iv[i] >= size) {
+		if (+iv[i] >= 2) {
 			throw Error("bad indices value at: " + i + ": " + iv[i]);
 		}
 	}
 	//signature struct
-	// in the case of size 2 and nrings 64
+	// in the case of size 2
 	// bb.s = [[64], [64]]
 
 	const bb: BorromeanSignature = {
-		s: [],
+		s: [[], []],
 		ee: "",
 	};
 	//signature pubkey matrix
-	const L: string[][] = [];
-	//add needed sub vectors (1 per ring size)
-	for (let i = 0; i < size; i++) {
-		bb.s[i] = [];
-		L[i] = [];
-	}
+	const L: string[][] = [[], []];
+
 	//compute starting at the secret index to the last row
 	let index;
 	const alpha = [];
-	for (let i = 0; i < nrings; i++) {
+	for (let i = 0; i < 64; i++) {
 		index = parseInt(iv[i]);
 		alpha[i] = random_scalar();
 		L[index][i] = ge_scalarmult_base(alpha[i]);
-		for (let j = index + 1; j < size; j++) {
-			bb.s[j][i] = random_scalar();
-			const c = hash_to_scalar(L[j - 1][i]);
-			L[j][i] = ge_double_scalarmult_base_vartime(
+		if (index === 0) {
+			bb.s[1][i] = random_scalar();
+			const c = hash_to_scalar(L[index][i]);
+			L[1][i] = ge_double_scalarmult_base_vartime(
 				c,
-				pm[j][i],
-				bb.s[j][i],
+				pm[1][i],
+				bb.s[1][i],
 			);
 		}
 	}
+
 	//hash last row to create ee
 	let ltemp = "";
-	for (let i = 0; i < nrings; i++) {
-		ltemp += L[size - 1][i];
+	for (let i = 0; i < 64; i++) {
+		ltemp += L[1][i];
 	}
 	bb.ee = hash_to_scalar(ltemp);
 	//compute the rest from 0 to secret index
-	let j: number;
-	for (let i = 0; i < nrings; i++) {
+
+	for (let i = 0; i < 64; i++) {
 		let cc = bb.ee;
-		for (j = 0; j < +iv[i]; j++) {
-			bb.s[j][i] = random_scalar();
+		if (+iv[i] === 1) {
+			bb.s[0][i] = random_scalar();
 			const LL = ge_double_scalarmult_base_vartime(
 				cc,
-				pm[j][i],
-				bb.s[j][i],
+				pm[0][i],
+				bb.s[0][i],
 			);
 			cc = hash_to_scalar(LL);
+			bb.s[1][i] = sc_mulsub(xv[i], cc, alpha[i]);
+		} else {
+			bb.s[0][i] = sc_mulsub(xv[i], cc, alpha[i]);
 		}
-		bb.s[j][i] = sc_mulsub(xv[i], cc, alpha[i]);
 	}
 	return bb;
 }

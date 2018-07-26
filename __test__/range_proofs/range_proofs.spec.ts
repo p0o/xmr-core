@@ -1,9 +1,11 @@
 import { BigInt } from "biginteger";
 import { hash_to_scalar } from "xmr-crypto-ops/hash_ops";
 import { Z } from "xmr-crypto-ops/constants";
-import { generate_key_image_2 } from "xmr-crypto-ops/key_image";
+import { generate_key_image } from "xmr-crypto-ops/key_image";
 import { genRct, verRct, decodeRct } from "xmr-transaction/libs/ringct";
 import { ctskpkGen, populateFromBlockchain } from "./test_utils";
+import { DefaultDevice } from "xmr-device/device-default";
+import { random_keypair } from "xmr-key-utils";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //
@@ -33,7 +35,7 @@ import { ctskpkGen, populateFromBlockchain } from "./test_utils";
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-it("range_proofs", () => {
+it("range_proofs", async () => {
 	//Ring CT Stuff
 	//ct range proofs
 	// ctkey vectors
@@ -55,53 +57,75 @@ it("range_proofs", () => {
 	let amounts = [];
 	// key vector
 	let amount_keys = [];
+	const destinations = [];
+
+	// add outputs
 
 	amounts.push(new BigInt(500));
 	amount_keys.push(hash_to_scalar(Z));
+	destinations.push(random_keypair().pub);
 
 	amounts.push(new BigInt(4500));
 	amount_keys.push(hash_to_scalar(Z));
+	destinations.push(random_keypair().pub);
 
 	amounts.push(new BigInt(500));
 	amount_keys.push(hash_to_scalar(Z));
+	destinations.push(random_keypair().pub);
 
 	amounts.push(new BigInt(500));
 	amount_keys.push(hash_to_scalar(Z));
+	destinations.push(random_keypair().pub);
 
 	//compute rct data with mixin 500
 	const { index, mixRing } = populateFromBlockchain(inPk, 3);
 
 	// generate kimg
-	const kimg = [generate_key_image_2(inPk[0].dest, inSk[0].x)];
+	const kimg = [generate_key_image(inPk[0].dest, inSk[0].x)];
+	const defaultHwDev = new DefaultDevice();
 
-	let s = genRct(
+	let s = await genRct(
 		Z,
 		inSk,
 		kimg,
+		destinations,
 		[],
 		amounts,
 		mixRing,
 		amount_keys,
 		[index],
 		"0",
+		defaultHwDev,
 	);
 
-	expect(verRct(s, true, mixRing, kimg[0])).toEqual(true);
-	expect(verRct(s, false, mixRing, kimg[0])).toEqual(true);
+	expect(await verRct(s, true, mixRing, kimg[0])).toEqual(true);
+	expect(await verRct(s, false, mixRing, kimg[0])).toEqual(true);
 
 	//decode received amount
-	decodeRct(s, amount_keys[1], 1);
+	await decodeRct(s, amount_keys[1], 1, defaultHwDev);
 
 	// Ring CT with failing MG sig part should not verify!
 	// Since sum of inputs != outputs
 
 	amounts[1] = new BigInt(12501);
 
-	s = genRct(Z, inSk, kimg, [], amounts, mixRing, amount_keys, [index], "0");
+	s = await genRct(
+		Z,
+		inSk,
+		kimg,
+		destinations,
+		[],
+		amounts,
+		mixRing,
+		amount_keys,
+		[index],
+		"0",
+		defaultHwDev,
+	);
 
-	expect(verRct(s, true, mixRing, kimg[0])).toEqual(true);
-	expect(verRct(s, false, mixRing, kimg[0])).toEqual(false);
+	expect(await verRct(s, true, mixRing, kimg[0])).toEqual(true);
+	expect(await verRct(s, false, mixRing, kimg[0])).toEqual(false);
 
 	//decode received amount
-	decodeRct(s, amount_keys[1], 1);
+	await decodeRct(s, amount_keys[1], 1, defaultHwDev);
 });
