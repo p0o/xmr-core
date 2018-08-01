@@ -60,9 +60,8 @@ class Keymap {
 	}
 }
 
-// tslint:disable:no-default-export
 // tslint:disable-next-line:max-classes-per-file
-export default class XMR<T> implements HWDevice {
+export class LedgerDevice<T> implements HWDevice {
 	private readonly transport: Transport<T>;
 	private name: string;
 	private mode: DeviceMode;
@@ -140,7 +139,7 @@ export default class XMR<T> implements HWDevice {
 			INS.GET_KEY,
 			0x01,
 			0x00,
-			undefined,
+			[0x00],
 			[32, 64],
 		);
 
@@ -171,7 +170,6 @@ export default class XMR<T> implements HWDevice {
 		);
 		this.privateViewKey = viewKey;
 		this.has_view_key = !this.is_fake_view_key(this.privateViewKey);
-
 		return { viewKey: vkey, spendKey: skey };
 	}
 
@@ -918,24 +916,28 @@ export default class XMR<T> implements HWDevice {
 			// so we dont slice out of bounds if returned bytes
 			// is less than slice size
 
-			const zeroBuf = Buffer.alloc(end - start);
+			const zeroBuf = Buffer.alloc(end);
 			// copy data into zero buffer
 			buf.copy(zeroBuf);
 			// slice
-			return zeroBuf.slice(start, end).toString("hex");
+			const slice = zeroBuf.slice(start, end).toString("hex");
+			return slice;
 		}
 
-		return endingIndicesToSliceAt.reduce(
-			(prev, currEndSliceIdx, idx, slicingIndices) => [
-				...prev,
-				sliceBufToHex(
-					buffer,
-					!idx ? 0 : slicingIndices[idx - 1],
-					currEndSliceIdx,
-				),
-			],
+		const res = endingIndicesToSliceAt.reduce(
+			(prev, currEndSliceIdx, idx, slicingIndices) => {
+				return [
+					...prev,
+					sliceBufToHex(
+						buffer,
+						!idx ? 0 : slicingIndices[idx - 1],
+						currEndSliceIdx,
+					),
+				];
+			},
 			[],
 		);
+		return res;
 	}
 
 	private arrLikeToBuf(arrLike: ArrLike) {
@@ -979,6 +981,8 @@ export default class XMR<T> implements HWDevice {
 			return this.bufferToSlicedHexString(buf, endingIndicesToSliceAt);
 		}
 	}
+
+
 	private notSupported(): any {
 		throw Error("This device function is not supported");
 	}
