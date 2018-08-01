@@ -1,19 +1,16 @@
-import {
-	generate_key_derivation,
-	derive_public_key,
-	derive_secret_key,
-} from "./derivation";
 import CNCrypto = require("xmr-vendor/cn_crypto");
 import { KEY_SIZE, STRUCT_SIZES } from "./constants";
 import { hextobin, bintohex } from "xmr-str-utils/hex-strings";
 import { hash_to_ec } from "./hash_ops";
+import { HWDevice, DeviceMode } from "xmr-device/types";
 
-export function derive_key_image_from_tx(
+export async function derive_key_image_from_tx(
 	tx_pub: string,
 	view_sec: string,
 	spend_pub: string,
 	spend_sec: string,
 	output_index: number,
+	hwdev: HWDevice,
 ) {
 	if (tx_pub.length !== 64) {
 		throw Error("Invalid tx_pub length");
@@ -27,21 +24,31 @@ export function derive_key_image_from_tx(
 	if (spend_sec.length !== 64) {
 		throw Error("Invalid spend_sec length");
 	}
-	const recv_derivation = generate_key_derivation(tx_pub, view_sec);
-	const ephemeral_pub = derive_public_key(
+	// set to transaction parse
+	await hwdev.set_mode(DeviceMode.TRANSACTION_PARSE);
+	const recv_derivation = await hwdev.generate_key_derivation(
+		tx_pub,
+		view_sec,
+	);
+	// conceal?
+
+	const ephemeral_pub = await hwdev.derive_public_key(
 		recv_derivation,
 		output_index,
 		spend_pub,
 	);
-	const ephemeral_sec = derive_secret_key(
+	const ephemeral_sec = await hwdev.derive_secret_key(
 		recv_derivation,
 		output_index,
 		spend_sec,
 	);
-	const k_image = generate_key_image(ephemeral_pub, ephemeral_sec);
+	const key_image = await hwdev.generate_key_image(
+		ephemeral_pub,
+		ephemeral_sec,
+	);
 	return {
-		ephemeral_pub: ephemeral_pub,
-		key_image: k_image,
+		ephemeral_pub,
+		key_image,
 	};
 }
 
