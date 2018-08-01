@@ -1,5 +1,6 @@
 import { Omit } from "types";
 import { BigInt } from "biginteger";
+import { Output } from "xmr-types";
 
 export interface SpentOutput {
 	amount: string;
@@ -59,23 +60,8 @@ export interface AddressInfo {
 	rates?: Rates;
 }
 
-export interface UnspentOutput {
-	amount: string;
-	public_key: string;
-	index: number;
-	global_index: number;
-	rct: string;
-	tx_id: number;
-	tx_hash: string;
-	tx_pub_key: string;
-	tx_prefix_hash: string;
-	spend_key_images: string[];
-	timestamp: string;
-	height: number;
-}
-
 export interface UnspentOuts {
 	per_kb_fee: number;
 	amount: string;
-	outputs?: UnspentOutput[];
+	outputs?: Output[];
 }

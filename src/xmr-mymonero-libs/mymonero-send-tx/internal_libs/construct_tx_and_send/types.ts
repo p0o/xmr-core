@@ -1,4 +1,3 @@
-import { WrappedNodeApi } from "../async_node_api";
 import {
 	NetType,
 	ViewSendKeys,
@@ -9,6 +8,8 @@ import {
 } from "xmr-types";
 import { Status } from "../../status_update_constants";
 import { BigInt } from "biginteger";
+import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
+import { HWDevice } from "xmr-device/types";
 
 export type GetFundTargetsAndFeeParams = {
 	senderAddress: string;
@@ -30,8 +31,10 @@ export type GetFundTargetsAndFeeParams = {
 	isRingCT: boolean;
 
 	updateStatus: (status: Status) => void;
-	api: WrappedNodeApi;
+	api: typeof MyMoneroApi;
 	nettype: NetType;
+
+	hwdev: HWDevice;
 };
 
 export type CreateTxAndAttemptToSendParams = {
@@ -60,6 +63,8 @@ export type CreateTxAndAttemptToSendParams = {
 	isRingCT: boolean;
 
 	updateStatus: (status: Status) => void;
-	api: WrappedNodeApi;
+	api: typeof MyMoneroApi;
 	nettype: NetType;
+
+	hwdev: HWDevice;
 };

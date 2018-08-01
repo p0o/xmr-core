@@ -38,7 +38,7 @@ import { ERR } from "./internal_libs/errors";
 import { Log } from "./internal_libs/logger";
 import { parseTargets } from "./internal_libs/parse_target";
 import { checkAddressAndPidValidity } from "./internal_libs/pid_utils";
-import { WrappedNodeApi } from "./internal_libs/async_node_api";
+
 import {
 	getRestOfTxData,
 	createTxAndAttemptToSend,
@@ -47,6 +47,8 @@ import { BigInt } from "biginteger";
 import { estimateRctSize } from "xmr-transaction/libs/ringct";
 import { formatMoneyFull } from "xmr-money/formatters";
 import { NetType, RawTarget, Pid, ViewSendKeys } from "xmr-types";
+import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
+import { HWDevice } from "xmr-device/types";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -88,13 +90,13 @@ export async function SendFunds(
 	senderAddress: string,
 	senderPrivateKeys: ViewSendKeys,
 	senderPublicKeys: ViewSendKeys,
-	nodeAPI: any, // TODO: possibly factor this dependency
 	pidToParse: Pid,
 	mixin: number,
 	simplePriority: number,
+	hwdev: HWDevice,
 	updateStatus: (status: Status) => void,
+	api = MyMoneroApi,
 ): Promise<SendFundsRet> {
-	const api = new WrappedNodeApi(nodeAPI);
 	const isRingCT = true;
 
 	if (mixin < minMixin()) {
@@ -130,17 +132,17 @@ export async function SendFunds(
 
 	updateStatus(sendFundStatus.fetchingLatestBalance);
 
-	const { dynamicFeePerKB, unusedOuts } = await api.unspentOuts(
+	const { per_kb_fee: feePerKB, unusedOuts } = await api.unspentOutputs(
 		senderAddress,
-		senderPrivateKeys,
-		senderPublicKeys,
+
+		senderPrivateKeys.view,
+		senderPublicKeys.spend,
+		senderPrivateKeys.spend,
 
 		mixin,
-
-		isSweeping,
+		hwdev,
 	);
 
-	const feePerKB = dynamicFeePerKB;
 	// Transaction will need at least 1KB fee (or 13KB for RingCT)
 	const minNetworkTxSizeKb = /*isRingCT ? */ 13; /* : 1*/
 	const estMinNetworkFee = calculateFeeKb(
@@ -176,6 +178,7 @@ export async function SendFunds(
 	const externApis = {
 		updateStatus,
 		api,
+		hwdev,
 	};
 
 	// begin the network fee with the smallest fee possible

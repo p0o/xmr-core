@@ -122,7 +122,10 @@ export async function getRestOfTxData(params: GetFundTargetsAndFeeParams) {
 		updateStatus(sendFundStatus.fetchingDecoyOutputs);
 
 		// grab random outputs to make a ring signature with
-		const { mixOuts } = await api.randomOuts(usingOuts, mixin);
+		const { amount_outs: mixOuts } = await api.randomOutputs(
+			usingOuts,
+			mixin,
+		);
 
 		return { mixOuts, fundTargets, newFee, usingOuts };
 	}
@@ -183,7 +186,7 @@ export async function createTxAndAttemptToSend(
 
 	await api.submitSerializedSignedTransaction(
 		senderAddress,
-		senderPrivateKeys,
+		senderPrivateKeys.view,
 		serializedSignedTx,
 	);
 
