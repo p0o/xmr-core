@@ -1,10 +1,10 @@
 import { KeyPair, Commit } from "xmr-types";
 
 export enum DeviceMode {
+	NONE,
 	TRANSACTION_CREATE_REAL,
 	TRANSACTION_CREATE_FAKE,
 	TRANSACTION_PARSE,
-	NONE,
 }
 
 // to later be converted to opaque types
