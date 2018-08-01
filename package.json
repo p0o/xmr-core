@@ -33,16 +33,19 @@
   },
   "homepage": "https://github.com/mymonero/mymonero-core-js#readme",
   "dependencies": {
+    "@ledgerhq/hw-transport-node-hid": "^4.22.0",
     "keccakjs": "^0.2.1",
     "moment": "^2.22.2",
+    "node-hid": "^0.7.3",
     "u2f-api": "^1.0.6"
   },
   "devDependencies": {
+    "@types/node-hid": "^0.7.0",
     "jest": "^23.1.0",
     "ts-jest": "^23.0.1",
     "ts-node": "^7.0.0",
     "tsconfig-paths": "^3.4.2",
-    "typescript": "^2.9.2"
+    "typescript": "^3"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -58,8 +61,9 @@
     "modulePaths": [
       "<rootDir>/src"
     ],
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.ts$",
+    "testRegex": "((\\.|/)(spec))\\.ts$",
     "coveragePathIgnorePatterns": [
+      "cryptonote_crypto_EMSCRIPTEN",
       "/node_modules/",
       "__test__"
     ]
