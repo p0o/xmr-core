@@ -5,5 +5,4 @@ coverage
 yarn-error.log
 tests/fixtures
 dist
-__test__/fixtures/log-live.log 
-__test__/fixtures/log-live-modified.log
+__test__/fixtures/*live*
