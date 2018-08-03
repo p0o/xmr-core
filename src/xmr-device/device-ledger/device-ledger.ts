@@ -134,6 +134,26 @@ export class LedgerDevice<T> implements HWDevice {
 	/* ======================================================================= */
 	// #region WALLET & ADDRESS
 
+	public async put_key(
+		privViewKey: string,
+		pubViewKey: string,
+		privSpendKey: string,
+		pubSpendKey: string,
+		_b58PubKey: string,
+	): Promise<boolean> {
+		await this.send(INS.PUT_KEY, 0x00, 0x00, [
+			0x00,
+			privViewKey,
+			pubViewKey,
+			privSpendKey,
+			pubSpendKey,
+			// dummy pub key just to bypass length verification
+			// isnt used in blue-app-monero code for anything else
+			"bc3b105abc2f939571e5b107ab58dc4f6ea22923d8189be54a47d107d187d901bc3b105abc2f939571e5b107ab58dc4f6ea22923d8189be54a47d107d187d901bc3b105abc2f939571e5b107ab58dc4f6ea22923d8189be54a47d107d187",
+		]);
+		return true;
+	}
+
 	public async get_public_address(): Promise<PublicAddress> {
 		const [view_public_key, spend_public_key] = await this.send(
 			INS.GET_KEY,
@@ -396,10 +416,12 @@ export class LedgerDevice<T> implements HWDevice {
 			);
 
 			//Note derivation in PARSE mode can only happen with viewkey, so assert it! (?)
-			console.assert(
-				this.is_fake_view_key(sec),
-				"Derivation in PARSE mode can only happen with viewkey",
-			);
+			if (this.is_fake_view_key(this.privateViewKey)) {
+				throw Error(
+					"Derivation in PARSE mode can only happen with viewkey",
+				);
+			}
+
 			const derivation = crypto.derivation.generate_key_derivation(
 				pub,
 				this.privateViewKey,
@@ -941,7 +963,15 @@ export class LedgerDevice<T> implements HWDevice {
 	}
 
 	private arrLikeToBuf(arrLike: ArrLike) {
-		return Array.isArray(arrLike) ? Buffer.from(arrLike) : arrLike;
+		return Array.isArray(arrLike)
+			? arrLike.reduce(
+					(accu, curr) =>
+						typeof curr === "string"
+							? Buffer.concat([accu, Buffer.from(curr, "hex")])
+							: Buffer.concat([accu, Buffer.from([curr])]),
+					Buffer.alloc(0),
+			  )
+			: arrLike;
 	}
 
 	private async send(
@@ -981,7 +1011,6 @@ export class LedgerDevice<T> implements HWDevice {
 			return this.bufferToSlicedHexString(buf, endingIndicesToSliceAt);
 		}
 	}
-
 
 	private notSupported(): any {
 		throw Error("This device function is not supported");

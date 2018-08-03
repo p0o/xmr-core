@@ -71,6 +71,24 @@ export interface HWDevice {
 	/* ======================================================================= */
 
 	/**
+	 * @description Store an external key on the device
+	 * @param {string} privViewKey
+	 * @param {string} pubViewKey
+	 * @param {string} privSpendKey
+	 * @param {string} pubSpendKey
+	 * @param {string} b58PubKey
+	 * @returns {Promise<boolean>}
+	 * @memberof HWDevice
+	 */
+	put_key(
+		privViewKey: string,
+		pubViewKey: string,
+		privSpendKey: string,
+		pubSpendKey: string,
+		b58PubKey: string,
+	): Promise<boolean>;
+
+	/**
 	 *
 	 * @description Get the public address (Kv + Ks) of an account
 	 * @returns {Promise<PublicAddress>}
