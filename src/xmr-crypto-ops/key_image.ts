@@ -2,7 +2,7 @@ import CNCrypto = require("xmr-vendor/cn_crypto");
 import { KEY_SIZE, STRUCT_SIZES } from "./constants";
 import { hextobin, bintohex } from "xmr-str-utils/hex-strings";
 import { hash_to_ec } from "./hash_ops";
-import { HWDevice, DeviceMode } from "xmr-device/types";
+import { HWDevice } from "xmr-device/types";
 
 export async function derive_key_image_from_tx(
 	tx_pub: string,
@@ -24,13 +24,10 @@ export async function derive_key_image_from_tx(
 	if (spend_sec.length !== 64) {
 		throw Error("Invalid spend_sec length");
 	}
-	// set to transaction parse
-	await hwdev.set_mode(DeviceMode.TRANSACTION_PARSE);
 	const recv_derivation = await hwdev.generate_key_derivation(
 		tx_pub,
 		view_sec,
 	);
-	// conceal?
 
 	const ephemeral_pub = await hwdev.derive_public_key(
 		recv_derivation,
