@@ -1,7 +1,4 @@
-import {
-	MyMoneroApi,
-	parseUnspentOutputs,
-} from "xmr-mymonero-libs/mymonero-api";
+import { parseUnspentOutputs } from "xmr-mymonero-libs/mymonero-api";
 import { Output } from "xmr-types";
 import { HWDevice } from "xmr-device/types";
 import {
@@ -10,11 +7,6 @@ import {
 } from "../fixtures/live-api";
 import { JSONPrettyPrint } from "../utils/formatters";
 import { LedgerDevice } from "xmr-device";
-
-// type MockApiType = Pick<
-// typeof MyMoneroApi,
-// "randomOutputs" | "submitSerializedSignedTransaction" | "unspentOutputs"
-// >;
 
 export class MockApi {
 	public static async unspentOutputs(
@@ -36,7 +28,6 @@ export class MockApi {
 		const {
 			address,
 			data,
-			keyImage_cache,
 			spend_key__private,
 			spend_key__public,
 			view_key__private,
