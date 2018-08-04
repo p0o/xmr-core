@@ -60,7 +60,7 @@ export async function MLSAG_Gen(
 
 	//secret index (pubkey section)
 	const Hi = hashToPoint(pk[index][0]);
-	const { a, aG, aHP, II } = await hwdev.mlsag_prepare(Hi, xx[0]);
+	const { a, aG, aHP } = await hwdev.mlsag_prepare(Hi, xx[0]);
 
 	alpha[0] = a; //need to save alphas for later
 	toHash[1] = pk[index][0]; //secret index pubkey
