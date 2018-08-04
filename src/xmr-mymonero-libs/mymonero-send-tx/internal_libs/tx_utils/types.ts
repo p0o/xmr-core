@@ -7,6 +7,7 @@ import {
 	AmountOutput,
 } from "xmr-types";
 import { BigInt } from "biginteger";
+import { HWDevice } from "xmr-device/types";
 
 export type ConstructTxParams = {
 	senderPublicKeys: ViewSendKeys;
@@ -27,6 +28,7 @@ export type ConstructTxParams = {
 	isRingCT: boolean;
 
 	nettype: NetType;
+	hwdev: HWDevice;
 };
 
 export type TotalAmtAndEstFeeParams = {

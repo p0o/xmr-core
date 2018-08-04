@@ -38,7 +38,7 @@ import { ERR } from "./internal_libs/errors";
 import { Log } from "./internal_libs/logger";
 import { parseTargets } from "./internal_libs/parse_target";
 import { checkAddressAndPidValidity } from "./internal_libs/pid_utils";
-import { WrappedNodeApi } from "./internal_libs/async_node_api";
+
 import {
 	getRestOfTxData,
 	createTxAndAttemptToSend,
@@ -47,6 +47,9 @@ import { BigInt } from "biginteger";
 import { estimateRctSize } from "xmr-transaction/libs/ringct";
 import { formatMoneyFull } from "xmr-money/formatters";
 import { NetType, RawTarget, Pid, ViewSendKeys } from "xmr-types";
+import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
+import { HWDevice } from "xmr-device/types";
+import { selectOutputsAndAmountForMixin } from "./internal_libs/output_selection";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -80,21 +83,22 @@ export type SendFundsRet = {
 	txFee: BigInt;
 };
 
-export async function SendFunds(
+export async function sendFunds(
 	targetAddress: string, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
 	nettype: NetType,
-	amountorZeroWhenSweep: number, // n value will be ignored for sweep
+	amountOrZeroWhenSweep: number, // n value will be ignored for sweep
 	isSweeping: boolean, // send true to sweep - amountorZeroWhenSweep will be ignored
 	senderAddress: string,
 	senderPrivateKeys: ViewSendKeys,
 	senderPublicKeys: ViewSendKeys,
-	nodeAPI: any, // TODO: possibly factor this dependency
 	pidToParse: Pid,
 	mixin: number,
 	simplePriority: number,
+	hwdev: HWDevice,
 	updateStatus: (status: Status) => void,
+	outputAndAmountSelector = selectOutputsAndAmountForMixin,
+	api = MyMoneroApi,
 ): Promise<SendFundsRet> {
-	const api = new WrappedNodeApi(nodeAPI);
 	const isRingCT = true;
 
 	if (mixin < minMixin()) {
@@ -102,7 +106,7 @@ export async function SendFunds(
 	}
 
 	// parse & normalize the target descriptions by mapping them to Monero addresses & amounts
-	const targetAmount = isSweeping ? 0 : amountorZeroWhenSweep;
+	const targetAmount = isSweeping ? 0 : amountOrZeroWhenSweep;
 	const target: RawTarget = {
 		address: targetAddress,
 		amount: targetAmount,
@@ -130,17 +134,17 @@ export async function SendFunds(
 
 	updateStatus(sendFundStatus.fetchingLatestBalance);
 
-	const { dynamicFeePerKB, unusedOuts } = await api.unspentOuts(
+	const { per_kb_fee: feePerKB, unusedOuts } = await api.unspentOutputs(
 		senderAddress,
-		senderPrivateKeys,
-		senderPublicKeys,
+
+		senderPrivateKeys.view,
+		senderPublicKeys.spend,
+		senderPrivateKeys.spend,
 
 		mixin,
-
-		isSweeping,
+		hwdev,
 	);
 
-	const feePerKB = dynamicFeePerKB;
 	// Transaction will need at least 1KB fee (or 13KB for RingCT)
 	const minNetworkTxSizeKb = /*isRingCT ? */ 13; /* : 1*/
 	const estMinNetworkFee = calculateFeeKb(
@@ -194,19 +198,22 @@ export async function SendFunds(
 			fundTargets,
 			newFee,
 			usingOuts,
-		} = await getRestOfTxData({
-			...senderkeys,
-			...targetData,
+		} = await getRestOfTxData(
+			{
+				...senderkeys,
+				...targetData,
 
-			mixin,
-			unusedOuts,
+				mixin,
+				unusedOuts,
 
-			...feeMeta,
-			networkFee,
+				...feeMeta,
+				networkFee,
 
-			...txMeta,
-			...externApis,
-		});
+				...txMeta,
+				...externApis,
+			},
+			outputAndAmountSelector,
+		);
 		networkFee = newFee; // reassign network fee to the new fee returned
 
 		const { txFee, txHash, success } = await createTxAndAttemptToSend({
@@ -224,6 +231,7 @@ export async function SendFunds(
 
 			...txMeta,
 			...externApis,
+			hwdev,
 		});
 
 		if (success) {

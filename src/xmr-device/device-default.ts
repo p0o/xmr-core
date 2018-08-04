@@ -127,6 +127,15 @@ export class DefaultDevice implements HWDevice {
 	/*                            DERIVATION & KEY                             */
 	/* ======================================================================= */
 	// #region DERIVATION & KEY
+	public async put_key(
+		_privViewKey: string,
+		_pubViewKey: string,
+		_privSpendKey: string,
+		_pubSpendKey: string,
+		_b58PubKey: string,
+	) {
+		return true;
+	}
 
 	public async verify_keys(
 		secretKey: SecretKey,

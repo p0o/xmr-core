@@ -324,6 +324,7 @@ async function makeSignedTx(params: ConstructTxParams) {
 			isRingCT,
 
 			nettype,
+			hwdev,
 		} = params;
 
 		Log.Target.fullDisplay(fundTargets);
@@ -354,6 +355,7 @@ async function makeSignedTx(params: ConstructTxParams) {
 			0,
 			isRingCT,
 			nettype,
+			hwdev,
 		);
 
 		Log.Transaction.signed(signedTx);

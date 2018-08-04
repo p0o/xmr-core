@@ -1,10 +1,10 @@
 import { KeyPair, Commit } from "xmr-types";
 
 export enum DeviceMode {
+	NONE,
 	TRANSACTION_CREATE_REAL,
 	TRANSACTION_CREATE_FAKE,
 	TRANSACTION_PARSE,
-	NONE,
 }
 
 // to later be converted to opaque types
@@ -14,11 +14,11 @@ export type EcPoint = string;
 export type SecretKey = EcScalar;
 export type PublicKey = EcPoint;
 
-type SecretKeys = [SecretKey, SecretKey];
+export type SecretKeys = { viewKey: EcScalar; spendKey: EcScalar };
 
 export type KeyDerivation = EcPoint;
 
-type ChachaKey = string;
+export type ChachaKey = string;
 export type PublicSpendKey = PublicKey;
 
 export interface PublicAddress {
@@ -69,6 +69,24 @@ export interface HWDevice {
 	/* ======================================================================= */
 	/*                             WALLET & ADDRESS                            */
 	/* ======================================================================= */
+
+	/**
+	 * @description Store an external key on the device
+	 * @param {string} privViewKey
+	 * @param {string} pubViewKey
+	 * @param {string} privSpendKey
+	 * @param {string} pubSpendKey
+	 * @param {string} b58PubKey
+	 * @returns {Promise<boolean>}
+	 * @memberof HWDevice
+	 */
+	put_key(
+		privViewKey: string,
+		pubViewKey: string,
+		privSpendKey: string,
+		pubSpendKey: string,
+		b58PubKey: string,
+	): Promise<boolean>;
 
 	/**
 	 *

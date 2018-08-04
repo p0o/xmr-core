@@ -28,7 +28,7 @@
 
 import { BigInt } from "biginteger";
 import {
-	genKeyImage,
+	genKeyImageFromTx,
 	KeyImageCache,
 	getKeyImageCache,
 } from "xmr-keyimg-memoized";
@@ -53,14 +53,16 @@ import {
 	UnspentOuts,
 	NormalizedTransaction,
 } from "./types";
+import { HWDevice } from "xmr-device/types";
 
-export function parseAddressInfo(
+export async function parseAddressInfo(
 	address: string,
-	keyImageCache: KeyImageCache = getKeyImageCache(address),
 	data: AddressInfo,
 	privViewKey: string,
 	pubSpendKey: string,
 	privSpendKey: string,
+	hwdev: HWDevice,
+	keyImageCache: KeyImageCache = getKeyImageCache(address),
 ) {
 	const normalizedData = normalizeAddressInfo(data);
 	let { total_sent } = normalizedData;
@@ -77,7 +79,7 @@ export function parseAddressInfo(
 	} = normalizedData;
 
 	for (const spent_output of spent_outputs) {
-		const key_image = genKeyImage(
+		const key_image = await genKeyImageFromTx(
 			keyImageCache,
 			spent_output.tx_pub_key,
 			spent_output.out_index,
@@ -85,6 +87,7 @@ export function parseAddressInfo(
 			privViewKey,
 			pubSpendKey,
 			privSpendKey,
+			hwdev,
 		);
 
 		if (!isKeyImageEqual(spent_output, key_image)) {
@@ -110,13 +113,14 @@ export function parseAddressInfo(
 	};
 }
 
-export function parseAddressTransactions(
+export async function parseAddressTransactions(
 	address: string,
-	keyImgCache: KeyImageCache = getKeyImageCache(address),
 	data: AddressTransactions,
 	privViewKey: string,
 	pubSpendKey: string,
 	privSpendKey: string,
+	hwdev: HWDevice,
+	keyImgCache: KeyImageCache = getKeyImageCache(address),
 ) {
 	const {
 		blockchain_height,
@@ -134,7 +138,7 @@ export function parseAddressTransactions(
 		const transaction = normalizeTransaction(transactions[i]);
 
 		for (let j = 0; j < transaction.spent_outputs.length; j++) {
-			const keyImage = genKeyImage(
+			const keyImage = await genKeyImageFromTx(
 				keyImgCache,
 				transaction.spent_outputs[j].tx_pub_key,
 				transaction.spent_outputs[j].out_index,
@@ -142,6 +146,7 @@ export function parseAddressTransactions(
 				privViewKey,
 				pubSpendKey,
 				privSpendKey,
+				hwdev,
 			);
 
 			if (!isKeyImageEqual(transaction.spent_outputs[j], keyImage)) {
@@ -195,13 +200,14 @@ export function parseAddressTransactions(
  * @param {string} pubSpendKey
  * @param {string} privSpendKey
  */
-export function parseUnspentOuts(
+export async function parseUnspentOutputs(
 	address: string,
-	keyImageCache: KeyImageCache = getKeyImageCache(address),
 	data: UnspentOuts,
 	privViewKey: string,
 	pubSpendKey: string,
 	privSpendKey: string,
+	hwdev: HWDevice,
+	keyImageCache: KeyImageCache = getKeyImageCache(address),
 ) {
 	const { outputs, per_kb_fee } = data;
 
@@ -230,7 +236,7 @@ export function parseUnspentOuts(
 				continue;
 			}
 
-			const keyImage = genKeyImage(
+			const keyImage = await genKeyImageFromTx(
 				keyImageCache,
 				beforeSplice.tx_pub_key,
 				beforeSplice.index,
@@ -238,6 +244,7 @@ export function parseUnspentOuts(
 				privViewKey,
 				pubSpendKey,
 				privSpendKey,
+				hwdev,
 			);
 
 			if (keyImage === beforeSplice.spend_key_images[j]) {

@@ -159,7 +159,7 @@ export async function genRct(
 	}
 	return rv;
 }
-const defaultHwDev = new DefaultDevice()
+const defaultHwDev = new DefaultDevice();
 
 export async function verRct(
 	rv: RCTSignatures,
@@ -332,7 +332,7 @@ export async function verRctSimple(
 				}
 			}
 		} else {
-			const message = await  get_pre_mlsag_hash(rv, mixRing, defaultHwDev);
+			const message = await get_pre_mlsag_hash(rv, mixRing, defaultHwDev);
 			const results = [];
 			for (let i = 0; i < mixRing.length; i++) {
 				results[i] = verRctMGSimple(

@@ -4,11 +4,11 @@ import {
 	NormalizedTransaction,
 	SpentOutput,
 	AddressInfo,
-	UnspentOutput,
 } from "./types";
 import { Omit } from "types";
 import { BigInt } from "biginteger";
 import { formatMoney } from "xmr-money/formatters";
+import { Output } from "xmr-types";
 
 export function isKeyImageEqual({ key_image }: SpentOutput, keyImage: string) {
 	return key_image === keyImage;
@@ -155,7 +155,7 @@ export function sortTransactions(transactions: NormalizedTransaction[]) {
 
 //#region parseUnspentOuts
 
-export function validateUnspentOutput(out: UnspentOutput, index: number) {
+export function validateUnspentOutput(out: Output, index: number) {
 	if (!out) {
 		throw Error(`unspent_output at index ${index} was null`);
 	}
@@ -169,7 +169,7 @@ export function validateSpendKeyImages(keyImgs: string[], index: number) {
 	}
 }
 
-export function validUnspentOutput(out: UnspentOutput, index: number) {
+export function validUnspentOutput(out: Output, index: number) {
 	if (out) {
 		return true;
 	} else {
@@ -180,7 +180,7 @@ export function validUnspentOutput(out: UnspentOutput, index: number) {
 	}
 }
 
-export function validTxPubKey(out: UnspentOutput) {
+export function validTxPubKey(out: Output) {
 	if (out.tx_pub_key) {
 		return true;
 	} else {

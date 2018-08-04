@@ -53,8 +53,6 @@ export function estimateRctSize(
 	size += 32 * outputs;
 	// txnFee
 	size += 4;
-	// const logStr = `estimated rct tx size for ${inputs} at mixin ${mixin} and ${outputs} : ${size}  (${((32 * inputs/*+1*/) + 2 * 32 * (mixin+1) * inputs + 32 * outputs)}) saved)`
-	// console.log(logStr)
 
 	return size;
 }

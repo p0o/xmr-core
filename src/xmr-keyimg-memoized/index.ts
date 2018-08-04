@@ -1,4 +1,5 @@
 import { derive_key_image_from_tx } from "xmr-crypto-ops/key_image";
+import { HWDevice } from "xmr-device/types";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //
@@ -46,7 +47,7 @@ const keyImagesByWalletId: KeyImageCacheMap = {};
  * @param {string} privSpendKey
  * @returns
  */
-export function genKeyImage(
+export async function genKeyImageFromTx(
 	keyImageCache: KeyImageCache,
 	txPubKey: string,
 	outIndex: number,
@@ -54,6 +55,7 @@ export function genKeyImage(
 	privViewKey: string,
 	pubSpendKey: string,
 	privSpendKey: string,
+	hwdev: HWDevice,
 ) {
 	const cacheIndex = `${txPubKey}:${address}:${outIndex}`;
 	const cachedKeyImage = keyImageCache[cacheIndex];
@@ -62,12 +64,13 @@ export function genKeyImage(
 		return cachedKeyImage;
 	}
 
-	const { key_image } = derive_key_image_from_tx(
+	const { key_image } = await derive_key_image_from_tx(
 		txPubKey,
 		privViewKey,
 		pubSpendKey,
 		privSpendKey,
 		outIndex,
+		hwdev,
 	);
 
 	// cache the computed key image

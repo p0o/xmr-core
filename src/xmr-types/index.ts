@@ -64,7 +64,7 @@ export type Output = {
 	tx_hash: string;
 	tx_pub_key: string;
 	tx_prefix_hash: string;
-	spend_key_images: string;
+	spend_key_images: string[];
 	timestamp: string;
 	height: number;
 };
