@@ -49,7 +49,6 @@ export function proveRctMG(
 //   this shows that sum inputs = sum outputs
 //Ver:
 //   verifies the above sig is created corretly
-
 export function verRctMG(
 	mg: MGSig,
 	pubs: RingMember[][],
@@ -75,9 +74,8 @@ export function verRctMG(
 	}
 
 	// key matrix of (cols, tmp)
-
 	let M: string[][] = [];
-	console.log(pubs);
+
 	//create the matrix to mg sig
 	for (let i = 0; i < rows; i++) {
 		M[i] = [];
