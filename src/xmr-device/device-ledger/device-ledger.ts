@@ -998,13 +998,9 @@ export class LedgerDevice<T> implements HWDevice {
 		data?: ArrLike | undefined,
 		endingIndicesToSliceAt?: number[],
 	) {
-		const buf = await this.transport.send(
-			0x00,
-			ins,
-			p1,
-			p2,
-			data ? this.arrLikeToBuf(data) : undefined,
-		);
+		const parsedData = data ? this.arrLikeToBuf(data) : undefined;
+
+		const buf = await this.transport.send(0x00, ins, p1, p2, parsedData);
 		if (!endingIndicesToSliceAt) {
 			return;
 		} else {
