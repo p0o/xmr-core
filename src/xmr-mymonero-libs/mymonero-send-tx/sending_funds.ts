@@ -49,6 +49,7 @@ import { formatMoneyFull } from "xmr-money/formatters";
 import { NetType, RawTarget, Pid, ViewSendKeys } from "xmr-types";
 import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
 import { HWDevice } from "xmr-device/types";
+import { selectOutputsAndAmountForMixin } from "./internal_libs/output_selection";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -82,10 +83,10 @@ export type SendFundsRet = {
 	txFee: BigInt;
 };
 
-export async function SendFunds(
+export async function sendFunds(
 	targetAddress: string, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
 	nettype: NetType,
-	amountorZeroWhenSweep: number, // n value will be ignored for sweep
+	amountOrZeroWhenSweep: number, // n value will be ignored for sweep
 	isSweeping: boolean, // send true to sweep - amountorZeroWhenSweep will be ignored
 	senderAddress: string,
 	senderPrivateKeys: ViewSendKeys,
@@ -95,6 +96,7 @@ export async function SendFunds(
 	simplePriority: number,
 	hwdev: HWDevice,
 	updateStatus: (status: Status) => void,
+	outputAndAmountSelector = selectOutputsAndAmountForMixin,
 	api = MyMoneroApi,
 ): Promise<SendFundsRet> {
 	const isRingCT = true;
@@ -104,7 +106,7 @@ export async function SendFunds(
 	}
 
 	// parse & normalize the target descriptions by mapping them to Monero addresses & amounts
-	const targetAmount = isSweeping ? 0 : amountorZeroWhenSweep;
+	const targetAmount = isSweeping ? 0 : amountOrZeroWhenSweep;
 	const target: RawTarget = {
 		address: targetAddress,
 		amount: targetAmount,
@@ -178,7 +180,6 @@ export async function SendFunds(
 	const externApis = {
 		updateStatus,
 		api,
-		hwdev,
 	};
 
 	// begin the network fee with the smallest fee possible
@@ -197,19 +198,22 @@ export async function SendFunds(
 			fundTargets,
 			newFee,
 			usingOuts,
-		} = await getRestOfTxData({
-			...senderkeys,
-			...targetData,
+		} = await getRestOfTxData(
+			{
+				...senderkeys,
+				...targetData,
 
-			mixin,
-			unusedOuts,
+				mixin,
+				unusedOuts,
 
-			...feeMeta,
-			networkFee,
+				...feeMeta,
+				networkFee,
 
-			...txMeta,
-			...externApis,
-		});
+				...txMeta,
+				...externApis,
+			},
+			outputAndAmountSelector,
+		);
 		networkFee = newFee; // reassign network fee to the new fee returned
 
 		const { txFee, txHash, success } = await createTxAndAttemptToSend({
@@ -227,6 +231,7 @@ export async function SendFunds(
 
 			...txMeta,
 			...externApis,
+			hwdev,
 		});
 
 		if (success) {

@@ -37,7 +37,10 @@ import {
  * @export
  * @param {GetFundTargetsAndFeeParams} params
  */
-export async function getRestOfTxData(params: GetFundTargetsAndFeeParams) {
+export async function getRestOfTxData(
+	params: GetFundTargetsAndFeeParams,
+	outputAndAmountSelector: typeof selectOutputsAndAmountForMixin,
+) {
 	const {
 		senderAddress,
 
@@ -74,7 +77,7 @@ export async function getRestOfTxData(params: GetFundTargetsAndFeeParams) {
 		remainingUnusedOuts, // this is a copy of the pre-mutation usingOuts
 		usingOuts,
 		usingOutsAmount,
-	} = selectOutputsAndAmountForMixin(
+	} = outputAndAmountSelector(
 		baseTotalAmount,
 		unusedOuts,
 		isRingCT,
