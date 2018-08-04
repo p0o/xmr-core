@@ -33,8 +33,6 @@ export type GetFundTargetsAndFeeParams = {
 	updateStatus: (status: Status) => void;
 	api: typeof MyMoneroApi;
 	nettype: NetType;
-
-	hwdev: HWDevice;
 };
 
 export type CreateTxAndAttemptToSendParams = {
@@ -65,6 +63,5 @@ export type CreateTxAndAttemptToSendParams = {
 	updateStatus: (status: Status) => void;
 	api: typeof MyMoneroApi;
 	nettype: NetType;
-
 	hwdev: HWDevice;
 };
