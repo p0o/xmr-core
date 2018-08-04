@@ -29,7 +29,7 @@ import {
 } from "./libs/utils";
 import { generate_ring_signature } from "./libs/non-ringct";
 import { genRct } from "./libs/ringct";
-import { DefaultDevice } from "xmr-device/device-default";
+import { HWDevice } from "xmr-device/types";
 
 const UINT64_MAX = new BigInt(2).pow(64);
 
@@ -47,7 +47,6 @@ interface Source {
 	real_output_in_tx_index: number; //index in transaction outputs vector
 	mask?: string | null; //ringct amount mask
 }
-const hwdev = new DefaultDevice();
 
 export async function create_transaction(
 	pub_keys: ViewSendKeys,
@@ -63,6 +62,7 @@ export async function create_transaction(
 	unlock_time: number,
 	rct: boolean,
 	nettype: NetType,
+	hwdev: HWDevice,
 ) {
 	unlock_time = unlock_time || 0;
 	mix_outs = mix_outs || [];
@@ -110,6 +110,7 @@ export async function create_transaction(
 	let found_money = BigInt.ZERO;
 	const sources = [];
 	console.log("Selected transfers: ", outputs);
+
 	for (i = 0; i < outputs.length; ++i) {
 		found_money = found_money.add(outputs[i].amount);
 		if (found_money.compare(UINT64_MAX) !== -1) {
@@ -224,6 +225,7 @@ export async function create_transaction(
 		unlock_time,
 		rct,
 		nettype,
+		hwdev,
 	);
 }
 
@@ -238,10 +240,11 @@ async function construct_tx(
 	unlock_time: number,
 	rct: boolean,
 	nettype: NetType,
+	hwdev: HWDevice,
 ) {
 	//we move payment ID stuff here, because we need txkey to encrypt
-	const txkey = await hwdev.generate_keys(); // uses default device always
-	console.log(txkey);
+	const txkey = { sec: await hwdev.open_tx(), pub: "" };
+
 	let extra = "";
 	if (payment_id) {
 		if (pid_encrypt && payment_id.length !== INTEGRATED_ID_SIZE * 2) {
@@ -383,6 +386,8 @@ async function construct_tx(
 					dstWKey.pubkeys.spend,
 					txkey.sec,
 				);
+			} else {
+				txkey.pub = await hwdev.scalarmultBase(txkey.sec);
 			}
 
 			const output_derivation =
@@ -500,8 +505,10 @@ async function construct_tx(
 			indices.push(sourcesWithKeyImgAndKeys[i].real_output_index);
 		});
 
+		const destinations: string[] = [];
 		const outAmounts = [];
 		for (i = 0; i < tx.vout.length; i++) {
+			destinations.push(tx.vout[i].target.key);
 			outAmounts.push(tx.vout[i].amount);
 			tx.vout[i].amount = "0"; //zero out all rct outputs
 		}
@@ -510,7 +517,7 @@ async function construct_tx(
 			tx_prefix_hash,
 			inSk,
 			keyimages,
-			dsts.map(d => d.address),
+			destinations,
 			inAmounts,
 			outAmounts,
 			mixRing,
@@ -520,6 +527,5 @@ async function construct_tx(
 			hwdev,
 		);
 	}
-	console.log(tx);
 	return tx;
 }
