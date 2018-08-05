@@ -26,6 +26,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import packagejson from "../../../package.json";
+import axios, { AxiosResponse } from "axios";
 
 export function withUserAgentParams<T>(params: T) {
 	// setting these on params instead of as header field User-Agent so as to retain all info found in User-Agent
@@ -63,30 +64,12 @@ export async function makeRequest(
 ) {
 	const url = `https://${hostName}/${endPoint}`;
 
-	const res = await window
-		.fetch(url, {
-			method: "post",
+	const res = await axios.post(url, payload, {
+		headers: {
+			"Content-Type": "application/json",
+			Accept: "application/json",
+		},
+	});
 
-			headers: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-			body: JSON.stringify(payload),
-		})
-		.then(checkHttpStatus)
-		.then(parseJSON);
-
-	return res;
-}
-
-function checkHttpStatus(response: Response) {
-	if (response.status >= 200 && response.status < 300) {
-		return response;
-	} else {
-		return new Error(response.statusText);
-	}
-}
-
-function parseJSON(response: Response) {
-	return response.json();
+	return res.data;
 }
