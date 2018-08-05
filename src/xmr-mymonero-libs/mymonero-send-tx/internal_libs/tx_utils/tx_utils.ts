@@ -22,6 +22,7 @@ import { create_address } from "xmr-address-utils";
 import { random_scalar } from "xmr-rand";
 import { config } from "xmr-constants/coin-config";
 import { decompose_tx_destinations } from "xmr-money/parsers";
+import { isRealDevice } from "xmr-device/utils";
 
 // #region totalAmtAndEstFee
 
@@ -343,7 +344,12 @@ async function makeSignedTx(params: ConstructTxParams) {
 
 		const signedTx = await create_transaction(
 			senderPublicKeys,
-			senderPrivateKeys,
+			{
+				...senderPrivateKeys,
+				view: isRealDevice(hwdev)
+					? (await hwdev.get_secret_keys()).viewKey
+					: senderPrivateKeys.view,
+			},
 			splitDestinations,
 			usingOuts,
 			mixOuts,

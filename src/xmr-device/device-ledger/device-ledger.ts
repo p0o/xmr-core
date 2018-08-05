@@ -172,6 +172,7 @@ export class LedgerDevice<T> implements HWDevice {
 	/**
 	 *
 	 * @description Retrives the secret view key if the user allows the export
+	 * Skips retriving the view key if already previously exported
 	 * @returns Fake view and send private key
 	 * @memberof XMR
 	 */
@@ -181,16 +182,26 @@ export class LedgerDevice<T> implements HWDevice {
 		const vkey = this.hexString();
 		const skey = this.hexString(0xff);
 
-		const [viewKey] = await this.send(
-			INS.GET_KEY,
-			0x02,
-			0x00,
-			[0x00],
-			[32],
-		);
-		this.privateViewKey = viewKey;
+		if (this.is_fake_view_key(this.privateViewKey)) {
+			const [viewKey] = await this.send(
+				INS.GET_KEY,
+				0x02,
+				0x00,
+				[0x00],
+				[32],
+			);
+			this.privateViewKey = viewKey;
+		}
+
 		this.has_view_key = !this.is_fake_view_key(this.privateViewKey);
 		return { viewKey: vkey, spendKey: skey };
+	}
+
+	public async export_private_view_key(): Promise<string> {
+		if (this.is_fake_view_key(this.privateViewKey)) {
+			await this.get_secret_keys();
+		}
+		return this.privateViewKey;
 	}
 
 	public async generate_chacha_key(_keys: IAccountKeys): Promise<ChachaKey> {

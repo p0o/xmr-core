@@ -1,7 +1,7 @@
 import { BigInt } from "biginteger";
 import {
-	formatMoneySymbol,
-	formatMoneyFullSymbol,
+	formatMoneyWithSymbol,
+	formatMoneyFullWithSymbol,
 	formatMoney,
 	formatMoneyFull,
 	printDsts,
@@ -28,7 +28,7 @@ export namespace Log {
 		export function toSelf(changeAmount: BigInt, selfAddress: string) {
 			console.log(
 				"Sending change of " +
-					formatMoneySymbol(changeAmount) +
+					formatMoneyWithSymbol(changeAmount) +
 					" to " +
 					selfAddress,
 			);
@@ -39,7 +39,7 @@ export namespace Log {
 		export function dynPerKB(dynFeePerKB: BigInt) {
 			console.log(
 				"Received dynamic per kb fee",
-				formatMoneySymbol(dynFeePerKB),
+				formatMoneyWithSymbol(dynFeePerKB),
 			);
 		}
 		export function basedOnInputs(
@@ -48,7 +48,7 @@ export namespace Log {
 		) {
 			console.log(
 				"New fee: " +
-					formatMoneySymbol(newNeededFee) +
+					formatMoneyWithSymbol(newNeededFee) +
 					" for " +
 					usingOuts.length +
 					" inputs",
@@ -57,7 +57,7 @@ export namespace Log {
 		export function belowDustThreshold(changeDivDustRemainder: BigInt) {
 			console.log(
 				"💬  Miners will add change of " +
-					formatMoneyFullSymbol(changeDivDustRemainder) +
+					formatMoneyFullWithSymbol(changeDivDustRemainder) +
 					" to transaction fee (below dust threshold)",
 			);
 		}
@@ -104,14 +104,14 @@ export namespace Log {
 				console.log("Balance required: all");
 			} else {
 				console.log(
-					"Balance required: " + formatMoneySymbol(totalAmount),
+					"Balance required: " + formatMoneyWithSymbol(totalAmount),
 				);
 			}
 		}
 
 		export function requiredPostRct(totalAmount: BigInt) {
 			console.log(
-				"~ Balance required: " + formatMoneySymbol(totalAmount),
+				"~ Balance required: " + formatMoneyWithSymbol(totalAmount),
 			);
 		}
 	}

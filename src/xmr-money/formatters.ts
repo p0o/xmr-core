@@ -26,7 +26,7 @@ export function formatMoneyFull(units: BigInt | string) {
 	);
 }
 
-export function formatMoneyFullSymbol(units: BigInt | string) {
+export function formatMoneyFullWithSymbol(units: BigInt | string) {
 	return formatMoneyFull(units) + " " + config.coinSymbol;
 }
 
@@ -38,7 +38,7 @@ export function formatMoney(units: BigInt | string) {
 	return f;
 }
 
-export function formatMoneySymbol(units: BigInt | string) {
+export function formatMoneyWithSymbol(units: BigInt | string) {
 	return formatMoney(units) + " " + config.coinSymbol;
 }
 

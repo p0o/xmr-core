@@ -10,6 +10,7 @@ import { HWDevice } from "xmr-device/types";
 import { BigInt } from "biginteger";
 import { Output } from "xmr-types";
 import { ERR } from "xmr-mymonero-libs/mymonero-send-tx/internal_libs/errors";
+import { isRealDevice } from "xmr-device/utils";
 
 export class MyMoneroApi {
 	public static async login(address: string, privViewKey: string) {
@@ -49,7 +50,9 @@ export class MyMoneroApi {
 		return parseAddressInfo(
 			address,
 			data,
-			privViewKey,
+			isRealDevice(hwdev)
+				? (await hwdev.get_secret_keys()).viewKey
+				: privViewKey,
 			pubSpendKey,
 			privSpendKey,
 			hwdev,
@@ -76,7 +79,9 @@ export class MyMoneroApi {
 		return parseAddressTransactions(
 			address,
 			data,
-			privViewKey,
+			isRealDevice(hwdev)
+				? (await hwdev.get_secret_keys()).viewKey
+				: privViewKey,
 			pubSpendKey,
 			privSpendKey,
 			hwdev,
@@ -134,7 +139,9 @@ export class MyMoneroApi {
 		return parseUnspentOutputs(
 			address,
 			data,
-			privViewKey,
+			isRealDevice(hwdev)
+				? (await hwdev.get_secret_keys()).viewKey
+				: privViewKey,
 			pubSpendKey,
 			privSpendKey,
 			hwdev,

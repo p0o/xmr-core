@@ -31,8 +31,9 @@ import {
 	calculateFee,
 	multiplyFeePriority,
 	calculateFeeKb,
+	DEFAULT_FEE_PRIORITY,
 } from "./internal_libs/fee_utils";
-import { minMixin } from "./mixin_utils";
+import { minMixin, fixedMixin } from "./mixin_utils";
 import { Status, sendFundStatus } from "./status_update_constants";
 import { ERR } from "./internal_libs/errors";
 import { Log } from "./internal_libs/logger";
@@ -50,6 +51,8 @@ import { NetType, RawTarget, Pid, ViewSendKeys } from "xmr-types";
 import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
 import { HWDevice } from "xmr-device/types";
 import { selectOutputsAndAmountForMixin } from "./internal_libs/output_selection";
+import { isRealDevice, getAddressString } from "xmr-device/utils";
+import { DefaultDevice } from "xmr-device";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -82,6 +85,76 @@ export type SendFundsRet = {
 	txHash: string;
 	txFee: BigInt;
 };
+
+export async function sendFundsSimple(
+	targetAddress: string,
+	amount: number,
+	pid: Pid,
+	updateStatus: (status: Status) => void,
+	hwdev: HWDevice,
+) {
+	if (!isRealDevice(hwdev)) {
+		throw Error(
+			"[sendFundsSimple] This function can only be used with a real hardware device",
+		);
+	}
+
+	const {
+		spend_public_key,
+		view_public_key,
+	} = await hwdev.get_public_address();
+
+	const address = await getAddressString(hwdev);
+
+	const senderPrivateKeys: ViewSendKeys = {
+		spend: (await hwdev.get_secret_keys()).spendKey,
+		view: await hwdev.export_private_view_key(),
+	};
+
+	const senderPublicKeys: ViewSendKeys = {
+		spend: spend_public_key,
+		view: view_public_key,
+	};
+
+	return await sendFunds(
+		targetAddress,
+		NetType.MAINNET,
+		amount,
+		false,
+		address,
+		senderPrivateKeys,
+		senderPublicKeys,
+		pid,
+		fixedMixin(),
+		DEFAULT_FEE_PRIORITY,
+		hwdev,
+		updateStatus,
+	);
+}
+
+export async function sendFundsRawKeys(
+	targetAddress: string,
+	amount: number,
+	senderAddress: string,
+	senderPrivateKeys: ViewSendKeys,
+	senderPublicKeys: ViewSendKeys,
+	updateStatus: (status: Status) => void,
+) {
+	return await sendFunds(
+		targetAddress,
+		NetType.MAINNET,
+		amount,
+		false,
+		senderAddress,
+		senderPrivateKeys,
+		senderPublicKeys,
+		null,
+		fixedMixin(),
+		DEFAULT_FEE_PRIORITY,
+		new DefaultDevice(),
+		updateStatus,
+	);
+}
 
 export async function sendFunds(
 	targetAddress: string, // currency-ready wallet address, but not an OpenAlias address (resolve before calling)
