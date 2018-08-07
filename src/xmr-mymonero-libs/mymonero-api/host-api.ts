@@ -11,6 +11,7 @@ import { BigInt } from "biginteger";
 import { Output } from "xmr-types";
 import { ERR } from "xmr-mymonero-libs/mymonero-send-tx/internal_libs/errors";
 import { isRealDevice } from "xmr-device/utils";
+import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
 
 export class MyMoneroApi {
 	public static async login(address: string, privViewKey: string) {
@@ -121,6 +122,17 @@ export class MyMoneroApi {
 		mixinNumber: number,
 		hwdev: HWDevice,
 	) {
+		JSONPrettyPrint(
+			"unspentOutputs",
+			{
+				address,
+				privViewKey,
+				pubSpendKey,
+				privSpendKey,
+				mixinNumber,
+			},
+			"args",
+		);
 		const parameters = withUserAgentParams({
 			address,
 			view_key: privViewKey,
@@ -136,6 +148,15 @@ export class MyMoneroApi {
 			parameters,
 		);
 
+		JSONPrettyPrint(
+			"unspentOutputs",
+			{
+				parameters,
+				data,
+			},
+			"pre_parseUnspentOutputs_dataAndParams",
+		);
+
 		return parseUnspentOutputs(
 			address,
 			data,
@@ -149,6 +170,8 @@ export class MyMoneroApi {
 	}
 
 	public static async randomOutputs(usingOuts: Output[], mixin: number) {
+		JSONPrettyPrint("randomOutputs", { usingOuts, mixin }, "args");
+
 		if (mixin < 0 || isNaN(mixin)) {
 			throw Error("Invalid mixin - must be >= 0");
 		}
@@ -164,6 +187,12 @@ export class MyMoneroApi {
 			myMoneroConfig.hostName,
 			"get_random_outs",
 			parameters,
+		);
+
+		JSONPrettyPrint(
+			"randomOutputs",
+			{ amount_outs: data.amount_outs },
+			"ret",
 		);
 
 		return { amount_outs: data.amount_outs };
@@ -186,6 +215,7 @@ export class MyMoneroApi {
 				parameters,
 			);
 		} catch (e) {
+			console.error(e);
 			throw ERR.TX.submitUnknown(e);
 		}
 	}

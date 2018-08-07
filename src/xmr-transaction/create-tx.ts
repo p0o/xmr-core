@@ -30,6 +30,7 @@ import {
 import { generate_ring_signature } from "./libs/non-ringct";
 import { genRct } from "./libs/ringct";
 import { HWDevice } from "xmr-device/types";
+import { JSONPrettyPrint } from "../../__test__/utils/formatters";
 
 const UINT64_MAX = new BigInt(2).pow(64);
 
@@ -63,7 +64,29 @@ export async function create_transaction(
 	rct: boolean,
 	nettype: NetType,
 	hwdev: HWDevice,
+	construct_tx_func = construct_tx,
 ) {
+	JSONPrettyPrint(
+		"create_transaction",
+
+		{
+			pub_keys,
+			sec_keys,
+			dsts,
+			outputs,
+			mix_outs,
+			fake_outputs_count,
+			fee_amount,
+			payment_id,
+			pid_encrypt,
+			destViewKeyPub,
+			unlock_time,
+			rct,
+			nettype,
+		},
+		"args",
+	);
+
 	unlock_time = unlock_time || 0;
 	mix_outs = mix_outs || [];
 	let i, j;
@@ -143,7 +166,7 @@ export async function create_transaction(
 				}
 
 				const output_entry: SourceOutput = {
-					index: out.global_index.toString(),
+					index: out.global_index,
 					key: out.public_key,
 				};
 
@@ -214,7 +237,7 @@ export async function create_transaction(
 			formatMoney(needed_money) +
 			")";
 	}
-	return construct_tx(
+	return construct_tx_func(
 		keys,
 		sources,
 		dsts,
@@ -229,7 +252,7 @@ export async function create_transaction(
 	);
 }
 
-async function construct_tx(
+export async function construct_tx(
 	keys: Keys,
 	sources: Source[],
 	dsts: ParsedTarget[],
@@ -241,9 +264,28 @@ async function construct_tx(
 	rct: boolean,
 	nettype: NetType,
 	hwdev: HWDevice,
+	genRctFunc = genRct,
+	txKeyGen = async () => ({ sec: await hwdev.open_tx(), pub: "" }),
 ) {
+	JSONPrettyPrint(
+		"construct_tx",
+		{
+			keys,
+			sources,
+			dsts,
+			fee_amount,
+			payment_id,
+			pid_encrypt,
+			destViewKeyPub,
+			unlock_time,
+			rct,
+			nettype,
+		},
+		"args",
+	);
+
 	//we move payment ID stuff here, because we need txkey to encrypt
-	const txkey = { sec: await hwdev.open_tx(), pub: "" };
+	const txkey = await txKeyGen();
 
 	let extra = "";
 	if (payment_id) {
@@ -324,6 +366,14 @@ async function construct_tx(
 		}),
 	);
 
+	JSONPrettyPrint(
+		"construct_tx",
+		{
+			sourcesWithKeyImgAndKeys,
+		},
+		"sourcesWithKeyImgAndKeys_pre_sort",
+	);
+
 	//sort ins
 	sourcesWithKeyImgAndKeys.sort((a, b) => {
 		return (
@@ -332,6 +382,14 @@ async function construct_tx(
 			) * -1
 		);
 	});
+
+	JSONPrettyPrint(
+		"construct_tx",
+		{
+			sourcesWithKeyImgAndKeys,
+		},
+		"sourcesWithKeyImgAndKeys_post_sort",
+	);
 
 	const in_contexts = sourcesWithKeyImgAndKeys.map(
 		source => source.in_ephemeral,
@@ -512,8 +570,23 @@ async function construct_tx(
 			outAmounts.push(tx.vout[i].amount);
 			tx.vout[i].amount = "0"; //zero out all rct outputs
 		}
+		JSONPrettyPrint(
+			"construct_tx",
+			{
+				tx,
+				keyimages,
+				inSk,
+				inAmounts,
+				mixRing,
+				indices,
+				destinations,
+				outAmounts,
+			},
+			"pre_gen_rct",
+		);
+
 		const tx_prefix_hash = get_tx_prefix_hash(tx);
-		tx.rct_signatures = await genRct(
+		tx.rct_signatures = await genRctFunc(
 			tx_prefix_hash,
 			inSk,
 			keyimages,
@@ -527,5 +600,14 @@ async function construct_tx(
 			hwdev,
 		);
 	}
+
+	JSONPrettyPrint(
+		"construct_tx",
+		{
+			tx,
+		},
+		"ret",
+	);
+
 	return tx;
 }

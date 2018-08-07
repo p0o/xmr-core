@@ -6,3 +6,4 @@ yarn-error.log
 tests/fixtures
 dist
 __test__/fixtures/*live*
+*.log

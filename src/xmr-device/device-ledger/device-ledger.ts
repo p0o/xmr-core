@@ -20,6 +20,7 @@ import {
 } from "../types";
 import { KeyPair, Commit } from "xmr-types";
 import * as crypto from "xmr-crypto-ops";
+import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
 
 enum RCT {
 	RCTTypeNull = 0x00,
@@ -59,6 +60,8 @@ class Keymap {
 		this.map = {};
 	}
 }
+const ledgerLog = (fnname: string, obj: any, extra?: string) =>
+	JSONPrettyPrint(`LedgerDevice ${fnname}`, obj, extra);
 
 // tslint:disable-next-line:max-classes-per-file
 export class LedgerDevice<T> implements HWDevice {
@@ -102,6 +105,8 @@ export class LedgerDevice<T> implements HWDevice {
 	}
 
 	public async set_mode(mode: DeviceMode) {
+		ledgerLog("set_mode", { mode }, "args");
+
 		switch (mode) {
 			case DeviceMode.TRANSACTION_CREATE_REAL:
 			case DeviceMode.TRANSACTION_CREATE_FAKE:
@@ -141,6 +146,18 @@ export class LedgerDevice<T> implements HWDevice {
 		pubSpendKey: string,
 		_b58PubKey: string,
 	): Promise<boolean> {
+		ledgerLog(
+			"put_key",
+			{
+				privViewKey,
+				pubViewKey,
+				privSpendKey,
+				pubSpendKey,
+				_b58PubKey,
+			},
+			"args",
+		);
+
 		await this.send(INS.PUT_KEY, 0x00, 0x00, [
 			0x00,
 			privViewKey,
@@ -155,12 +172,22 @@ export class LedgerDevice<T> implements HWDevice {
 	}
 
 	public async get_public_address(): Promise<PublicAddress> {
+		ledgerLog("get_public_address", { command: "get_public_address" });
+
 		const [view_public_key, spend_public_key] = await this.send(
 			INS.GET_KEY,
 			0x01,
 			0x00,
 			[0x00],
 			[32, 64],
+		);
+		ledgerLog(
+			"get_public_address",
+			{
+				view_public_key,
+				spend_public_key,
+			},
+			"ret",
 		);
 
 		return {
@@ -181,6 +208,7 @@ export class LedgerDevice<T> implements HWDevice {
 		// because secret keys are always in possesion of the ledger device
 		const vkey = this.hexString();
 		const skey = this.hexString(0xff);
+		ledgerLog("get_secret_keys", { command: "get_secret_keys" });
 
 		if (this.is_fake_view_key(this.privateViewKey)) {
 			const [viewKey] = await this.send(
@@ -194,13 +222,26 @@ export class LedgerDevice<T> implements HWDevice {
 		}
 
 		this.has_view_key = !this.is_fake_view_key(this.privateViewKey);
+
+		ledgerLog("get_secret_keys", { viewKey: vkey, spendKey: skey }, "ret");
 		return { viewKey: vkey, spendKey: skey };
 	}
 
 	public async export_private_view_key(): Promise<string> {
+		ledgerLog("export_private_view_key", {
+			command: "export_private_view_key",
+		});
+
 		if (this.is_fake_view_key(this.privateViewKey)) {
 			await this.get_secret_keys();
 		}
+
+		ledgerLog(
+			"export_private_view_key",
+			{ viewKey: this.privateViewKey },
+			"ret",
+		);
+
 		return this.privateViewKey;
 	}
 
@@ -342,6 +383,8 @@ export class LedgerDevice<T> implements HWDevice {
 	/* ======================================================================= */
 	// #region DERIVATION & KEY
 	public async verify_keys(secret_key: SecretKey, public_key: PublicKey) {
+		ledgerLog("verify_keys", { secret_key, public_key }, "args");
+
 		const verifyArr = await this.send(
 			INS.VERIFY_KEY,
 			0x00,
@@ -362,10 +405,14 @@ export class LedgerDevice<T> implements HWDevice {
 
 		const verified = verifyArr[3];
 
+		ledgerLog("verify_keys", { verified: verified === 1 }, "ret");
+
 		return verified === 1;
 	}
 
 	public async scalarmultKey(P: Key, a: Key): Promise<Key> {
+		ledgerLog("scalarmultKey", { P, a }, "args");
+
 		const [aP] = await this.send(
 			INS.SECRET_SCAL_MUL_KEY,
 			0x00,
@@ -373,10 +420,15 @@ export class LedgerDevice<T> implements HWDevice {
 			[0x00, P, a],
 			[32],
 		);
+
+		ledgerLog("scalarmultKey", { aP }, "ret");
+
 		return aP;
 	}
 
 	public async scalarmultBase(a: Key): Promise<Key> {
+		ledgerLog("scalarmultBase", { a }, "args");
+
 		const [aG] = await this.send(
 			INS.SECRET_SCAL_MUL_BASE,
 			0x00,
@@ -384,10 +436,15 @@ export class LedgerDevice<T> implements HWDevice {
 			[0x00, a],
 			[32],
 		);
+
+		ledgerLog("scalarmultBase", { aG }, "args");
+
 		return aG;
 	}
 
 	public async sc_secret_add(a: SecretKey, b: SecretKey) {
+		ledgerLog("sc_secret_add", { a, b }, "args");
+
 		const [r] = await this.send(
 			INS.SECRET_KEY_ADD,
 			0x00,
@@ -395,10 +452,15 @@ export class LedgerDevice<T> implements HWDevice {
 			[0x00, a, b],
 			[32],
 		);
+
+		ledgerLog("sc_secret_add", { r }, "args");
+
 		return r;
 	}
 
 	public async generate_keys(recovery_key?: SecretKey): Promise<KeyPair> {
+		ledgerLog("generate_keys", { command: "generate_keys" });
+
 		if (recovery_key) {
 			throw Error(
 				"Ledger device method generate_keys does not support recover",
@@ -412,6 +474,8 @@ export class LedgerDevice<T> implements HWDevice {
 			[32, 64],
 		);
 
+		ledgerLog("generate_keys", { pub, sec }, "ret");
+
 		return { pub, sec };
 	}
 
@@ -419,6 +483,8 @@ export class LedgerDevice<T> implements HWDevice {
 		pub: PublicKey,
 		sec: SecretKey,
 	): Promise<KeyDerivation> {
+		ledgerLog("generate_key_derivation", { pub, sec }, "args");
+
 		if (this.mode === DeviceMode.TRANSACTION_PARSE && this.has_view_key) {
 			// When a derivation is requested in PARSE mode and the view key is available,
 			// Perform the derivation via extern library and return the derivation unencrypted
@@ -446,6 +512,9 @@ export class LedgerDevice<T> implements HWDevice {
 				[0x00, pub, sec],
 				[32],
 			);
+
+			ledgerLog("generate_key_derivation", { derivation }, "ret");
+
 			return derivation;
 		}
 	}
@@ -457,6 +526,18 @@ export class LedgerDevice<T> implements HWDevice {
 		main_derivation: KeyDerivation,
 		additional_derivations: KeyDerivation[],
 	) {
+		ledgerLog(
+			"conceal_derivation",
+			{
+				derivation,
+				tx_pub_key,
+				additional_tx_pub_keys,
+				main_derivation,
+				additional_derivations,
+			},
+			"args",
+		);
+
 		let pubKey: string | undefined;
 		if (derivation === main_derivation) {
 			pubKey = tx_pub_key;
@@ -475,6 +556,17 @@ export class LedgerDevice<T> implements HWDevice {
 			throw Error("Mismatched derivation on scan info");
 		}
 
+		ledgerLog(
+			"conceal_derivation",
+			{
+				derivation: this.generate_key_derivation(
+					pubKey,
+					this.null_skey,
+				),
+			},
+			"ret",
+		);
+
 		return this.generate_key_derivation(pubKey, this.null_skey);
 	}
 
@@ -482,6 +574,15 @@ export class LedgerDevice<T> implements HWDevice {
 		derivation: KeyDerivation,
 		output_index: number,
 	): Promise<EcScalar> {
+		ledgerLog(
+			"derivation_to_scalar",
+			{
+				derivation,
+				output_index,
+			},
+			"args",
+		);
+
 		const [scalar] = await this.send(
 			INS.DERIVATION_TO_SCALAR,
 			0x00,
@@ -497,6 +598,14 @@ export class LedgerDevice<T> implements HWDevice {
 			[32],
 		);
 
+		ledgerLog(
+			"derivation_to_scalar",
+			{
+				scalar,
+			},
+			"ret",
+		);
+
 		return scalar;
 	}
 
@@ -505,6 +614,16 @@ export class LedgerDevice<T> implements HWDevice {
 		output_index: number,
 		sec: SecretKey,
 	): Promise<SecretKey> {
+		ledgerLog(
+			"derive_secret_key",
+			{
+				derivation,
+				output_index,
+				sec,
+			},
+			"args",
+		);
+
 		const [derivedSec] = await this.send(
 			INS.DERIVE_SECRET_KEY,
 			0x00,
@@ -521,6 +640,14 @@ export class LedgerDevice<T> implements HWDevice {
 			[32],
 		);
 
+		ledgerLog(
+			"derive_secret_key",
+			{
+				derivedSec,
+			},
+			"args",
+		);
+
 		return derivedSec;
 	}
 
@@ -529,6 +656,16 @@ export class LedgerDevice<T> implements HWDevice {
 		output_index: number,
 		pub: PublicKey,
 	): Promise<PublicKey> {
+		ledgerLog(
+			"derive_public_key",
+			{
+				derivation,
+				output_index,
+				pub,
+			},
+			"args",
+		);
+
 		const [derived_pub] = await this.send(
 			INS.DERIVE_PUBLIC_KEY,
 			0x00,
@@ -544,10 +681,27 @@ export class LedgerDevice<T> implements HWDevice {
 			],
 			[32],
 		);
+
+		ledgerLog(
+			"derive_public_key",
+			{
+				derived_pub,
+			},
+			"ret",
+		);
+
 		return derived_pub;
 	}
 
 	public async secret_key_to_public_key(sec: SecretKey): Promise<PublicKey> {
+		ledgerLog(
+			"secret_key_to_public_key",
+			{
+				sec,
+			},
+			"args",
+		);
+
 		const [pub] = await this.send(
 			INS.SECRET_KEY_TO_PUBLIC_KEY,
 			0x00,
@@ -555,6 +709,15 @@ export class LedgerDevice<T> implements HWDevice {
 			[0x00, sec],
 			[32],
 		);
+
+		ledgerLog(
+			"secret_key_to_public_key",
+			{
+				pub,
+			},
+			"ret",
+		);
+
 		return pub;
 	}
 
@@ -578,6 +741,10 @@ export class LedgerDevice<T> implements HWDevice {
 	/* ======================================================================= */
 	// #region TRANSACTION
 	public async open_tx(): Promise<SecretKey> {
+		ledgerLog("open_tx", {
+			command: "open_tx",
+		});
+
 		const options = 0x00;
 
 		const account = [0x00, 0x00, 0x00, 0x00];
@@ -593,6 +760,13 @@ export class LedgerDevice<T> implements HWDevice {
 
 		const sec_tx_key = enc_r;
 
+		ledgerLog(
+			"open_tx",
+			{
+				sec_tx_key,
+			},
+			"ret",
+		);
 		return sec_tx_key;
 	}
 
@@ -601,6 +775,16 @@ export class LedgerDevice<T> implements HWDevice {
 		public_key: string,
 		secret_key: string,
 	): Promise<Hash8> {
+		ledgerLog(
+			"encrypt_payment_id",
+			{
+				paymentId,
+				public_key,
+				secret_key,
+			},
+			"args",
+		);
+
 		const [enc_pid] = await this.send(
 			INS.STEALTH,
 			0x00,
@@ -608,6 +792,14 @@ export class LedgerDevice<T> implements HWDevice {
 			[0x00, public_key, secret_key, paymentId],
 			[8],
 		);
+		ledgerLog(
+			"encrypt_payment_id",
+			{
+				enc_pid,
+			},
+			"ret",
+		);
+
 		return enc_pid;
 	}
 
@@ -616,6 +808,16 @@ export class LedgerDevice<T> implements HWDevice {
 		public_key: string,
 		secret_key: string,
 	): Promise<Hash8> {
+		ledgerLog(
+			"decrypt_payment_id",
+			{
+				paymentId,
+				public_key,
+				secret_key,
+			},
+			"args",
+		);
+
 		return await this.encrypt_payment_id(paymentId, public_key, secret_key);
 	}
 
@@ -637,6 +839,19 @@ export class LedgerDevice<T> implements HWDevice {
 		amount_key: Key,
 		out_eph_public_key: PublicKey,
 	): boolean {
+		ledgerLog(
+			"add_output_key_mapping",
+			{
+				Aout: Aout,
+				Bout: Bout,
+				is_subaddress,
+				index: real_output_index,
+				Pout: out_eph_public_key,
+				AKout: amount_key,
+			},
+			"args",
+		);
+
 		this.key_map.add({
 			Aout: Aout,
 			Bout: Bout,
@@ -653,6 +868,15 @@ export class LedgerDevice<T> implements HWDevice {
 		unmasked: Commit,
 		AKout: SecretKey,
 	): Promise<Commit> {
+		ledgerLog(
+			"ecdhEncode",
+			{
+				unmasked,
+				AKout,
+			},
+			"args",
+		);
+
 		// AKout -> Amount key for output
 		// AKout = encrypted private derivation data computed during the processing of output transaction keys
 		// derivation data  = generate_key_derivation(Kv (recipent view public key), r (tx_key) ) = r.Kv
@@ -666,10 +890,28 @@ export class LedgerDevice<T> implements HWDevice {
 			[32, 64],
 		);
 
+		ledgerLog(
+			"ecdhEncode",
+			{
+				blindAmount,
+				blindMask,
+			},
+			"ret",
+		);
+
 		return { amount: blindAmount, mask: blindMask };
 	}
 
 	public async ecdhDecode(masked: Commit, AKout: SecretKey): Promise<Commit> {
+		ledgerLog(
+			"ecdhDecode",
+			{
+				masked,
+				AKout,
+			},
+			"args",
+		);
+
 		const [unmaskedAmount, unmaskedMask] = await this.send(
 			INS.UNBLIND,
 			0x00,
@@ -677,6 +919,16 @@ export class LedgerDevice<T> implements HWDevice {
 			[0x00, AKout, masked.mask, masked.amount],
 			[32, 64],
 		);
+
+		ledgerLog(
+			"ecdhDecode",
+			{
+				unmaskedAmount,
+				unmaskedMask,
+			},
+			"ret",
+		);
+
 		return { amount: unmaskedAmount, mask: unmaskedMask };
 	}
 
@@ -687,6 +939,18 @@ export class LedgerDevice<T> implements HWDevice {
 		hashes: KeyV,
 		outPk: CtKeyV,
 	): Promise<Key> {
+		ledgerLog(
+			"mlsag_prehash",
+			{
+				blob,
+				inputs_size,
+				outputs_size,
+				hashes,
+				outPk,
+			},
+			"args",
+		);
+
 		const data = Buffer.from(blob, "hex");
 
 		const options = inputs_size === 0 ? 0x00 : 0x80;
@@ -698,6 +962,8 @@ export class LedgerDevice<T> implements HWDevice {
 			txnFee.push(data[data_offset]);
 			data_offset += 1;
 		}
+
+		ledgerLog("mlsag_prehash", {}, "INS.VALIDATE p2 === 1");
 
 		// monero_apdu_mlsag_prehash_init p2 === 1
 		await this.send(INS.VALIDATE, 0x01, 0x01, [
@@ -723,6 +989,8 @@ export class LedgerDevice<T> implements HWDevice {
 				const pseudoOut = data
 					.slice(data_offset, data_offset + 32)
 					.toString("hex");
+
+				ledgerLog("mlsag_prehash", {}, `INS.VALIDATE p2 === ${p2}`);
 
 				await this.send(INS.VALIDATE, p1, p2, [opts, pseudoOut]);
 
@@ -772,6 +1040,20 @@ export class LedgerDevice<T> implements HWDevice {
 			);
 			kv_offset += 32;
 
+			ledgerLog(
+				"mlsag_prehash",
+				{
+					outKeys,
+					p1,
+					p2,
+					opts,
+					data_buf,
+					C_offset,
+					kv_offset,
+				},
+				`INS.VALIDATE p2 === ${p2}`,
+			);
+
 			await this.send(INS.VALIDATE, p1, p2, data_buf);
 		}
 
@@ -787,6 +1069,19 @@ export class LedgerDevice<T> implements HWDevice {
 			const C = data.slice(C_offset, C_offset + 32).toString("hex");
 			C_offset += 32;
 
+			ledgerLog(
+				"mlsag_prehash",
+				{
+					p1,
+					p2,
+					opts,
+					C,
+					C_offset,
+					kv_offset,
+				},
+				`INS.VALIDATE p2 === ${p2}`,
+			);
+
 			await this.send(INS.VALIDATE, p1, p2, [opts, C]);
 		}
 
@@ -797,6 +1092,9 @@ export class LedgerDevice<T> implements HWDevice {
 			[0x00, hashes[0], hashes[2]],
 			[32],
 		);
+
+		ledgerLog("mlsag_prehash", { prehash }, "ret");
+
 		return prehash;
 	}
 	/**
@@ -831,6 +1129,8 @@ export class LedgerDevice<T> implements HWDevice {
 			);
 			return { a, aG };
 		} else {
+			ledgerLog("mlsag_prepare", { H, xx }, "args");
+
 			// a -> alpha -> one time secret key for tx
 			// aG -> alpha.G -> one time public key for tx
 			const [a, aG, aHP, II] = await this.send(
@@ -840,11 +1140,16 @@ export class LedgerDevice<T> implements HWDevice {
 				[0x00, H, xx],
 				[32, 64, 96, 128],
 			);
+
+			ledgerLog("mlsag_prepare", { a, aG, aHP, II }, "ret");
+
 			return { a, aG, aHP, II };
 		}
 	}
 
 	public async mlsag_hash(long_message: KeyV): Promise<Key> {
+		ledgerLog("mlsag_hash", { long_message }, "args");
+
 		// cnt is size_t
 		const cnt = long_message.length;
 		let res: string = "";
@@ -856,11 +1161,14 @@ export class LedgerDevice<T> implements HWDevice {
 				[i === cnt - 1 ? 0x00 : 0x80, long_message[i]],
 				[32],
 			);
+			ledgerLog("mlsag_hash", { res }, `iteration  ${i}`);
 		}
 
 		if (!res) {
 			throw Error("Return value of last exchange is empty string");
 		}
+
+		ledgerLog("mlsag_hash", { res }, `ret`);
 
 		return res;
 	}
@@ -873,6 +1181,19 @@ export class LedgerDevice<T> implements HWDevice {
 		dsRows: number,
 		ss: KeyV,
 	): Promise<KeyV> {
+		ledgerLog(
+			"mlsag_sign",
+			{
+				c,
+				xx,
+				alpha,
+				rows,
+				dsRows,
+				ss,
+			},
+			`args`,
+		);
+
 		if (dsRows >= rows) {
 			throw Error("dsRows greater than rows");
 		}
@@ -885,12 +1206,22 @@ export class LedgerDevice<T> implements HWDevice {
 
 		for (let j = 0; j < dsRows; j++) {
 			// ss[j]
-			[ss[j]] = await this.send(
+			const [res] = await this.send(
 				INS.MLSAG,
 				0x03,
 				j + 1,
 				[j === dsRows - 1 ? 0x80 : 0x00, xx[j], alpha[j]],
 				[32],
+			);
+			ss[j] = res;
+
+			ledgerLog(
+				"mlsag_sign",
+				{
+					"ss[j]": ss[j],
+					ss,
+				},
+				`iteration ${j}`,
 			);
 		}
 
@@ -898,12 +1229,20 @@ export class LedgerDevice<T> implements HWDevice {
 			// sc_mulsub(const unsigned char *a, const unsigned char *b, const unsigned char *c)  -> unsigned char *s
 			// c - a.b mod l
 			ss[j] = crypto.primitive_ops.sc_mulsub(c, xx[j], alpha[j]);
+			ledgerLog(
+				"mlsag_sign",
+				{ "ss[j]": ss[j], ss },
+				`sc_mulsub  j:${j}`,
+			);
 		}
 
+		ledgerLog("mlsag_sign", { ss }, "ret");
 		return ss;
 	}
 
 	public async close_tx(): Promise<boolean> {
+		ledgerLog("close_tx", { command: "close_tx" });
+
 		await this.send(INS.CLOSE_TX, 0x00, 0x00, [0x00]);
 		return true;
 	}
@@ -1009,13 +1348,48 @@ export class LedgerDevice<T> implements HWDevice {
 		data?: ArrLike | undefined,
 		endingIndicesToSliceAt?: number[],
 	) {
-		const parsedData = data ? this.arrLikeToBuf(data) : undefined;
+		const serializedData = data ? this.arrLikeToBuf(data) : undefined;
 
-		const buf = await this.transport.send(0x00, ins, p1, p2, parsedData);
+		ledgerLog(
+			"send",
+			{
+				ins,
+				p1,
+				p2,
+				data,
+				serializedData,
+				serializedDataHex: serializedData
+					? serializedData.toString("hex")
+					: undefined,
+				endingIndicesToSliceAt,
+			},
+			"before_send_to_ledger",
+		);
+
+		const buf = await this.transport.send(
+			0x00,
+			ins,
+			p1,
+			p2,
+			serializedData,
+		);
+
 		if (!endingIndicesToSliceAt) {
 			return;
 		} else {
-			return this.bufferToSlicedHexString(buf, endingIndicesToSliceAt);
+			ledgerLog(
+				"send",
+				{ buf, bufHex: buf.toString("hex") },
+				"returned buffer",
+			);
+
+			const res = this.bufferToSlicedHexString(
+				buf,
+				endingIndicesToSliceAt,
+			);
+
+			ledgerLog("send", { res }, "ret");
+			return res;
 		}
 	}
 

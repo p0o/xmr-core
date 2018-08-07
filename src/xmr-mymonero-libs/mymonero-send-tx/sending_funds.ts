@@ -53,6 +53,7 @@ import { HWDevice } from "xmr-device/types";
 import { selectOutputsAndAmountForMixin } from "./internal_libs/output_selection";
 import { isRealDevice, getAddressString } from "xmr-device/utils";
 import { DefaultDevice } from "xmr-device";
+import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,
@@ -172,6 +173,23 @@ export async function sendFunds(
 	outputAndAmountSelector = selectOutputsAndAmountForMixin,
 	api = MyMoneroApi,
 ): Promise<SendFundsRet> {
+	JSONPrettyPrint(
+		"sendFunds",
+		{
+			targetAddress,
+			nettype,
+			amountOrZeroWhenSweep,
+			isSweeping,
+			senderAddress,
+			senderPrivateKeys,
+			senderPublicKeys,
+			pidToParse,
+			mixin,
+			simplePriority,
+		},
+		"args",
+	);
+
 	const isRingCT = true;
 
 	if (mixin < minMixin()) {
@@ -287,6 +305,7 @@ export async function sendFunds(
 			},
 			outputAndAmountSelector,
 		);
+
 		networkFee = newFee; // reassign network fee to the new fee returned
 
 		const { txFee, txHash, success } = await createTxAndAttemptToSend({
