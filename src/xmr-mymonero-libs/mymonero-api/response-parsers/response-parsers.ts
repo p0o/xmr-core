@@ -54,6 +54,8 @@ import {
 	NormalizedTransaction,
 } from "./types";
 import { HWDevice } from "xmr-device/types";
+import { JSONPrettyPrint } from "../../../../__test__/utils/formatters";
+import { Output } from "xmr-types";
 
 export async function parseAddressInfo(
 	address: string,
@@ -209,37 +211,39 @@ export async function parseUnspentOutputs(
 	hwdev: HWDevice,
 	keyImageCache: KeyImageCache = getKeyImageCache(address),
 ) {
+	JSONPrettyPrint(
+		"parseUnspentOutputs",
+		{
+			address,
+			data,
+			privViewKey,
+			pubSpendKey,
+			privSpendKey,
+			keyImageCache,
+		},
+		"args",
+	);
 	const { outputs, per_kb_fee } = data;
+	const nonNullOutputs = outputs || [];
 
 	if (!per_kb_fee) {
 		throw Error("Unexpected / missing per_kb_fee");
 	}
 
-	const unspentOuts = outputs || [];
+	const unspentOutputs = await nonNullOutputs.reduce(
+		async (unspent, currOutput, i) => {
+			const resolvedUnspent = await unspent;
 
-	for (let i = 0; i < unspentOuts.length; i++) {
-		const unspentOut = unspentOuts[i];
-		validateUnspentOutput(unspentOut, i);
+			validateUnspentOutput(currOutput, i);
+			validTxPubKey(currOutput);
 
-		const { spend_key_images } = unspentOut;
-		validateSpendKeyImages(spend_key_images, i);
+			const { spend_key_images, tx_pub_key, index } = currOutput;
+			validateSpendKeyImages(spend_key_images, i);
 
-		for (let j = 0; j < spend_key_images.length; j++) {
-			const beforeSplice = unspentOuts[i];
-
-			if (!validUnspentOutput(beforeSplice, i)) {
-				// NOTE: Looks like the i-- code below should exit earlier if this is necessary
-				continue;
-			}
-
-			if (!validTxPubKey(beforeSplice)) {
-				continue;
-			}
-
-			const keyImage = await genKeyImageFromTx(
+			const computedKeyImage = await genKeyImageFromTx(
 				keyImageCache,
-				beforeSplice.tx_pub_key,
-				beforeSplice.index,
+				tx_pub_key,
+				index,
 				address,
 				privViewKey,
 				pubSpendKey,
@@ -247,33 +251,36 @@ export async function parseUnspentOutputs(
 				hwdev,
 			);
 
-			if (keyImage === beforeSplice.spend_key_images[j]) {
-				// Remove output from list
-				unspentOuts.splice(i, 1);
-
-				const afterSplice = unspentOuts[i];
-
-				// skip rest of spend_key_images
-				if (afterSplice) {
-					j = afterSplice.spend_key_images.length;
+			for (const spend_key_image of spend_key_images) {
+				if (spend_key_image === computedKeyImage) {
+					return resolvedUnspent;
+				} else {
+					console.log(
+						`💬  Output used as mixin (${computedKeyImage} / ${spend_key_image})`,
+					);
 				}
-
-				i--;
-			} else {
-				console.log(
-					`💬  Output used as mixin (${keyImage} / ${
-						unspentOuts[i].spend_key_images[j]
-					})`,
-				);
 			}
-		}
-	}
 
-	console.log("Unspent outs: " + JSON.stringify(unspentOuts));
+			return [...resolvedUnspent, currOutput];
+		},
+		Promise.resolve([]) as Promise<Output[]>,
+	);
+
+	console.log("Unspent outs: " + JSON.stringify(unspentOutputs));
+
+	JSONPrettyPrint(
+		"parseUnspentOutputs",
+		{
+			unspentOutputs,
+			unusedOuts: [...unspentOutputs],
+			per_kb_fee: new BigInt(per_kb_fee),
+		},
+		"ret",
+	);
 
 	return {
-		unspentOuts,
-		unusedOuts: [...unspentOuts],
+		unspentOutputs,
+		unusedOuts: [...unspentOutputs],
 		per_kb_fee: new BigInt(per_kb_fee),
 	};
 }
