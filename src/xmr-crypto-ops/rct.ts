@@ -71,17 +71,16 @@ export async function generate_key_image_helper(
 				),
 		  )
 		: I; //decode mask, or d2s(1) if no mask
-	const ephemeral_pub = await hwdev.derive_public_key(
-		recv_derivation,
-		out_index,
-		keys.spend.pub,
-	);
-	if (!ephemeral_pub) throw Error("Failed to generate key image");
+
 	const ephemeral_sec = await hwdev.derive_secret_key(
 		recv_derivation,
 		out_index,
 		keys.spend.sec,
 	);
+
+	const ephemeral_pub = await hwdev.secret_key_to_public_key(ephemeral_sec);
+	if (!ephemeral_pub) throw Error("Failed to generate key image");
+
 	const key_image = await hwdev.generate_key_image(
 		ephemeral_pub,
 		ephemeral_sec,
