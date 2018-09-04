@@ -21,6 +21,7 @@ import { get_pre_mlsag_hash } from "./utils";
 import { verBulletProof } from "./components/bullet_proofs";
 import { HWDevice, CtKeyV } from "xmr-device/types";
 import { DefaultDevice } from "xmr-device/device-default";
+import { JSONPrettyPrint } from "../../../../__test__/utils/formatters";
 
 const RCTTypeFull = 1;
 const RCTTypeSimple = 2;
@@ -50,6 +51,22 @@ export async function genRct(
 	txnFee: string,
 	hwdev: HWDevice,
 ) {
+	JSONPrettyPrint(
+		"genRct",
+		{
+			message,
+			inSk,
+			kimgs,
+			destinations,
+			inAmounts,
+			outAmounts,
+			mixRing,
+			amountKeys,
+			indices,
+			txnFee,
+		},
+		"args",
+	);
 	if (outAmounts.length !== amountKeys.length) {
 		throw Error("different number of amounts/amount_keys");
 	}
@@ -144,6 +161,17 @@ export async function genRct(
 
 		sumC = ge_add(sumC, txnfeeKey);
 		const pre_mlsag_hash = await get_pre_mlsag_hash(rv, mixRing, hwdev);
+
+		JSONPrettyPrint(
+			"genRct",
+			{
+				txnfeeKey,
+				sumC,
+				pre_mlsag_hash,
+			},
+			"RCTTypeFull, pre rv.p.MGs.push",
+		);
+
 		rv.p.MGs.push(
 			await proveRctMG(
 				pre_mlsag_hash,
@@ -157,6 +185,15 @@ export async function genRct(
 			),
 		);
 	}
+
+	JSONPrettyPrint(
+		"genRct",
+		{
+			rv,
+		},
+		"ret",
+	);
+
 	return rv;
 }
 const defaultHwDev = new DefaultDevice();

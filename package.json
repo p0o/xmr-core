@@ -34,6 +34,7 @@
   "homepage": "https://github.com/mymonero/mymonero-core-js#readme",
   "dependencies": {
     "@ledgerhq/hw-transport-node-hid": "^4.22.0",
+    "axios": "^0.18.0",
     "keccakjs": "^0.2.1",
     "moment": "^2.22.2",
     "node-hid": "^0.7.3",
@@ -60,7 +61,9 @@
         "skipBabel": true
       }
     },
-    "modulePathIgnorePatterns": ["dist"],
+    "modulePathIgnorePatterns": [
+      "dist"
+    ],
     "transform": {
       "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },

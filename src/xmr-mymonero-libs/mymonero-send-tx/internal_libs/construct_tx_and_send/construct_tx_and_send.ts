@@ -13,6 +13,7 @@ import {
 	CreateTxAndAttemptToSendParams,
 	GetFundTargetsAndFeeParams,
 } from "./types";
+import { JSONPrettyPrint } from "../../../../../__test__/utils/formatters";
 
 /**
  *
@@ -41,6 +42,7 @@ export async function getRestOfTxData(
 	params: GetFundTargetsAndFeeParams,
 	outputAndAmountSelector: typeof selectOutputsAndAmountForMixin,
 ) {
+	JSONPrettyPrint("getRestOfTxData", params, "args");
 	const {
 		senderAddress,
 
@@ -130,8 +132,20 @@ export async function getRestOfTxData(
 			mixin,
 		);
 
+		JSONPrettyPrint(
+			"getRestOfTxData",
+			{ mixOuts, fundTargets, newFee, usingOuts },
+			"ret with mixin > 0",
+		);
+
 		return { mixOuts, fundTargets, newFee, usingOuts };
 	}
+
+	JSONPrettyPrint(
+		"getRestOfTxData",
+		{ fundTargets, newFee, usingOuts },
+		"ret with mixin = 0",
+	);
 
 	// mixin === 0: -- PSNOTE: is that even allowed?
 	return { mixOuts: undefined, fundTargets, newFee, usingOuts };
@@ -187,6 +201,15 @@ export async function createTxAndAttemptToSend(
 	Log.Fee.successfulTx(networkFee);
 	updateStatus(sendFundStatus.submittingTransaction);
 
+	JSONPrettyPrint(
+		"createTxAndAttemptToSend",
+		{
+			senderAddress,
+			viewKey: senderPrivateKeys.view,
+			serializedSignedTx,
+		},
+		"pre submitSerializedSignedTransaction",
+	);
 	await api.submitSerializedSignedTransaction(
 		senderAddress,
 		senderPrivateKeys.view,
