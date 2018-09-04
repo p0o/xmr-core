@@ -1,5 +1,5 @@
 import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
-import { LedgerDevice } from "xmr-device";
+import { LedgerDevice } from "xmr-device/device-ledger";
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
 import { pubkeys_to_string } from "xmr-key-utils";
 import { NetType } from "xmr-types";

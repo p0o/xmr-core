@@ -1357,7 +1357,6 @@ export class LedgerDevice<T> implements HWDevice {
 				p1,
 				p2,
 				data,
-				serializedData,
 				serializedDataHex: serializedData
 					? serializedData.toString("hex")
 					: undefined,
@@ -1379,8 +1378,8 @@ export class LedgerDevice<T> implements HWDevice {
 		} else {
 			ledgerLog(
 				"send",
-				{ buf, bufHex: buf.toString("hex") },
-				"returned buffer",
+				{ bufHex: buf.toString("hex") },
+				"returned buffer converted to hex string",
 			);
 
 			const res = this.bufferToSlicedHexString(

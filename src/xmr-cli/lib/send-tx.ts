@@ -8,12 +8,11 @@ import { LedgerDevice } from "xmr-device";
 import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
 import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
 import { pubkeys_to_string } from "xmr-key-utils";
-import { DeviceMode } from "xmr-device/types";
 
 export async function send(address: string, amount: number, pid: Pid) {
 	const transport = await TransportNodeHid.create();
 	const dev = new LedgerDevice(transport);
-	await dev.set_mode(DeviceMode.TRANSACTION_CREATE_REAL);
+
 	const {
 		spend_public_key,
 		view_public_key,

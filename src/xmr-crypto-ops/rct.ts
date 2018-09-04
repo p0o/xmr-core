@@ -9,6 +9,8 @@ import { valid_hex } from "xmr-str-utils/hex-strings";
 import { hash_to_scalar } from "./hash_ops";
 import { Commit, Keys } from "xmr-types";
 import { HWDevice } from "xmr-device/types";
+import { derivation_to_scalar, generate_key_derivation } from "./derivation";
+import { LedgerDevice } from "xmr-device";
 
 //creates a Pedersen commitment from an amount (in scalar form) and a mask
 //C = bG + aH where b = mask, a = amount
@@ -59,18 +61,24 @@ export async function generate_key_image_helper(
 		keys.view.sec,
 	);
 	if (!recv_derivation) throw Error("Failed to generate key image");
+	const maskFunc = (derivation: string) =>
+		enc_mask
+			? sc_sub(
+					enc_mask,
+					hash_to_scalar(derivation_to_scalar(derivation, out_index)),
+			  )
+			: I; //decode mask, or d2s(1) if no mask
+
+	let mask: string = "";
 	// wallet2::light_wallet_parse_rct_str
-	const mask = enc_mask
-		? sc_sub(
-				enc_mask,
-				hash_to_scalar(
-					await hwdev.derivation_to_scalar(
-						recv_derivation,
-						out_index,
-					),
-				),
-		  )
-		: I; //decode mask, or d2s(1) if no mask
+
+	if (hwdev instanceof LedgerDevice) {
+		const privViewKey = await hwdev.export_private_view_key();
+		const derivation = generate_key_derivation(tx_pub_key, privViewKey);
+		mask = maskFunc(derivation);
+	} else {
+		mask = maskFunc(recv_derivation);
+	}
 
 	const ephemeral_sec = await hwdev.derive_secret_key(
 		recv_derivation,
