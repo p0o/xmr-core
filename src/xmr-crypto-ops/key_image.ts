@@ -29,16 +29,14 @@ export async function derive_key_image_from_tx(
 		view_sec,
 	);
 
-	const ephemeral_pub = await hwdev.derive_public_key(
-		recv_derivation,
-		output_index,
-		spend_pub,
-	);
 	const ephemeral_sec = await hwdev.derive_secret_key(
 		recv_derivation,
 		output_index,
 		spend_sec,
 	);
+
+	const ephemeral_pub = await hwdev.secret_key_to_public_key(ephemeral_sec);
+
 	const key_image = await hwdev.generate_key_image(
 		ephemeral_pub,
 		ephemeral_sec,
