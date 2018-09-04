@@ -22,6 +22,8 @@ import { create_address } from "xmr-address-utils";
 import { random_scalar } from "xmr-rand";
 import { config } from "xmr-constants/coin-config";
 import { decompose_tx_destinations } from "xmr-money/parsers";
+import { isRealDevice } from "xmr-device/utils";
+import { JSONPrettyPrint } from "../../../../../__test__/utils/formatters";
 
 // #region totalAmtAndEstFee
 
@@ -297,8 +299,16 @@ export function validateAndConstructFundTargets(
 
 export async function constructTx(params: ConstructTxParams) {
 	const { signedTx } = await makeSignedTx(params);
+	JSONPrettyPrint("constructTx", { signedTx }, "signedTx");
 	const { serializedSignedTx, txHash } = getSerializedTxAndHash(signedTx);
+	JSONPrettyPrint(
+		"constructTx",
+		{ serializedSignedTx, txHash },
+		"serializedTxAndHash",
+	);
+
 	const { numOfKB } = getTxSize(serializedSignedTx, params.networkFee);
+	JSONPrettyPrint("constructTx", { numOfKB }, "numOfKb");
 
 	return { numOfKB, txHash, serializedSignedTx };
 }
@@ -343,7 +353,12 @@ async function makeSignedTx(params: ConstructTxParams) {
 
 		const signedTx = await create_transaction(
 			senderPublicKeys,
-			senderPrivateKeys,
+			{
+				...senderPrivateKeys,
+				view: isRealDevice(hwdev)
+					? (await hwdev.get_secret_keys()).viewKey
+					: senderPrivateKeys.view,
+			},
 			splitDestinations,
 			usingOuts,
 			mixOuts,

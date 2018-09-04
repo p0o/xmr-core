@@ -3,6 +3,7 @@ import { Log } from "./logger";
 import { BigInt } from "biginteger";
 import { config } from "xmr-constants/coin-config";
 import { Output } from "xmr-types";
+import { JSONPrettyPrint } from "../../../../__test__/utils/formatters";
 
 export function selectOutputsAndAmountForMixin(
 	targetAmount: BigInt,
@@ -10,6 +11,17 @@ export function selectOutputsAndAmountForMixin(
 	isRingCT: boolean,
 	sweeping: boolean,
 ) {
+	JSONPrettyPrint(
+		"selectOutputsAndAmountForMixin",
+		{
+			targetAmount,
+			unusedOuts,
+			isRingCT,
+			sweeping,
+		},
+		"args",
+	);
+
 	Log.SelectOutsAndAmtForMix.target(targetAmount);
 
 	let usingOutsAmount = new BigInt(0);
@@ -43,6 +55,17 @@ export function selectOutputsAndAmountForMixin(
 
 		Log.SelectOutsAndAmtForMix.usingOut(outAmount, out);
 	}
+
+	JSONPrettyPrint(
+		"selectOutputsAndAmountForMixin",
+		{
+			usingOuts,
+			usingOutsAmount,
+			remainingUnusedOuts,
+		},
+		"ret",
+	);
+
 	return {
 		usingOuts,
 		usingOutsAmount,

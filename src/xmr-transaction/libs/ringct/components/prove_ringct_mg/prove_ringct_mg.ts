@@ -5,6 +5,7 @@ import { identity } from "xmr-crypto-ops/constants";
 import { MGSig } from "./types";
 import { MLSAG_Gen, MLSAG_ver } from "./mlsag";
 import { CtKeyV, HWDevice } from "xmr-device/types";
+import { JSONPrettyPrint } from "../../../../../../__test__/utils/formatters";
 
 //Ring-ct MG sigs
 //Prove:
@@ -24,6 +25,20 @@ export function proveRctMG(
 	index: number,
 	hwdev: HWDevice,
 ) {
+	JSONPrettyPrint(
+		"proveRctMG",
+		{
+			message,
+			pubs,
+			inSk,
+			kimg,
+			mask,
+			Cout,
+			index,
+		},
+		"args",
+	);
+
 	const cols = pubs.length;
 	if (cols < 3) {
 		throw Error("cols must be > 2 (mixin)");
@@ -38,6 +53,22 @@ export function proveRctMG(
 	}
 
 	const xx = [inSk.x, sc_sub(inSk.a, mask)];
+
+	JSONPrettyPrint(
+		"proveRctMG",
+		{
+			message,
+			pubs,
+			inSk,
+			kimg,
+			mask,
+			Cout,
+			index,
+			PK,
+			xx,
+		},
+		"pre_MLSAG_gen",
+	);
 	return MLSAG_Gen(message, PK, xx, kimg, index, hwdev);
 }
 

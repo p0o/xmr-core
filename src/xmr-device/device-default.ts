@@ -25,6 +25,7 @@ import { encrypt_payment_id } from "xmr-pid";
 import { encode_ecdh, decode_ecdh } from "xmr-crypto-ops/rct";
 import { cn_fast_hash } from "xmr-fast-hash";
 import { sc_mulsub } from "xmr-crypto-ops/primitive_ops";
+import { hash_to_scalar } from "xmr-crypto-ops/hash_ops";
 
 export class DefaultDevice implements HWDevice {
 	private name: string;
@@ -304,7 +305,7 @@ export class DefaultDevice implements HWDevice {
 	}
 
 	public async mlsag_hash(toHash: KeyV): Promise<Key> {
-		return cn_fast_hash(toHash.join(""));
+		return hash_to_scalar(toHash.join(""));
 	}
 
 	public async mlsag_sign(

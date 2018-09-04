@@ -8,6 +8,7 @@ import {
 import { random_scalar } from "xmr-rand";
 import { MGSig } from "./types";
 import { HWDevice } from "xmr-device/types";
+import { JSONPrettyPrint } from "../../../../../../__test__/utils/formatters";
 
 // Gen creates a signature which proves that for some column in the keymatrix "pk"
 //	 the signer knows a secret key for each row in that column
@@ -23,6 +24,18 @@ export async function MLSAG_Gen(
 	index: number,
 	hwdev: HWDevice,
 ) {
+	JSONPrettyPrint(
+		"MLSAG_Gen",
+
+		{
+			message,
+			pk,
+			xx,
+			kimg,
+			index,
+		},
+		"args",
+	);
 	const cols = pk.length; //ring size
 	let i;
 
@@ -75,6 +88,11 @@ export async function MLSAG_Gen(
 
 	c_old = await hwdev.mlsag_hash(toHash);
 
+	JSONPrettyPrint(
+		"MLSAG_Gen",
+		{ alpha, toHash, c_old },
+		"secret index section",
+	);
 	i = (index + 1) % cols;
 	if (i === 0) {
 		rv.cc = c_old;
@@ -108,10 +126,23 @@ export async function MLSAG_Gen(
 		if (i === 0) {
 			rv.cc = c_old;
 		}
+
+		JSONPrettyPrint(
+			"MLSAG_Gen_post_iteration",
+			{ alpha, toHash, c_old },
+			`iteration ${i}`,
+		);
 	}
 
 	await hwdev.mlsag_sign(c_old, xx, alpha, rows, 1, rv.ss[index]);
+	JSONPrettyPrint(
+		"MLSAG_Gen",
 
+		{
+			rv,
+		},
+		"ret",
+	);
 	return rv;
 }
 
