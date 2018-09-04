@@ -29,7 +29,7 @@ import {
 } from "./libs/utils";
 import { generate_ring_signature } from "./libs/non-ringct";
 import { genRct } from "./libs/ringct";
-import { HWDevice } from "xmr-device/types";
+import { HWDevice, DeviceMode } from "xmr-device/types";
 import { JSONPrettyPrint } from "../../__test__/utils/formatters";
 
 const UINT64_MAX = new BigInt(2).pow(64);
@@ -64,7 +64,6 @@ export async function create_transaction(
 	rct: boolean,
 	nettype: NetType,
 	hwdev: HWDevice,
-	construct_tx_func = construct_tx,
 ) {
 	JSONPrettyPrint(
 		"create_transaction",
@@ -237,7 +236,8 @@ export async function create_transaction(
 			formatMoney(needed_money) +
 			")";
 	}
-	return construct_tx_func(
+	await hwdev.set_mode(DeviceMode.TRANSACTION_CREATE_REAL);
+	return construct_tx(
 		keys,
 		sources,
 		dsts,
@@ -264,8 +264,6 @@ export async function construct_tx(
 	rct: boolean,
 	nettype: NetType,
 	hwdev: HWDevice,
-	genRctFunc = genRct,
-	txKeyGen = async () => ({ sec: await hwdev.open_tx(), pub: "" }),
 ) {
 	JSONPrettyPrint(
 		"construct_tx",
@@ -285,7 +283,7 @@ export async function construct_tx(
 	);
 
 	//we move payment ID stuff here, because we need txkey to encrypt
-	const txkey = await txKeyGen();
+	const txkey = { sec: await hwdev.open_tx(), pub: "" };
 
 	let extra = "";
 	if (payment_id) {
@@ -337,34 +335,44 @@ export async function construct_tx(
 
 	//run the for loop twice to sort ins by key image
 	//first generate key image and other construction data to sort it all in one go
-	const sourcesWithKeyImgAndKeys = await Promise.all(
-		sources.map(async (source, idx) => {
-			console.log(idx + ": " + formatMoneyFull(source.amount));
-			if (source.real_output_index >= source.outputs.length) {
-				throw Error("real index >= outputs.length");
-			}
-			const { key_image, in_ephemeral } = await generate_key_image_helper(
-				keys,
-				source.real_output_pub_tx_key,
-				source.real_output_in_tx_index,
-				source.mask,
-				hwdev,
-			); //mask will be undefined for non-rct
 
-			if (
-				in_ephemeral.pub !==
-				source.outputs[source.real_output_index].key
-			) {
-				throw Error("in_ephemeral.pub !== source.real_out.key");
-			}
+	type KeyImgAndKeys = {
+		key_image: string;
+		in_ephemeral: {
+			pub: string;
+			sec: string;
+			mask: string;
+		};
+	};
 
-			return {
-				...source,
-				key_image,
-				in_ephemeral,
-			};
-		}),
-	);
+	const sourcesWithKeyImgAndKeys: (Source & KeyImgAndKeys)[] = [];
+
+	let _i = 0;
+	for (const source of sources) {
+		console.log(_i + ": " + formatMoneyFull(source.amount));
+		if (source.real_output_index >= source.outputs.length) {
+			throw Error("real index >= outputs.length");
+		}
+		const { key_image, in_ephemeral } = await generate_key_image_helper(
+			keys,
+			source.real_output_pub_tx_key,
+			source.real_output_in_tx_index,
+			source.mask,
+			hwdev,
+		); //mask will be undefined for non-rct
+
+		if (in_ephemeral.pub !== source.outputs[source.real_output_index].key) {
+			throw Error("in_ephemeral.pub !== source.real_out.key");
+		}
+
+		const newSrc: Source & KeyImgAndKeys = {
+			...source,
+			key_image,
+			in_ephemeral,
+		};
+		sourcesWithKeyImgAndKeys.push(newSrc);
+		_i++;
+	}
 
 	JSONPrettyPrint(
 		"construct_tx",
@@ -586,7 +594,7 @@ export async function construct_tx(
 		);
 
 		const tx_prefix_hash = get_tx_prefix_hash(tx);
-		tx.rct_signatures = await genRctFunc(
+		tx.rct_signatures = await genRct(
 			tx_prefix_hash,
 			inSk,
 			keyimages,
@@ -608,6 +616,8 @@ export async function construct_tx(
 		},
 		"ret",
 	);
+
+	await hwdev.close_tx();
 
 	return tx;
 }
