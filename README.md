@@ -1,9 +1,11 @@
 # xmr-core
 
-### Contributing
+Forked from mymonero/mymonero-core-js, this library provides a few significant changes compared to its origin:
 
-1. QA
-2. Pull Requests
+-   Full typescript support
+-   Hardware wallet (Ledeger Nano S) support
+-   Re-written to es6+ standards
+-   Isomorphic, ideal for both server and browser usage
 
 # Info
 
@@ -15,12 +17,14 @@ All source code copyright © 2014-2018 by MyMonero. All rights reserved.
 
 ## What's in This Repo?
 
-This repository holds the Javascript source code for the Monero/CryptoNote cryptography and protocols, plus lightwallet functions which power the official [MyMonero](https://www.mymonero.com) apps.
+This mono-repository contains various packages for Monero/CryptoNote cryptography and protocols.
+Below you'll find each package and its purpose.
 
-### Contents
+## Features
 
 -   `xmr-address-utils` Utilities for working with Monero addresses
 -   `xmr-b58` xmr-b58 contains functions to encode and decode base58 strings for monero operations
+-   `xmr-cli` xmr-cli contains basic user operations that use the mono-repo packages for its functionality
 -   `xmr-constants` xmr-constants contains constant declarations for working with Monero, such as address prefixes, blocktimes, and decimal places
 -   `xmr-crypto-ops` Core crypto operations for Monero
 -   `xmr-device` Implementations and interfaces of various hardware devices for creating Monero transactions securely
@@ -37,6 +41,10 @@ This repository holds the Javascript source code for the Monero/CryptoNote crypt
 -   `xmr-types` A pure types library that contains shared interfaces and types for the xmr-core mono-repo
 -   `xmr-varint` Create varints from numbers and strings for usage in Monero's data structures
 -   `xmr-vendor` A container library that holds external dependencies that have been modified for usage in Monero transaction creation / validation
+
+## Usage
+
+The most common use case would be under the domain of a wallet service implementing xmr support. To see basic examples on how this would be done, take a look at the `xmr-cli` package to do basic operations such as sending currency and checking a users balance.
 
 # Contributing
 
