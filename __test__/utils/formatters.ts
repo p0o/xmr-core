@@ -15,6 +15,8 @@ export function JSONPretty(obj: any) {
 }
 
 export function JSONPrettyPrint(name: string, obj: any, extra?: string) {
-	console.log(`[${name}] ${extra || ""}
-${JSON.stringify(obj, pretty, 1)}`);
+	if (process.env.NODE_ENV === "test" && process.env.DEBUG) {
+		console.log(`[${name}] ${extra || ""}
+		${JSON.stringify(obj, pretty, 1)}`);
+	}
 }
