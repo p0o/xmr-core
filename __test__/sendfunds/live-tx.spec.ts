@@ -1,4 +1,4 @@
-import { failingTxLedger, passingTxRaw } from "./fixtures/live-tx";
+import { failingTxLedger, passingTxRaw } from "../fixtures/live-tx";
 import { verRct } from "xmr-transaction/libs/ringct";
 
 describe("tx tests", () => {
