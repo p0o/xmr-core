@@ -17,6 +17,8 @@ export function isKeyImageEqual({ key_image }: SpentOutput, keyImage: string) {
 //#region addressInfo
 
 export function normalizeAddressInfo(data: AddressInfo): Required<AddressInfo> {
+	data.spent_outputs = data.spent_outputs || [];
+
 	const defaultObj: Required<AddressInfo> = {
 		total_sent: "0",
 		total_received: "0",
@@ -41,6 +43,8 @@ export function normalizeAddressInfo(data: AddressInfo): Required<AddressInfo> {
 export function normalizeAddressTransactions(
 	data: AddressTransactions,
 ): Required<AddressTransactions> {
+	data.transactions = data.transactions || [];
+
 	const defaultObj: Required<AddressTransactions> = {
 		scanned_height: 0,
 		scanned_block_height: 0,
@@ -56,6 +60,8 @@ export function normalizeAddressTransactions(
 export function normalizeTransaction(
 	tx: AddressTransactionsTx,
 ): NormalizedTransaction {
+	tx.spent_outputs = tx.spent_outputs || [];
+
 	const defaultObj: Omit<NormalizedTransaction, "timestamp"> = {
 		amount: new BigInt(0),
 		approx_float_amount: 0,
