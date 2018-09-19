@@ -1,4 +1,4 @@
-import { Omit } from "types";
+import { Omit } from "xmr-types";
 import { BigInt } from "biginteger";
 import { Output } from "xmr-types";
 

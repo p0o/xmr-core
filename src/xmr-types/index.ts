@@ -1,6 +1,8 @@
 import { BigInt } from "biginteger";
 import { RCTSignatures } from "xmr-transaction/libs/ringct";
 
+export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+
 export interface Commit {
 	mask: string;
 	amount: string;

@@ -5,7 +5,7 @@ import {
 	SpentOutput,
 	AddressInfo,
 } from "./types";
-import { Omit } from "types";
+import { Omit } from "xmr-types";
 import { BigInt } from "biginteger";
 import { formatMoney } from "xmr-money/formatters";
 import { Output } from "xmr-types";

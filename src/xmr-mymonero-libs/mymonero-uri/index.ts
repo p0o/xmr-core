@@ -2,7 +2,7 @@ import { config } from "xmr-constants/coin-config";
 import { NetType } from "xmr-types";
 import { possibleOAAddress } from "../mymonero-send-tx/internal_libs/open_alias_lite";
 import { decode_address } from "xmr-address-utils";
-import { Omit } from "types";
+import { Omit } from "xmr-types";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //
