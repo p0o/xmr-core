@@ -44,7 +44,6 @@ import {
 	normalizeAddressInfo,
 	validateUnspentOutput,
 	validateSpendKeyImages,
-	validUnspentOutput,
 	validTxPubKey,
 } from "./utils";
 import {

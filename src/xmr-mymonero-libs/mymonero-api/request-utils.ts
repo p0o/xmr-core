@@ -26,7 +26,7 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import packagejson from "../../../package.json";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 
 export function withUserAgentParams<T>(params: T) {
 	// setting these on params instead of as header field User-Agent so as to retain all info found in User-Agent
