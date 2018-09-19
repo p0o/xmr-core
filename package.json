@@ -1,11 +1,11 @@
 {
-  "name": "mymonero-core-js",
+  "private": true,
+  "name": "xmr-core",
   "version": "0.9.0",
-  "description": "The JS library containing the Monero crypto plus lightweight wallet functions behind the official MyMonero apps",
-  "main": "index.js",
+  "description": "Various packages for Monero/CryptoNote cryptography and protocols",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mymonero/mymonero-core-js.git"
+    "url": "git+https://github.com/MyCryptoHQ/xmr-core.git"
   },
   "scripts": {
     "build": "tsc",
@@ -16,22 +16,23 @@
   "keywords": [
     "monero",
     "mymonero",
-    "javascript",
-    "js",
+    "typescript",
+    "ts",
     "lightweight",
     "lightwallet",
     "wallet",
     "crypto",
     "script",
     "utility",
-    "tool"
+    "tool",
+    "xmr"
   ],
   "author": "MyMonero",
   "license": "See LICENSE.TXT. Copyright (c) 2014-2018, MyMonero.com. All rights reserved.",
   "bugs": {
-    "url": "https://github.com/mymonero/mymonero-core-js/issues"
+    "url": "https://github.com/MyCryptoHQ/xmr-core/issues"
   },
-  "homepage": "https://github.com/mymonero/mymonero-core-js#readme",
+  "homepage": "https://github.com/MyCryptoHQ/xmr-core#readme",
   "dependencies": {
     "@ledgerhq/hw-transport-node-hid": "^4.22.0",
     "axios": "^0.18.0",
