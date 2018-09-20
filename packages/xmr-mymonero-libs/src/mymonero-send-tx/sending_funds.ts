@@ -1,32 +1,3 @@
-// Copyright (c) 2014-2018, MyMonero.com
-//
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without modification, are
-// permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice, this list of
-//	conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice, this list
-//	of conditions and the following disclaimer in the documentation and/or other
-//	materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its contributors may be
-//	used to endorse or promote products derived from this software without specific
-//	prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-// THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-
 import {
 	calculateFee,
 	multiplyFeePriority,
@@ -47,13 +18,17 @@ import {
 import { BigInt } from "@xmr-core/biginteger";
 import { estimateRctSize } from "@xmr-core/xmr-transaction";
 import { formatMoneyFull } from "@xmr-core/xmr-money";
-import { NetType, RawTarget, Pid, ViewSendKeys } from "@xmr-core/xmr-types";
-import { MyMoneroApi } from "@xmr-core/xmr-mymonero-libs";
-import { HWDevice } from "@xmr-core/xmr-device";
+import { RawTarget, Pid, ViewSendKeys } from "@xmr-core/xmr-transaction";
+import { MyMoneroApi } from "../";
 import { selectOutputsAndAmountForMixin } from "./internal_libs/output_selection";
-import { isRealDevice, getAddressString } from "@xmr-core/xmr-device";
-import { DefaultDevice } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
+import {
+	isRealDevice,
+	getAddressString,
+	DefaultDevice,
+	NetType,
+	HWDevice,
+} from "@xmr-core/xmr-crypto-utils";
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
 
 export function estimatedTransactionNetworkFee(
 	nonZeroMixin: number,

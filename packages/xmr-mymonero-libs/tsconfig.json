@@ -5,19 +5,16 @@
 		"module": "commonjs",
 		"resolveJsonModule": true,
 		"outDir": "lib",
-		"rootDir": "src"
+		"rootDir": "src",
+		"lib": ["dom", "es2017"]
 	},
+
 	"references": [
 		{ "path": "../xmr-constants" },
-		{ "path": "../xmr-device" },
-		{ "path": "../xmr-types" },
-		{ "path": "../xmr-keyimg-memoized" },
-		{ "path": "../xmr-money" },
-		{ "path": "../xmr-mymonero-libs" },
+		{ "path": "../xmr-crypto-utils" },
 		{ "path": "../xmr-transaction" },
-		{ "path": "../xmr-address-utils" },
-		{ "path": "../xmr-pid" },
-		{ "path": "../xmr-rand" },
+		{ "path": "../xmr-money" },
+		{ "path": "../xmr-transaction" },
 		{ "path": "../xmr-fast-hash" }
 	]
 }

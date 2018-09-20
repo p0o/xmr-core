@@ -1,4 +1,4 @@
-import { ll } from "./nacl-fast-cn";
+import { ll } from "../../vendor/nacl-fast-cn";
 
 const {
 	ge_add,

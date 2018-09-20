@@ -1,3 +1,3 @@
-import CNCrypto = require("./cryptonote_crypto_EMSCRIPTEN");
+import CNCrypto = require("../../vendor/cryptonote_crypto_EMSCRIPTEN");
 
 export = CNCrypto;

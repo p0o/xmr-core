@@ -1,7 +1,6 @@
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
-import { LedgerDevice } from "@xmr-core/xmr-device";
-import { pubkeys_to_string } from "@xmr-core/xmr-key-utils";
-import { NetType } from "@xmr-core/xmr-types";
+import { LedgerDevice } from "@xmr-core/xmr-crypto-utils";
+import { pubkeys_to_string, NetType } from "@xmr-core/xmr-crypto-utils";
 import { MyMoneroApi } from "@xmr-core/xmr-mymonero-libs";
 import { formatMoneyWithSymbol } from "@xmr-core/xmr-money";
 

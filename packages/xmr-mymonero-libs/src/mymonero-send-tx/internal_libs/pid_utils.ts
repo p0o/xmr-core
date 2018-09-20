@@ -1,7 +1,10 @@
-import { isValidOrNoPaymentID } from "@xmr-core/xmr-pid";
 import { ERR } from "./errors";
-import { decode_address, is_subaddress } from "@xmr-core/xmr-address-utils";
-import { NetType } from "@xmr-core/xmr-types";
+import {
+	decode_address,
+	is_subaddress,
+	isValidOrNoPaymentID,
+	NetType,
+} from "@xmr-core/xmr-crypto-utils";
 
 /**
  *

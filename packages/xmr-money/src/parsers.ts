@@ -1,6 +1,6 @@
-import { config } from "@xmr-core/xmr-constants/coin-config";
+import { config } from "@xmr-core/xmr-constants";
 import { BigInt } from "@xmr-core/biginteger";
-import { ParsedTarget } from "@xmr-core/xmr-types";
+import { ParsedTarget } from "./types";
 
 /**
  *

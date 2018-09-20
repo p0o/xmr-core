@@ -1,4 +1,4 @@
-import { SignedTransaction } from "@xmr-core/xmr-types";
+import { SignedTransaction } from "../types";
 import { encode_varint } from "@xmr-core/xmr-varint";
 import { cn_fast_hash } from "@xmr-core/xmr-fast-hash";
 import { valid_hex } from "@xmr-core/xmr-str-utils";

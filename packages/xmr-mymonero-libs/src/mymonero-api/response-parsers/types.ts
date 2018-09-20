@@ -1,5 +1,6 @@
-import { Omit, Output } from "@xmr-core/xmr-types";
 import { BigInt } from "@xmr-core/biginteger";
+import { Omit } from "../../types";
+import { Output } from "@xmr-core/xmr-transaction";
 
 export interface SpentOutput {
 	amount: string;

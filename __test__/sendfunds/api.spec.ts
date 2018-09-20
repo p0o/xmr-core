@@ -1,6 +1,6 @@
 import { MockApi } from "./mockApi";
-import { DefaultDevice } from "@xmr-core/xmr-device";
-import { JSONPretty } from "../utils/formatters";
+import { DefaultDevice } from "@xmr-core/xmr-crypto-utils";
+import { JSONPretty } from "@xmr-core/xmr-str-utils";
 
 describe("mock api smoke test", () => {
 	it("unspentOutputs", async () => {

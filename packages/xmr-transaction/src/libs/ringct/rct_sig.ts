@@ -5,27 +5,28 @@ import {
 	verRctMGSimple,
 } from "./components/prove_ringct_mg";
 import { RCTSignatures } from "./types";
-import { SecretCommitment, RingMember } from "@xmr-core/xmr-types";
+import { SecretCommitment, RingMember } from "../../types";
 import { BigInt } from "@xmr-core/biginteger";
 import {
-	Z,
-	I,
-	H,
-	identity,
+	random_scalar,
+	constants,
+	primitive_ops,
+	rctOps,
+} from "@xmr-core/xmr-crypto-utils";
+import { d2s, JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
+import { get_pre_mlsag_hash } from "./utils";
+import { verBulletProof } from "./components/bullet_proofs";
+import { HWDevice, CtKeyV } from "@xmr-core/xmr-crypto-utils";
+import { DefaultDevice } from "@xmr-core/xmr-crypto-utils";
+
+const {
 	sc_add,
 	sc_sub,
 	ge_add,
 	ge_double_scalarmult_base_vartime,
-	commit,
-	scalarmultH,
-} from "@xmr-core/xmr-crypto-ops";
-import { d2s } from "@xmr-core/xmr-str-utils;
-import { random_scalar } from "@xmr-core/xmr-rand";
-import { get_pre_mlsag_hash } from "./utils";
-import { verBulletProof } from "./components/bullet_proofs";
-import { HWDevice, CtKeyV } from "@xmr-core/xmr-device";
-import { DefaultDevice } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../../__test__/utils/formatters";
+} = primitive_ops;
+const { commit, scalarmultH } = rctOps;
+const { I, Z, identity, H } = constants;
 
 const RCTTypeFull = 1;
 const RCTTypeSimple = 2;

@@ -13,7 +13,7 @@ A container library that holds external dependencies that have been modified for
 
 ---
 
-The @xmr-core/xmr-crypto package wraps all the functionality provided by this library into easier to use functions.
+The @xmr-core/xmr-crypto-utils package wraps all the functionality provided by this library into easier to use functions.
 
 ## Installation
 

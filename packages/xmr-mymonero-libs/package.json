@@ -35,15 +35,9 @@
 		"axios": "^0.18.0",
 		"@xmr-core/biginteger": "^1.0.0",
 		"@xmr-core/xmr-constants": "^1.0.0",
-		"@xmr-core/xmr-device": "^1.0.0",
-		"@xmr-core/xmr-types": "^1.0.0",
-		"@xmr-core/xmr-keyimg-memoized": "^1.0.0",
-		"@xmr-core/xmr-money": "^1.0.0",
-		"@xmr-core/xmr-mymonero-libs": "^1.0.0",
+		"@xmr-core/xmr-crypto-utils": "^1.0.0",
 		"@xmr-core/xmr-transaction": "^1.0.0",
-		"@xmr-core/xmr-address-utils": "^1.0.0",
-		"@xmr-core/xmr-pid": "^1.0.0",
-		"@xmr-core/xmr-rand": "^1.0.0",
+		"@xmr-core/xmr-money": "^1.0.0",
 		"@xmr-core/xmr-fast-hash": "^1.0.0"
 	},
 	"devDependencies": {

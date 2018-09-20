@@ -3,7 +3,7 @@ import { serializeTxHeader } from "../utils";
 import { cn_fast_hash } from "@xmr-core/xmr-fast-hash";
 import { serialize_range_proofs } from "./components/prove_range";
 import { RCTSignatures } from "./types";
-import { SignedTransaction } from "@xmr-core/xmr-types";
+import { SignedTransaction } from "../../types";
 
 export function serialize_rct_tx_with_hash(tx: SignedTransaction) {
 	if (!tx.rct_signatures) {

@@ -1,7 +1,7 @@
-import { trimRight, padLeft } from "@xmr-core/xmr-str-utils/std-strings";
+import { trimRight, padLeft } from "@xmr-core/xmr-str-utils";
 import { BigInt } from "@xmr-core/biginteger";
-import { config } from "@xmr-core/xmr-constants/coin-config";
-import { ParsedTarget } from "@xmr-core/xmr-types";
+import { config } from "@xmr-core/xmr-constants";
+import { ParsedTarget } from "./types";
 
 export function formatMoneyFull(units: BigInt | string) {
 	let strUnits = units.toString();

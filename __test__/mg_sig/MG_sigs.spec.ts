@@ -1,15 +1,14 @@
-import { skGen } from "@xmr-core/xmr-key-utils";
+import { skGen, DefaultDevice } from "@xmr-core/xmr-crypto-utils";
 import {
 	ge_scalarmult_base,
 	ge_scalarmult,
-} from "@xmr-core/xmr-crypto-ops/primitive_ops";
-import { identity } from "@xmr-core/xmr-crypto-ops/constants";
-import { hashToPoint } from "@xmr-core/xmr-crypto-ops/hash_ops";
+} from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/primitive_ops";
+import { identity } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/constants";
+import { hashToPoint } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/hash_ops";
 import {
 	MLSAG_Gen,
 	MLSAG_ver,
-} from "@xmr-core/xmr-transaction/libs/ringct/components/prove_ringct_mg";
-import { DefaultDevice } from "@xmr-core/xmr-device/device-default";
+} from "@xmr-core/xmr-transaction/lib/libs/ringct/components/prove_ringct_mg";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //

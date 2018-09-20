@@ -31,7 +31,7 @@ import {
 	genKeyImageFromTx,
 	KeyImageCache,
 	getKeyImageCache,
-} from "@xmr-core/xmr-keyimg-memoized";
+} from "./memoized-keyimage-generation";
 import {
 	normalizeAddressTransactions,
 	normalizeTransaction,
@@ -52,9 +52,9 @@ import {
 	UnspentOuts,
 	NormalizedTransaction,
 } from "./types";
-import { HWDevice } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../../__test__/utils/formatters";
-import { Output } from "@xmr-core/xmr-types";
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
+import { HWDevice } from "@xmr-core/xmr-crypto-utils";
+import { Output } from "@xmr-core/xmr-transaction";
 
 export async function parseAddressInfo(
 	address: string,

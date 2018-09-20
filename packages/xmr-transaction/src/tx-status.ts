@@ -1,6 +1,5 @@
 import moment from "moment";
 import { config } from "@xmr-core/xmr-constants";
-import { NormalizedTransaction } from "@xmr-core/xmr-mymonero-libs";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //
@@ -31,14 +30,14 @@ import { NormalizedTransaction } from "@xmr-core/xmr-mymonero-libs";
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 export function isTransactionConfirmed(
-	tx: NormalizedTransaction,
+	tx: { height: number },
 	blockchainHeight: number,
 ) {
 	return blockchainHeight - tx.height > config.txMinConfirms;
 }
 
 export function isTransactionUnlocked(
-	{ unlock_time }: NormalizedTransaction,
+	{ unlock_time }: { unlock_time: number },
 	blockchainHeight: number,
 ) {
 	if (!config.maxBlockNumber) {
@@ -55,7 +54,7 @@ export function isTransactionUnlocked(
 }
 
 export function transactionLockedReason(
-	{ unlock_time }: NormalizedTransaction,
+	{ unlock_time }: { unlock_time: number },
 	blockchainHeight: number,
 ) {
 	if (unlock_time < config.maxBlockNumber) {

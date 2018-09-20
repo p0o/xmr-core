@@ -34,18 +34,14 @@
 	"dependencies": {
 		"moment": "^2.22.2",
 		"@xmr-core/biginteger": "^1.0.0",
-		"@xmr-core/xmr-types": "^1.0.0",
-		"@xmr-core/xmr-crypto-ops": "^1.0.0",
+		"@xmr-core/xmr-transaction": "^1.0.0",
+		"@xmr-core/xmr-crypto-utils": "^1.0.0",
 		"@xmr-core/xmr-str-utils": "^1.0.0",
 		"@xmr-core/xmr-money": "^1.0.0",
 		"@xmr-core/xmr-constants": "^1.0.0",
-		"@xmr-core/xmr-address-utils": "^1.0.0",
-		"@xmr-core/xmr-device": "^1.0.0",
-		"@xmr-core/xmr-mymonero-libs": "^1.0.0",
 		"@xmr-core/xmr-fast-hash": "^1.0.0",
 		"@xmr-core/xmr-varint": "^1.0.0",
-		"@xmr-core/xmr-vendor": "^1.0.0",
-		"@xmr-core/xmr-rand": "^1.0.0"
+		"@xmr-core/xmr-vendor": "^1.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"

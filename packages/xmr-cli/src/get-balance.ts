@@ -1,9 +1,11 @@
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
 import { MyMoneroApi } from "@xmr-core/xmr-mymonero-libs";
-import { LedgerDevice } from "@xmr-core/xmr-device";
+import {
+	LedgerDevice,
+	NetType,
+	pubkeys_to_string,
+} from "@xmr-core/xmr-crypto-utils";
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
-import { pubkeys_to_string } from "@xmr-core/xmr-key-utils";
-import { NetType } from "@xmr-core/xmr-types";
-import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
 import { formatMoneyWithSymbol } from "@xmr-core/xmr-money";
 
 const setTimeoutAsync = (timeout: number) =>

@@ -13,7 +13,7 @@ import {
 	CreateTxAndAttemptToSendParams,
 	GetFundTargetsAndFeeParams,
 } from "./types";
-import { JSONPrettyPrint } from "../../../../../__test__/utils/formatters";
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
 
 /**
  *

@@ -1,9 +1,12 @@
-import { RingMember, SecretCommitment } from "@xmr-core/xmr-types";
-import { ge_sub, ge_add, sc_sub, identity } from "@xmr-core/xmr-crypto-ops";
+import { RingMember, SecretCommitment } from "../../../../types";
+import { primitive_ops, constants } from "@xmr-core/xmr-crypto-utils";
 import { MGSig } from "./types";
 import { MLSAG_Gen, MLSAG_ver } from "./mlsag";
-import { CtKeyV, HWDevice } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../../../../__test__/utils/formatters";
+import { CtKeyV, HWDevice } from "@xmr-core/xmr-crypto-utils";
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
+
+const { ge_sub, ge_add, sc_sub } = primitive_ops;
+const { identity } = constants;
 
 //Ring-ct MG sigs
 //Prove:

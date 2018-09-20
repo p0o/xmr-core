@@ -1,13 +1,11 @@
-import {
-	STRUCT_SIZES,
-	KEY_SIZE,
-	HASH_SIZE,
-	hash_to_ec,
-	hash_to_scalar,
-} from "@xmr-core/xmr-crypto-ops";
+import { constants, random_scalar, hash_ops } from "@xmr-core/xmr-crypto-utils";
 import { valid_hex, hextobin, bintohex } from "@xmr-core/xmr-str-utils";
 import { CNCrypto } from "@xmr-core/xmr-vendor";
-import { random_scalar } from "@xmr-core/xmr-rand";
+
+const { STRUCT_SIZES, KEY_SIZE, HASH_SIZE } = constants;
+const { hash_to_ec, hash_to_scalar } = hash_ops;
+
+export * from "./serialization";
 
 export function generate_ring_signature(
 	prefix_hash: string,

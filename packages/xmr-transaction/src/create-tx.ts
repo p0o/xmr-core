@@ -1,26 +1,9 @@
-import {
-	ParsedTarget,
-	ViewSendKeys,
-	Output,
-	AmountOutput,
-	Pid,
-	NetType,
-	SignedTransaction,
-	SecretCommitment,
-	RingMember,
-	TransactionOutput,
-	Keys,
-} from "@xmr-core/xmr-types";
 import { BigInt } from "@xmr-core/biginteger";
-import {
-	zeroCommit,
-	generate_key_image_helper,
-} from "@xmr-core/xmr-crypto-ops";
-import { d2s, I } from "@xmr-core/xmr-str-utils";
-import { formatMoney, formatMoneyFull } from "@xmr-core/xmr-money";
+import { rctOps, NetType, Keys, constants } from "@xmr-core/xmr-crypto-utils";
+import { d2s, JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
 import { INTEGRATED_ID_SIZE } from "@xmr-core/xmr-constants";
-import { decode_address, is_subaddress } from "@xmr-core/xmr-address-utils";
-
+import { decode_address, is_subaddress } from "@xmr-core/xmr-crypto-utils";
+import { formatMoney, formatMoneyFull } from "@xmr-core/xmr-money";
 import {
 	get_payment_id_nonce,
 	add_nonce_to_extra,
@@ -30,8 +13,20 @@ import {
 } from "./libs/utils";
 import { generate_ring_signature } from "./libs/non-ringct";
 import { genRct } from "./libs/ringct";
-import { HWDevice, DeviceMode } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
+import { HWDevice, DeviceMode } from "@xmr-core/xmr-crypto-utils";
+import {
+	ViewSendKeys,
+	ParsedTarget,
+	Output,
+	AmountOutput,
+	Pid,
+	SignedTransaction,
+	TransactionOutput,
+	SecretCommitment,
+	RingMember,
+} from "./types";
+const { I } = constants;
+const { generate_key_image_helper, zeroCommit } = rctOps;
 
 const UINT64_MAX = new BigInt(2).pow(64);
 

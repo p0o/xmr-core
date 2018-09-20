@@ -1,7 +1,10 @@
 import { BigInt } from "biginteger";
-import { skGen } from "@xmr-core/xmr-key-utils";
-import { d2s } from "@xmr-core/xmr-str-utils/integer-strings";
-import { encode_ecdh, decode_ecdh } from "@xmr-core/xmr-crypto-ops/rct";
+import { skGen } from "@xmr-core/xmr-crypto-utils";
+import { d2s } from "@xmr-core/xmr-str-utils";
+import {
+	encode_ecdh,
+	decode_ecdh,
+} from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/rct";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //

@@ -36,7 +36,7 @@
 		"@xmr-core/xmr-varint": "^1.0.0",
 		"@xmr-core/xmr-str-utils": "^1.0.0",
 		"@xmr-core/xmr-fast-hash": "^1.0.0",
-		"@xmr-core/xmr-device": "^1.0.0"
+		"@xmr-core/xmr-crypto-utils": "^1.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"

@@ -2,12 +2,15 @@ import {
 	sendFundsSimple,
 	sendFundsStatusToMessage,
 } from "@xmr-core/xmr-mymonero-libs";
-import { Pid, NetType } from "@xmr-core/xmr-types";
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
-import { LedgerDevice } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
 import { MyMoneroApi } from "@xmr-core/xmr-mymonero-libs";
-import { pubkeys_to_string } from "@xmr-core/xmr-key-utils";
+import {
+	pubkeys_to_string,
+	LedgerDevice,
+	NetType,
+} from "@xmr-core/xmr-crypto-utils";
+import { Pid } from "@xmr-core/xmr-transaction";
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
 
 export async function send(address: string, amount: number, pid: Pid) {
 	const transport = await TransportNodeHid.create();

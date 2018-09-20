@@ -6,7 +6,7 @@ import {
 	formatMoneyFull,
 	printDsts,
 } from "@xmr-core/xmr-money";
-import { ParsedTarget, Output, SignedTransaction } from "@xmr-core/xmr-types";
+import { ParsedTarget, Output, SignedTransaction } from "@xmr-core/xmr-transaction";
 
 export namespace Log {
 	export namespace Amount {

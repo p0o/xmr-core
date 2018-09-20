@@ -1,4 +1,4 @@
-import { SignedTransaction } from "@xmr-core/xmr-types";
+import { SignedTransaction } from "../../types";
 import { serializeTxHeader } from "../utils";
 
 export function serialize_non_rct_tx(tx: SignedTransaction) {

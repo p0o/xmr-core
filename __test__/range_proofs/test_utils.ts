@@ -27,11 +27,14 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import { randomBytes } from "crypto";
 
-import { SecretCommitment, RingMember } from "@xmr-core/xmr-types";
-import { random_keypair } from "@xmr-core/xmr-key-utils";
-import { d2s } from "@xmr-core/xmr-str-utils/integer-strings";
-import { ge_scalarmult, ge_add } from "@xmr-core/xmr-crypto-ops/primitive_ops";
-import { H } from "@xmr-core/xmr-crypto-ops/constants";
+import { SecretCommitment, RingMember } from "@xmr-core/xmr-transaction";
+import { random_keypair } from "@xmr-core/xmr-crypto-utils";
+import { d2s } from "@xmr-core/xmr-str-utils";
+import {
+	ge_scalarmult,
+	ge_add,
+} from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/primitive_ops";
+import { H } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/constants";
 
 //generates a <secret , public> / Pedersen commitment to the amount
 

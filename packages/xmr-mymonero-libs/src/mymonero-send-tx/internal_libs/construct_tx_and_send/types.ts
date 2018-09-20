@@ -1,15 +1,14 @@
 import {
-	NetType,
 	ViewSendKeys,
 	ParsedTarget,
 	Pid,
 	Output,
 	AmountOutput,
-} from "@xmr-core/xmr-types";
+} from "@xmr-core/xmr-transaction";
 import { Status } from "../../status_update_constants";
 import { BigInt } from "@xmr-core/biginteger";
-import { MyMoneroApi } from "@xmr-core/xmr-mymonero-libs";
-import { HWDevice } from "@xmr-core/xmr-device";
+import { MyMoneroApi } from "../../../";
+import { HWDevice, NetType } from "@xmr-core/xmr-crypto-utils";
 
 export type GetFundTargetsAndFeeParams = {
 	senderAddress: string;

@@ -1,7 +1,7 @@
-import { ParsedTarget, RawTarget, NetType } from "@xmr-core/xmr-types";
+import { ParsedTarget, RawTarget } from "@xmr-core/xmr-transaction";
 import { ERR } from "./errors";
 import { possibleOAAddress } from "./open_alias_lite";
-import { decode_address } from "@xmr-core/xmr-address-utils";
+import { decode_address, NetType } from "@xmr-core/xmr-crypto-utils";
 import { parseMoney } from "@xmr-core/xmr-money";
 
 /**

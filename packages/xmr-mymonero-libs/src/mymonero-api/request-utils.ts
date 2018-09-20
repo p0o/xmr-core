@@ -25,15 +25,15 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-import packagejson from "../../../package.json";
+
 import axios from "axios";
 
 export function withUserAgentParams<T>(params: T) {
 	// setting these on params instead of as header field User-Agent so as to retain all info found in User-Agent
 	// such as platform… and these are set so server has option to control delivery
 	return Object.assign(params, {
-		app_name: "@xmr-core/xmr-core", // originally MyMonero
-		app_version: packagejson.version, //originally 1.0.0
+		app_name: "@xmr-core/mymonero-api", // originally MyMonero
+		app_version: "1.0.0", //originally 1.0.0
 	});
 }
 

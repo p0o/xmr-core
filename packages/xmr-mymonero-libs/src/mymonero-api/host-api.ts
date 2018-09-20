@@ -6,11 +6,11 @@ import {
 	parseAddressTransactions,
 	parseUnspentOutputs,
 } from "./response-parsers";
-import { HWDevice } from "@xmr-core/xmr-device";
 import { BigInt } from "@xmr-core/biginteger";
-import { Output } from "@xmr-core/xmr-types";
-import { isRealDevice } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../__test__/utils/formatters";
+import { HWDevice, isRealDevice } from "@xmr-core/xmr-crypto-utils";
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
+import { Output } from "@xmr-core/xmr-transaction";
+import { ERR } from "@xmr-core/xmr-mymonero-libs/src/mymonero-send-tx/internal_libs/errors";
 
 export class MyMoneroApi {
 	public static async login(address: string, privViewKey: string) {

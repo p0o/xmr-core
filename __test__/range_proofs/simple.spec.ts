@@ -1,3 +1,25 @@
+import { ctskpkGen, populateFromBlockchainSimple } from "./test_utils";
+
+import { BigInt } from "@xmr-core/biginteger";
+
+import { hash_to_scalar } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/hash_ops";
+
+import { Z } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/constants";
+
+import {
+	random_keypair,
+	random_scalar,
+	DefaultDevice,
+} from "@xmr-core/xmr-crypto-utils";
+
+import { generate_key_image } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/key_image";
+
+import {
+	genRct,
+	verRctSimple,
+	decodeRctSimple,
+} from "@xmr-core/xmr-transaction";
+
 // Copyright (c) 2014-2018, MyMonero.com
 //
 // All rights reserved.
@@ -25,20 +47,6 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-import { ctskpkGen, populateFromBlockchainSimple } from "./test_utils";
-import { hash_to_scalar } from "@xmr-core/xmr-crypto-ops/hash_ops";
-import { Z } from "@xmr-core/xmr-crypto-ops/constants";
-import { generate_key_image } from "@xmr-core/xmr-crypto-ops/key_image";
-import {
-	genRct,
-	verRctSimple,
-	decodeRctSimple,
-} from "@xmr-core/xmr-transaction/libs/ringct";
-import { BigInt } from "biginteger";
-import { random_scalar } from "@xmr-core/xmr-rand";
-import { random_keypair } from "@xmr-core/xmr-key-utils";
-import { DefaultDevice } from "@xmr-core/xmr-device/device-default";
 
 it("should test ringct simple transactions", async () => {
 	//Ring CT Stuff

@@ -1,12 +1,16 @@
 import { BorromeanSignature } from "./types";
-import { random_scalar } from "@xmr-core/xmr-rand";
 import {
+	random_scalar,
+	hash_ops,
+	primitive_ops,
+} from "@xmr-core/xmr-crypto-utils";
+
+const { hash_to_scalar, array_hash_to_scalar } = hash_ops;
+const {
 	ge_scalarmult_base,
-	ge_double_scalarmult_base_vartime,
 	sc_mulsub,
-	hash_to_scalar,
-	array_hash_to_scalar,
-} from "@xmr-core/xmr-crypto-ops";
+	ge_double_scalarmult_base_vartime,
+} = primitive_ops;
 
 //xv: vector of secret keys, 1 per ring (nrings)
 //pm: matrix of pubkeys, indexed by size first

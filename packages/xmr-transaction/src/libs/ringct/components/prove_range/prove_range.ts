@@ -2,17 +2,22 @@ import { BigInt } from "@xmr-core/biginteger";
 import { genBorromean, verifyBorromean } from "./borromean";
 import { RangeSignature } from "./types";
 import {
-	identity,
-	H2,
-	Z,
-	I,
+	primitive_ops,
+	constants,
+	random_scalar,
+} from "@xmr-core/xmr-crypto-utils";
+
+import { d2b } from "@xmr-core/xmr-str-utils";
+
+const {
+	sc_add,
+
 	ge_sub,
 	ge_add,
-	sc_add,
 	ge_scalarmult_base,
-} from "@xmr-core/xmr-crypto-ops";
-import { random_scalar } from "@xmr-core/xmr-rand";
-import { d2b } from "@xmr-core/xmr-str-utils";
+} = primitive_ops;
+
+const { I, Z, identity, H2 } = constants;
 
 //proveRange
 //proveRange gives C, and mask such that \sumCi = C

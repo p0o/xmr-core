@@ -5,10 +5,10 @@ import {
 	SpentOutput,
 	AddressInfo,
 } from "./types";
-import { Omit } from "@xmr-core/xmr-types";
+import { Omit } from "../../types";
 import { BigInt } from "@xmr-core/biginteger";
 import { formatMoney } from "@xmr-core/xmr-money";
-import { Output } from "@xmr-core/xmr-types";
+import { Output } from "@xmr-core/xmr-transaction";
 
 export function isKeyImageEqual({ key_image }: SpentOutput, keyImage: string) {
 	return key_image === keyImage;

@@ -3,13 +3,16 @@
 
 	"compilerOptions": {
 		"outDir": "lib",
-		"rootDir": "src"
+		"rootDir": "src",
+		"lib": ["dom", "es2017"]
 	},
+
 	"references": [
 		{ "path": "../xmr-mymonero-libs" },
-		{ "path": "../xmr-device" },
-		{ "path": "../xmr-key-utils" },
-		{ "path": "../xmr-types" },
-		{ "path": "../xmr-money" }
+		{ "path": "../xmr-crypto-utils" },
+		{ "path": "../xmr-crypto-utils" },
+		{ "path": "../xmr-transaction" },
+		{ "path": "../xmr-money" },
+		{ "path": "../xmr-str-utils" }
 	]
 }

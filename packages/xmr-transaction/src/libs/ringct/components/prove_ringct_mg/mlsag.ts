@@ -1,15 +1,19 @@
 import {
-	array_hash_to_scalar,
-	hashToPoint,
-	ge_double_scalarmult_base_vartime,
-	ge_double_scalarmult_postcomp_vartime,
-	sc_sub,
-	ge_scalarmult_base,
-} from "@xmr-core/xmr-crypto-ops";
-import { random_scalar } from "@xmr-core/xmr-rand";
+	hash_ops,
+	primitive_ops,
+	random_scalar,
+} from "@xmr-core/xmr-crypto-utils";
 import { MGSig } from "./types";
-import { HWDevice } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../../../../__test__/utils/formatters";
+import { HWDevice } from "@xmr-core/xmr-crypto-utils";
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
+
+const { array_hash_to_scalar, hashToPoint } = hash_ops;
+const {
+	ge_scalarmult_base,
+	sc_sub,
+	ge_double_scalarmult_postcomp_vartime,
+	ge_double_scalarmult_base_vartime,
+} = primitive_ops;
 
 // Gen creates a signature which proves that for some column in the keymatrix "pk"
 //	 the signer knows a secret key for each row in that column

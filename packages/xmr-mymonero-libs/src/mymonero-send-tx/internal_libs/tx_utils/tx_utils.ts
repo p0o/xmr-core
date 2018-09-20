@@ -17,13 +17,12 @@ import {
 	create_transaction,
 } from "@xmr-core/xmr-transaction";
 import { cn_fast_hash } from "@xmr-core/xmr-fast-hash";
-import { SignedTransaction, ParsedTarget } from "@xmr-core/xmr-types";
-import { create_address } from "@xmr-core/xmr-address-utils";
-import { random_scalar } from "@xmr-core/xmr-rand";
+import { SignedTransaction, ParsedTarget } from "@xmr-core/xmr-transaction";
+import { create_address, random_scalar } from "@xmr-core/xmr-crypto-utils";
 import { config } from "@xmr-core/xmr-constants";
 import { decompose_tx_destinations } from "@xmr-core/xmr-money";
-import { isRealDevice } from "@xmr-core/xmr-device";
-import { JSONPrettyPrint } from "../../../../../__test__/utils/formatters";
+import { isRealDevice } from "@xmr-core/xmr-crypto-utils";
+import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
 
 // #region totalAmtAndEstFee
 
