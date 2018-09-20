@@ -11,7 +11,7 @@ import {
 	TransactionOutput,
 	Keys,
 } from "@xmr-core/xmr-types";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import {
 	zeroCommit,
 	generate_key_image_helper,

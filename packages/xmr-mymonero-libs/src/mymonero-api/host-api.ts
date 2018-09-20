@@ -7,7 +7,7 @@ import {
 	parseUnspentOutputs,
 } from "./response-parsers";
 import { HWDevice } from "@xmr-core/xmr-device";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { Output } from "@xmr-core/xmr-types";
 import { isRealDevice } from "@xmr-core/xmr-device";
 import { JSONPrettyPrint } from "../../../__test__/utils/formatters";

@@ -1,6 +1,6 @@
 import { popRandElement } from "./arr_utils";
 import { Log } from "./logger";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { config } from "@xmr-core/xmr-constants";
 import { Output } from "@xmr-core/xmr-types";
 import { JSONPrettyPrint } from "../../../../__test__/utils/formatters";

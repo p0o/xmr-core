@@ -1,5 +1,5 @@
 import { config } from "@xmr-core/xmr-constants/coin-config";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { ParsedTarget } from "@xmr-core/xmr-types";
 
 /**

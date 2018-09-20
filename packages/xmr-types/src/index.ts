@@ -1,4 +1,4 @@
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { RCTSignatures } from "@xmr-core/xmr-transaction";
 
 export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;

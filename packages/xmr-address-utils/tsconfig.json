@@ -12,7 +12,7 @@
 		{ "path": "../xmr-nettype-address-prefixes" },
 		{ "path": "../xmr-b58" },
 		{ "path": "../xmr-key-utils" },
-		{ "path": "../xmr-constants/address" },
+		{ "path": "../xmr-constants" },
 		{ "path": "../xmr-types" }
 	]
 }

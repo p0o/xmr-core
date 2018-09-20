@@ -6,7 +6,7 @@ import {
 } from "./components/prove_ringct_mg";
 import { RCTSignatures } from "./types";
 import { SecretCommitment, RingMember } from "@xmr-core/xmr-types";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import {
 	Z,
 	I,

@@ -32,6 +32,7 @@
 		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
 	},
 	"dependencies": {
+		"@xmr-core/biginteger": "^1.0.0",
 		"@xmr-core/xmr-transaction": "^1.0.0"
 	},
 	"devDependencies": {

@@ -1,4 +1,4 @@
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { formatMoney } from "@xmr-core/xmr-money";
 import { config } from "@xmr-core/xmr-constants";
 

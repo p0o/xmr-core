@@ -1,4 +1,4 @@
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 
 /**
  * @description Gets a starting total amount.

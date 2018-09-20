@@ -7,7 +7,7 @@ import {
 	AmountOutput,
 } from "@xmr-core/xmr-types";
 import { Status } from "../../status_update_constants";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { MyMoneroApi } from "@xmr-core/xmr-mymonero-libs";
 import { HWDevice } from "@xmr-core/xmr-device";
 

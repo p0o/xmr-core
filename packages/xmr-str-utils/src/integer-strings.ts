@@ -1,4 +1,4 @@
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { swapEndian } from "./hex-strings";
 
 //switch byte order charwise

@@ -1,7 +1,5 @@
-import { hexUtils } from "@xmr-core/xmr-str-utils";
+import { hextobin, valid_hex } from "@xmr-core/xmr-str-utils";
 import SHA3 = require("keccakjs");
-
-const { hextobin, valid_hex } = hexUtils;
 
 export function cn_fast_hash(input: string) {
 	if (input.length % 2 !== 0 || !valid_hex(input)) {

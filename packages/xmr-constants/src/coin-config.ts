@@ -1,4 +1,4 @@
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //

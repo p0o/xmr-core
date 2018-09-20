@@ -6,7 +6,7 @@ import {
 	AddressInfo,
 } from "./types";
 import { Omit } from "@xmr-core/xmr-types";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { formatMoney } from "@xmr-core/xmr-money";
 import { Output } from "@xmr-core/xmr-types";
 

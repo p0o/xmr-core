@@ -33,6 +33,7 @@
 	},
 	"dependencies": {
 		"axios": "^0.18.0",
+		"@xmr-core/biginteger": "^1.0.0",
 		"@xmr-core/xmr-constants": "^1.0.0",
 		"@xmr-core/xmr-device": "^1.0.0",
 		"@xmr-core/xmr-types": "^1.0.0",

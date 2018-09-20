@@ -44,7 +44,7 @@ import {
 	getRestOfTxData,
 	createTxAndAttemptToSend,
 } from "./internal_libs/construct_tx_and_send";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { estimateRctSize } from "@xmr-core/xmr-transaction";
 import { formatMoneyFull } from "@xmr-core/xmr-money";
 import { NetType, RawTarget, Pid, ViewSendKeys } from "@xmr-core/xmr-types";

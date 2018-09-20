@@ -9,7 +9,7 @@ import { ERR } from "../errors";
 import { Log } from "../logger";
 import { popRandElement } from "../arr_utils";
 import { calculateFee, multiplyFeePriority } from "../fee_utils";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import {
 	serialize_rct_tx_with_hash,
 	estimateRctSize,

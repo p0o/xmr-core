@@ -6,7 +6,7 @@ import {
 	Output,
 	AmountOutput,
 } from "@xmr-core/xmr-types";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { HWDevice } from "@xmr-core/xmr-device";
 
 export type ConstructTxParams = {

@@ -1,4 +1,4 @@
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 
 export const DEFAULT_FEE_PRIORITY = 1;
 

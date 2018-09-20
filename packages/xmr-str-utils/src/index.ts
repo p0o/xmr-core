@@ -1,5 +1,3 @@
-import * as hexUtils from "./hex-strings";
-import * as intStrUtils from "./integer-strings";
-import * as stdUtils from "./std-strings";
-
-export { hexUtils, intStrUtils, stdUtils };
+export * from "./hex-strings";
+export * from "./integer-strings";
+export * from "./std-strings";

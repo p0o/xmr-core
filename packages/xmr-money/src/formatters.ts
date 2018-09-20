@@ -1,5 +1,5 @@
 import { trimRight, padLeft } from "@xmr-core/xmr-str-utils/std-strings";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 import { config } from "@xmr-core/xmr-constants/coin-config";
 import { ParsedTarget } from "@xmr-core/xmr-types";
 

@@ -31,7 +31,9 @@
 	"bugs": {
 		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
 	},
-	"dependencies": {},
+	"dependencies": {
+		"@xmr-core/biginteger": "^1.0.0"
+	},
 	"devDependencies": {
 		"typescript": "^3.0.0"
 	},

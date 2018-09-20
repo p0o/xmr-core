@@ -1,4 +1,4 @@
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
 
 export const STRUCT_SIZES = {
 	GE_P3: 160,
