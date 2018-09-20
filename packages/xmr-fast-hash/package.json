@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-fast-hash",
-	"version": "0.0.1",
+	"version": "0.0.0",
 	"description": "An implementation of Monero's `cn_fast_hash`",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,7 +33,7 @@
 	},
 	"dependencies": {
 		"keccakjs": "^0.2.1",
-		"@xmr-core/xmr-str-utils": "^0.0.1"
+		"@xmr-core/xmr-str-utils": "^0.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"

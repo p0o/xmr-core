@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-mymonero-libs",
-	"version": "0.0.1",
+	"version": "0.0.0",
 	"description": "A collection of utilities for building ontop of a MyMonero compatible API",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,12 +33,12 @@
 	},
 	"dependencies": {
 		"axios": "^0.18.0",
-		"@xmr-core/biginteger": "^0.0.1",
-		"@xmr-core/xmr-constants": "^0.0.1",
-		"@xmr-core/xmr-crypto-utils": "^0.0.1",
-		"@xmr-core/xmr-transaction": "^0.0.1",
-		"@xmr-core/xmr-money": "^0.0.1",
-		"@xmr-core/xmr-fast-hash": "^0.0.1"
+		"@xmr-core/biginteger": "^0.0.0",
+		"@xmr-core/xmr-constants": "^0.0.0",
+		"@xmr-core/xmr-crypto-utils": "^0.0.0",
+		"@xmr-core/xmr-transaction": "^0.0.0",
+		"@xmr-core/xmr-money": "^0.0.0",
+		"@xmr-core/xmr-fast-hash": "^0.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"

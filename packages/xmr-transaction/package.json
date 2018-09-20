@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-transaction",
-	"version": "0.0.1",
+	"version": "0.0.0",
 	"description": "Create Monero transactions and check their status",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,15 +33,15 @@
 	},
 	"dependencies": {
 		"moment": "^2.22.2",
-		"@xmr-core/biginteger": "^0.0.1",
-		"@xmr-core/xmr-transaction": "^0.0.1",
-		"@xmr-core/xmr-crypto-utils": "^0.0.1",
-		"@xmr-core/xmr-str-utils": "^0.0.1",
-		"@xmr-core/xmr-money": "^0.0.1",
-		"@xmr-core/xmr-constants": "^0.0.1",
-		"@xmr-core/xmr-fast-hash": "^0.0.1",
-		"@xmr-core/xmr-varint": "^0.0.1",
-		"@xmr-core/xmr-vendor": "^0.0.1"
+		"@xmr-core/biginteger": "^0.0.0",
+		"@xmr-core/xmr-transaction": "^0.0.0",
+		"@xmr-core/xmr-crypto-utils": "^0.0.0",
+		"@xmr-core/xmr-str-utils": "^0.0.0",
+		"@xmr-core/xmr-money": "^0.0.0",
+		"@xmr-core/xmr-constants": "^0.0.0",
+		"@xmr-core/xmr-fast-hash": "^0.0.0",
+		"@xmr-core/xmr-varint": "^0.0.0",
+		"@xmr-core/xmr-vendor": "^0.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"

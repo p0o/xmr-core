@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-b58",
-	"version": "0.0.1",
+	"version": "0.0.0",
 	"description": "Functions to encode and decode base58 strings for monero operations",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",

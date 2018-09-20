@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-str-utils",
-	"version": "0.0.1",
+	"version": "0.0.0",
 	"description": "A library for working with strings commonly used in other Monero libraries",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -32,7 +32,7 @@
 		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
 	},
 	"dependencies": {
-		"@xmr-core/biginteger": "^0.0.1"
+		"@xmr-core/biginteger": "^0.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"
