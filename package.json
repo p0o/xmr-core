@@ -35,7 +35,6 @@
 		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
 	},
 	"homepage": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core#readme",
-	"dependencies": {},
 	"devDependencies": {
 		"jest": "^23.1.0",
 		"lerna": "^3.4.0",
@@ -72,5 +71,6 @@
 			"/node_modules/",
 			"__test__"
 		]
-	}
+	},
+	"name": "xmr-core"
 }
