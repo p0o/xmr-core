@@ -2,7 +2,7 @@ import { generate_parameters } from "./test_parameters";
 import {
 	genBorromean,
 	verifyBorromean,
-} from "xmr-transaction/libs/ringct/components/prove_range/borromean";
+} from "xmr-transaction/src/libs/ringct/components/prove_range";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //

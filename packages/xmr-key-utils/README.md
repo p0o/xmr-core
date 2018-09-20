@@ -1,4 +1,4 @@
-# xmr-key-utils
+# @xmr-core/xmr-key-utils
 
 A collection of functions for creating and verifying Monero related public/private keys.
 
@@ -15,7 +15,7 @@ A collection of functions for creating and verifying Monero related public/priva
 ---
 
 ```ts
-import { random_keypair, verify_keys } from "xmr-key-utils";
+import { random_keypair, verify_keys } from "@xmr-core/xmr-key-utils";
 const viewKeys = random_keypair();
 const spendKeys = random_keypair();
 const isValidKeypairs = verify_keys(
@@ -29,7 +29,7 @@ const isValidKeypairs = verify_keys(
 ## Installation
 
 ```sh
-yarn add xmr-key-utils
+yarn add @xmr-core/xmr-key-utils
 ```
 
 ## License

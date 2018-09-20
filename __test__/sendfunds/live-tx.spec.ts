@@ -1,5 +1,5 @@
 import { failingTxLedger, passingTxRaw } from "../fixtures/live-tx";
-import { verRct } from "xmr-transaction/libs/ringct";
+import { verRct } from "@xmr-core/xmr-transaction/libs/ringct";
 
 describe("tx tests", () => {
 	it("should pass", async () => {

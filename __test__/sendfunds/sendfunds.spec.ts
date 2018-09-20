@@ -1,11 +1,11 @@
-import { sendFunds } from "xmr-mymonero-libs/mymonero-send-tx";
+import { sendFunds } from "@xmr-core/xmr-mymonero-libs/mymonero-send-tx";
 import { sendFundsArgs } from "../fixtures/live-sendfunds";
-import { DefaultDevice } from "xmr-device";
+import { DefaultDevice } from "@xmr-core/xmr-device";
 import { MockApi } from "./mockApi";
 import { BigInt } from "biginteger";
 import { outputsAndAmountToUseForMixinReturn } from "../fixtures/live-outputsAndAmountToUseForMixin";
-import { Output } from "xmr-types";
-import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
+import { Output } from "@xmr-core/xmr-types";
+import { MyMoneroApi } from "@xmr-core/xmr-mymonero-libs/mymonero-api";
 const {
 	amount_orZeroWhenSweep,
 	isSweep_orZeroWhenAmount,

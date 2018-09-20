@@ -1,4 +1,4 @@
-# xmr-money
+# @xmr-core/xmr-money
 
 Helpers for formatting and parsing Moneroj.
 
@@ -15,7 +15,7 @@ Helpers for formatting and parsing Moneroj.
 ---
 
 ```ts
-import { formatMoneyFullSymbol } from "xmr-money";
+import { formatMoneyFullSymbol } from "@xmr-core/xmr-money";
 const amt = "30000";
 const parsedAmtWithSym = formatMoneyFullSymbol(amt);
 ```
@@ -25,7 +25,7 @@ const parsedAmtWithSym = formatMoneyFullSymbol(amt);
 ---
 
 ```sh
-yarn add xmr-money
+yarn add @xmr-core/xmr-money
 ```
 
 ## License

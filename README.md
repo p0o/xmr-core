@@ -1,4 +1,4 @@
-# xmr-core
+# @xmr-core/xmr-core
 
 Forked from mymonero/mymonero-core-js, this library provides a few significant changes compared to its origin:
 
@@ -22,29 +22,29 @@ Below you'll find each package and its purpose.
 
 ## Features
 
--   `xmr-address-utils` Utilities for working with Monero addresses
--   `xmr-b58` xmr-b58 contains functions to encode and decode base58 strings for monero operations
--   `xmr-cli` xmr-cli contains basic user operations that use the mono-repo packages for its functionality
--   `xmr-constants` xmr-constants contains constant declarations for working with Monero, such as address prefixes, blocktimes, and decimal places
--   `xmr-crypto-ops` Core crypto operations for Monero
--   `xmr-device` Implementations and interfaces of various hardware devices for creating Monero transactions securely
--   `xmr-fast-hash` An implementation of Monero's `cn_fast_hash`
--   `xmr-key-utils` A collection of functions for creating and verifying Monero related public/private keys.
--   `xmr-keyimg-memoized` Memoized key image generation library
--   `xmr-money` Helpers for formatting and parsing Moneroj.
--   `xmr-mymonero-libs` A collection of utilities for building ontop of a MyMonero compatible API
--   `xmr-nettype-address-prefixes` Helper library to get Monero address prefixes depending on the network type (mainnet|testnet|stagenet)
--   `xmr-pid` Validate, create, and manipulate, Monero payment ids
--   `xmr-rand` Create random hex strings for Monero operations
--   `xmr-str-utils` A library for working with strings commonly used in other Monero libraries
--   `xmr-transaction` Create Monero transactions and check their status
--   `xmr-types` A pure types library that contains shared interfaces and types for the xmr-core mono-repo
--   `xmr-varint` Create varints from numbers and strings for usage in Monero's data structures
--   `xmr-vendor` A container library that holds external dependencies that have been modified for usage in Monero transaction creation / validation
+-   `@xmr-core/xmr-address-utils` Utilities for working with Monero addresses
+-   `@xmr-core/xmr-b58` @xmr-core/xmr-b58 contains functions to encode and decode base58 strings for monero operations
+-   `@xmr-core/xmr-cli` @xmr-core/xmr-cli contains basic user operations that use the mono-repo packages for its functionality
+-   `@xmr-core/xmr-constants` @xmr-core/xmr-constants contains constant declarations for working with Monero, such as address prefixes, blocktimes, and decimal places
+-   `@xmr-core/xmr-crypto-ops` Core crypto operations for Monero
+-   `@xmr-core/xmr-device` Implementations and interfaces of various hardware devices for creating Monero transactions securely
+-   `@xmr-core/xmr-fast-hash` An implementation of Monero's `cn_fast_hash`
+-   `@xmr-core/xmr-key-utils` A collection of functions for creating and verifying Monero related public/private keys.
+-   `@xmr-core/xmr-keyimg-memoized` Memoized key image generation library
+-   `@xmr-core/xmr-money` Helpers for formatting and parsing Moneroj.
+-   `@xmr-core/xmr-mymonero-libs` A collection of utilities for building ontop of a MyMonero compatible API
+-   `@xmr-core/xmr-nettype-address-prefixes` Helper library to get Monero address prefixes depending on the network type (mainnet|testnet|stagenet)
+-   `@xmr-core/xmr-pid` Validate, create, and manipulate, Monero payment ids
+-   `@xmr-core/xmr-rand` Create random hex strings for Monero operations
+-   `@xmr-core/xmr-str-utils` A library for working with strings commonly used in other Monero libraries
+-   `@xmr-core/xmr-transaction` Create Monero transactions and check their status
+-   `@xmr-core/xmr-types` A pure types library that contains shared interfaces and types for the @xmr-core/xmr-core mono-repo
+-   `@xmr-core/xmr-varint` Create varints from numbers and strings for usage in Monero's data structures
+-   `@xmr-core/xmr-vendor` A container library that holds external dependencies that have been modified for usage in Monero transaction creation / validation
 
 ## Usage
 
-The most common use case would be under the domain of a wallet service implementing xmr support. To see basic examples on how this would be done, take a look at the `xmr-cli` package to do basic operations such as sending currency and checking a users balance.
+The most common use case would be under the domain of a wallet service implementing xmr support. To see basic examples on how this would be done, take a look at the `@xmr-core/xmr-cli` package to do basic operations such as sending currency and checking a users balance.
 
 # Contributing
 

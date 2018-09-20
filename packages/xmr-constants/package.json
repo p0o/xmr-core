@@ -1,0 +1,39 @@
+{
+	"name": "@xmr-core/xmr-constants",
+	"version": "1.0.0",
+	"description": "Declarations for working with Monero, such as address prefixes, blocktimes, and decimal places",
+	"main": "lib/index.js",
+	"typings": "lib/index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepublishOnly": "tsc -b ."
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MyCryptoHQ/@xmr-core/xmr-core.git"
+	},
+	"keywords": [
+		"monero",
+		"mymonero",
+		"typescript",
+		"ts",
+		"lightweight",
+		"lightwallet",
+		"wallet",
+		"crypto",
+		"script",
+		"utility",
+		"tool",
+		"xmr"
+	],
+	"author": "HenryNguyen5",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"typescript": "^3.0.0"
+	},
+	"homepage": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core#readme"
+}

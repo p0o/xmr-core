@@ -1,5 +1,5 @@
 import { MockApi } from "./mockApi";
-import { DefaultDevice } from "xmr-device";
+import { DefaultDevice } from "@xmr-core/xmr-device";
 import { JSONPretty } from "../utils/formatters";
 
 describe("mock api smoke test", () => {

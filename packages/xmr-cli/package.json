@@ -1,0 +1,46 @@
+{
+	"name": "@xmr-core/xmr-cli",
+	"version": "1.0.0",
+	"description": "Basic user operations that use the mono-repo packages for its functionality",
+	"main": "lib/index.js",
+	"typings": "lib/index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepublishOnly": "tsc -b ."
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MyCryptoHQ/@xmr-core/xmr-core.git"
+	},
+	"keywords": [
+		"monero",
+		"mymonero",
+		"typescript",
+		"ts",
+		"lightweight",
+		"lightwallet",
+		"wallet",
+		"crypto",
+		"script",
+		"utility",
+		"tool",
+		"xmr"
+	],
+	"author": "HenryNguyen5",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
+	},
+	"dependencies": {
+		"@ledgerhq/hw-transport-node-hid": "^4.22.0",
+		"@xmr-core/xmr-mymonero-libs": "^1.0.0",
+		"@xmr-core/xmr-device": "^1.0.0",
+		"@xmr-core/xmr-key-utils": "^1.0.0",
+		"@xmr-core/xmr-types": "^1.0.0",
+		"@xmr-core/xmr-money": "^1.0.0"
+	},
+	"devDependencies": {
+		"typescript": "^3.0.0"
+	},
+	"homepage": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core#readme"
+}

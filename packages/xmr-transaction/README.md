@@ -1,4 +1,4 @@
-# xmr-transaction
+# @xmr-core/xmr-transaction
 
 Create Monero transactions and check their status
 
@@ -15,7 +15,7 @@ Create Monero transactions and check their status
 ---
 
 ```ts
-import { create_transaction, isTransactionConfirmed } from "xmr-transaction";
+import { create_transaction, isTransactionConfirmed } from "@xmr-core/xmr-transaction";
 
 const tx = await create_transaction(...args);
 const isConfirmed = isTransactionConfirmed(tx);
@@ -26,7 +26,7 @@ const isConfirmed = isTransactionConfirmed(tx);
 ---
 
 ```sh
-yarn add xmr-transaction
+yarn add @xmr-core/xmr-transaction
 ```
 
 ## License

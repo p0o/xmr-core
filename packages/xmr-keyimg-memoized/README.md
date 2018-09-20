@@ -1,4 +1,4 @@
-# xmr-keyimg-memoized
+# @xmr-core/xmr-keyimg-memoized
 
 Memoized key image generation library
 
@@ -12,14 +12,14 @@ Memoized key image generation library
 
 ---
 
-See `xmr-mymonero-libs/mymonero-api/response-parsers` for real-world usage
+See `@xmr-core/xmr-mymonero-libs/mymonero-api/response-parsers` for real-world usage
 
 ## Installation
 
 ---
 
 ```sh
-yarn add xmr-keyimg-memoized
+yarn add @xmr-core/xmr-keyimg-memoized
 ```
 
 ## License

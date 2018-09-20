@@ -1,5 +1,5 @@
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
-import { LedgerDevice } from "xmr-device";
+import { LedgerDevice } from "@xmr-core/xmr-device";
 import { MockApi } from "../../sendfunds/mockApi";
 import { JSONPretty } from "../../utils/formatters";
 jest.setTimeout(1000 * 60 * 60);

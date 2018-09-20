@@ -1,4 +1,4 @@
-# xmr-str-utils
+# @xmr-core/xmr-str-utils
 
 A library for working with strings commonly used in other Monero libraries
 
@@ -15,7 +15,7 @@ A library for working with strings commonly used in other Monero libraries
 ---
 
 ```ts
-import { hexUtils } from "xmr-str-utils";
+import { hexUtils } from "@xmr-core/xmr-str-utils";
 const valid = hexUtils.valid_hex("0x01");
 ```
 
@@ -24,7 +24,7 @@ const valid = hexUtils.valid_hex("0x01");
 ---
 
 ```sh
-yarn add xmr-str-utils
+yarn add @xmr-core/xmr-str-utils
 ```
 
 ## License

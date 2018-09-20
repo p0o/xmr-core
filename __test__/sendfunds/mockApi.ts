@@ -1,12 +1,12 @@
-import { parseUnspentOutputs } from "xmr-mymonero-libs/mymonero-api";
-import { Output } from "xmr-types";
-import { HWDevice } from "xmr-device/types";
+import { parseUnspentOutputs } from "@xmr-core/xmr-mymonero-libs/mymonero-api";
+import { Output } from "@xmr-core/xmr-types";
+import { HWDevice } from "@xmr-core/xmr-device/types";
 import {
 	unspentOutputsResponse,
 	randomOutputsReponse,
 } from "../fixtures/live-api";
 import { JSONPrettyPrint } from "../utils/formatters";
-import { LedgerDevice } from "xmr-device";
+import { LedgerDevice } from "@xmr-core/xmr-device";
 
 export class MockApi {
 	public static async unspentOutputs(

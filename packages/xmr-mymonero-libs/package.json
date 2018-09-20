@@ -1,0 +1,52 @@
+{
+	"name": "@xmr-core/xmr-mymonero-libs",
+	"version": "1.0.0",
+	"description": "A collection of utilities for building ontop of a MyMonero compatible API",
+	"main": "lib/index.js",
+	"typings": "lib/index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepublishOnly": "tsc -b ."
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MyCryptoHQ/@xmr-core/xmr-core.git"
+	},
+	"keywords": [
+		"monero",
+		"mymonero",
+		"typescript",
+		"ts",
+		"lightweight",
+		"lightwallet",
+		"wallet",
+		"crypto",
+		"script",
+		"utility",
+		"tool",
+		"xmr"
+	],
+	"author": "HenryNguyen5",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
+	},
+	"dependencies": {
+		"axios": "^0.18.0",
+		"@xmr-core/xmr-constants": "^1.0.0",
+		"@xmr-core/xmr-device": "^1.0.0",
+		"@xmr-core/xmr-types": "^1.0.0",
+		"@xmr-core/xmr-keyimg-memoized": "^1.0.0",
+		"@xmr-core/xmr-money": "^1.0.0",
+		"@xmr-core/xmr-mymonero-libs": "^1.0.0",
+		"@xmr-core/xmr-transaction": "^1.0.0",
+		"@xmr-core/xmr-address-utils": "^1.0.0",
+		"@xmr-core/xmr-pid": "^1.0.0",
+		"@xmr-core/xmr-rand": "^1.0.0",
+		"@xmr-core/xmr-fast-hash": "^1.0.0"
+	},
+	"devDependencies": {
+		"typescript": "^3.0.0"
+	},
+	"homepage": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core#readme"
+}

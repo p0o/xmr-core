@@ -1,4 +1,4 @@
-# xmr-vendor
+# @xmr-core/xmr-vendor
 
 A container library that holds external dependencies that have been modified for usage in Monero transaction creation / validation
 
@@ -13,14 +13,14 @@ A container library that holds external dependencies that have been modified for
 
 ---
 
-The xmr-crypto package wraps all the functionality provided by this library into easier to use functions.
+The @xmr-core/xmr-crypto package wraps all the functionality provided by this library into easier to use functions.
 
 ## Installation
 
 ---
 
 ```sh
-yarn add xmr-vendor
+yarn add @xmr-core/xmr-vendor
 ```
 
 ## License

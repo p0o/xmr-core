@@ -1,14 +1,14 @@
-import { valid_hex } from "xmr-str-utils/hex-strings";
-import { NetType } from "xmr-types";
-import { cn_fast_hash } from "xmr-fast-hash";
+import { valid_hex } from "xmr-str-utils/src/hex-strings";
+import { NetType } from "xmr-types/src";
+import { cn_fast_hash } from "xmr-fast-hash/src";
 import {
 	generate_key_derivation,
 	derivation_to_scalar,
 	derive_public_key,
 	derive_subaddress_public_key,
 } from "xmr-crypto-ops/derivation";
-import { decode_address } from "xmr-address-utils";
-import { hash_to_scalar } from "xmr-crypto-ops/hash_ops";
+import { decode_address } from "xmr-address-utils/src";
+import { hash_to_scalar } from "xmr-crypto-ops/src";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //

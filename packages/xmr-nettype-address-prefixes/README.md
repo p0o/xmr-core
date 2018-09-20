@@ -1,4 +1,4 @@
-# xmr-nettype-address-prefixes
+# @xmr-core/xmr-nettype-address-prefixes
 
 Helper library to get Monero address prefixes depending on the network type (mainnet|testnet|stagenet)
 
@@ -15,8 +15,8 @@ Helper library to get Monero address prefixes depending on the network type (mai
 ---
 
 ```ts
-import { NetType } from "xmr-types";
-import { cryptonoteBase58PrefixForStandardAddressOn } from "xmr-nettype-address-prefixes";
+import { NetType } from "@xmr-core/xmr-types";
+import { cryptonoteBase58PrefixForStandardAddressOn } from "@xmr-core/xmr-nettype-address-prefixes";
 
 const standardAddressMainnetPrefix = cryptonoteBase58PrefixForStandardAddressOn(
 	NetType.MAINNET,
@@ -28,7 +28,7 @@ const standardAddressMainnetPrefix = cryptonoteBase58PrefixForStandardAddressOn(
 ---
 
 ```sh
-yarn add xmr-nettype-address-prefixes
+yarn add @xmr-core/xmr-nettype-address-prefixes
 ```
 
 ## License

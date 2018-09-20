@@ -1,4 +1,4 @@
-# xmr-crypto-ops
+# @xmr-core/xmr-crypto-ops
 
 Core crypto operations for Monero
 
@@ -17,7 +17,7 @@ Core crypto operations for Monero
 ---
 
 ```ts
-import { generate_key_image } from "xmr-crypto-ops";
+import { generate_key_image } from "@xmr-core/xmr-crypto-ops";
 const secretKey = "...";
 const publicKey = "...";
 const keyImage = generate_key_image(publicKey, secretKey);
@@ -27,10 +27,10 @@ const keyImage = generate_key_image(publicKey, secretKey);
 
 ---
 
-Install xmr-crypto-ops by running:
+Install @xmr-core/xmr-crypto-ops by running:
 
 ```sh
-yarn add xmr-crypto-ops
+yarn add @xmr-core/xmr-crypto-ops
 ```
 
 ## License

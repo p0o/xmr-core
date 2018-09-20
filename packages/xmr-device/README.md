@@ -1,4 +1,4 @@
-# xmr-device
+# @xmr-core/xmr-device
 
 Implementations and interfaces of various hardware devices for creating Monero transactions securely
 
@@ -14,14 +14,14 @@ Implementations and interfaces of various hardware devices for creating Monero t
 
 ---
 
-See `xmr-transaction` to see how `xmr-device` is used in the context of creating transactions, or `xmr-mymonero-libs` to see how `xmr-device` is used for checking if transactions belong to the current hardware device being used.
+See `@xmr-core/xmr-transaction` to see how `@xmr-core/xmr-device` is used in the context of creating transactions, or `@xmr-core/xmr-mymonero-libs` to see how `@xmr-core/xmr-device` is used for checking if transactions belong to the current hardware device being used.
 
 ## Installation
 
 ---
 
 ```sh
-yarn add xmr-device
+yarn add @xmr-core/xmr-device
 ```
 
 ## License

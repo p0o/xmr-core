@@ -1,0 +1,22 @@
+{
+	"extends": "../tsconfig.settings.json",
+
+	"compilerOptions": {
+		"outDir": "lib",
+		"rootDir": "src"
+	},
+	"references": [
+		{ "path": "../xmr-types" },
+		{ "path": "../xmr-crypto-ops" },
+		{ "path": "../xmr-str-utils" },
+		{ "path": "../xmr-money" },
+		{ "path": "../xmr-constants" },
+		{ "path": "../xmr-address-utils" },
+		{ "path": "../xmr-device" },
+		{ "path": "../xmr-mymonero-libs" },
+		{ "path": "../xmr-fast-hash" },
+		{ "path": "../xmr-varint" },
+		{ "path": "../xmr-vendor" },
+		{ "path": "../xmr-rand" }
+	]
+}

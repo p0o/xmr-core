@@ -1,13 +1,13 @@
-# xmr-constants
+# @xmr-core/xmr-constants
 
-xmr-constants contains constant declarations for working with Monero, such as address prefixes, blocktimes, and decimal places
+@xmr-core/xmr-constants contains constant declarations for working with Monero, such as address prefixes, blocktimes, and decimal places
 
 ## Installation
 
 ---
 
 ```sh
-yarn add xmr-constants
+yarn add @xmr-core/xmr-constants
 ```
 
 ## License

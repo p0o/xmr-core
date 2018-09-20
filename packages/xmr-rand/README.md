@@ -1,4 +1,4 @@
-# xmr-rand
+# @xmr-core/xmr-rand
 
 Create random hex strings for Monero operations
 
@@ -15,7 +15,7 @@ Create random hex strings for Monero operations
 ---
 
 ```ts
-import { random_scalar } from "xmr-rand";
+import { random_scalar } from "@xmr-core/xmr-rand";
 const randScalar = random_scalar();
 ```
 
@@ -24,7 +24,7 @@ const randScalar = random_scalar();
 ---
 
 ```sh
-yarn add xmr-rand
+yarn add @xmr-core/xmr-rand
 ```
 
 ## License

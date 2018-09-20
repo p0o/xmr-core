@@ -1,11 +1,11 @@
 import { BigInt } from "biginteger";
-import { hash_to_scalar } from "xmr-crypto-ops/hash_ops";
-import { Z } from "xmr-crypto-ops/constants";
-import { generate_key_image } from "xmr-crypto-ops/key_image";
-import { genRct, verRct, decodeRct } from "xmr-transaction/libs/ringct";
+import { hash_to_scalar } from "@xmr-core/xmr-crypto-ops/hash_ops";
+import { Z } from "@xmr-core/xmr-crypto-ops/constants";
+import { generate_key_image } from "@xmr-core/xmr-crypto-ops/key_image";
+import { genRct, verRct, decodeRct } from "@xmr-core/xmr-transaction/libs/ringct";
 import { ctskpkGen, populateFromBlockchain } from "./test_utils";
-import { DefaultDevice } from "xmr-device/device-default";
-import { random_keypair } from "xmr-key-utils";
+import { DefaultDevice } from "@xmr-core/xmr-device/device-default";
+import { random_keypair } from "@xmr-core/xmr-key-utils";
 
 // Copyright (c) 2014-2018, MyMonero.com
 //

@@ -1,6 +1,6 @@
-# xmr-cli
+# @xmr-core/xmr-cli
 
-xmr-cli contains basic user operations that use the mono-repo packages for its functionality
+@xmr-core/xmr-cli contains basic user operations that use the mono-repo packages for its functionality
 
 ## Features
 
@@ -13,7 +13,7 @@ xmr-cli contains basic user operations that use the mono-repo packages for its f
 ---
 
 ```sh
-yarn add xmr-cli
+yarn add @xmr-core/xmr-cli
 ```
 
 ## License

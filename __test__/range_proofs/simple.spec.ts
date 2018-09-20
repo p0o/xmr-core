@@ -27,18 +27,18 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import { ctskpkGen, populateFromBlockchainSimple } from "./test_utils";
-import { hash_to_scalar } from "xmr-crypto-ops/hash_ops";
-import { Z } from "xmr-crypto-ops/constants";
-import { generate_key_image } from "xmr-crypto-ops/key_image";
+import { hash_to_scalar } from "@xmr-core/xmr-crypto-ops/hash_ops";
+import { Z } from "@xmr-core/xmr-crypto-ops/constants";
+import { generate_key_image } from "@xmr-core/xmr-crypto-ops/key_image";
 import {
 	genRct,
 	verRctSimple,
 	decodeRctSimple,
-} from "xmr-transaction/libs/ringct";
+} from "@xmr-core/xmr-transaction/libs/ringct";
 import { BigInt } from "biginteger";
-import { random_scalar } from "xmr-rand";
-import { random_keypair } from "xmr-key-utils";
-import { DefaultDevice } from "xmr-device/device-default";
+import { random_scalar } from "@xmr-core/xmr-rand";
+import { random_keypair } from "@xmr-core/xmr-key-utils";
+import { DefaultDevice } from "@xmr-core/xmr-device/device-default";
 
 it("should test ringct simple transactions", async () => {
 	//Ring CT Stuff

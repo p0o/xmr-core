@@ -1,4 +1,4 @@
-# xmr-pid
+# @xmr-core/xmr-pid
 
 Validate, create, and manipulate, Monero payment ids
 
@@ -16,7 +16,7 @@ Validate, create, and manipulate, Monero payment ids
 ---
 
 ```ts
-import { makePaymentId, isValidShortPaymentID } from "xmr-pid";
+import { makePaymentId, isValidShortPaymentID } from "@xmr-core/xmr-pid";
 const shortPid = makePaymentId();
 const isValid = isValidShortPaymentID(shortPid); // true
 ```
@@ -24,7 +24,7 @@ const isValid = isValidShortPaymentID(shortPid); // true
 ## Installation
 
 ```sh
-yarn add xmr-pid
+yarn add @xmr-core/xmr-pid
 ```
 
 ## License

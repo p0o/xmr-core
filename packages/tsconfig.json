@@ -1,26 +1,25 @@
 {
-	"compilerOptions": {
-		"target": "es2017",
-
-		"module": "commonjs",
-
-		"baseUrl": "src",
-		"outDir": "dist",
-		"lib": ["es2017", "dom"],
-
-		"moduleResolution": "node",
-		"noEmitOnError": false,
-		"noImplicitAny": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		"strictNullChecks": true,
-		"strictPropertyInitialization": true,
-		"noFallthroughCasesInSwitch": true,
-		"noImplicitThis": true,
-		"noErrorTruncation": true,
-		"pretty": true,
-		"resolveJsonModule": true,
-		"esModuleInterop": true
-	},
-	"include": ["./__test__/", "examples"]
+	"files": [],
+	"references": [
+		"@xmr-core/xmr-b58",
+		"@xmr-core/xmr-constants",
+		"@xmr-core/xmr-device",
+		"@xmr-core/xmr-keyimg-memoized",
+		"@xmr-core/xmr-money",
+		"@xmr-core/xmr-nettype-address-prefixes",
+		"@xmr-core/xmr-rand",
+		"@xmr-core/xmr-transaction",
+		"@xmr-core/xmr-varint",
+		"extern-types",
+		"@xmr-core/xmr-address-utils",
+		"@xmr-core/xmr-cli",
+		"@xmr-core/xmr-crypto-ops",
+		"@xmr-core/xmr-fast-hash",
+		"@xmr-core/xmr-key-utils",
+		"@xmr-core/xmr-mymonero-libs",
+		"@xmr-core/xmr-pid",
+		"@xmr-core/xmr-str-utils",
+		"@xmr-core/xmr-types",
+		"@xmr-core/xmr-vendor"
+	]
 }

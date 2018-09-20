@@ -1,4 +1,4 @@
-# xmr-varint
+# @xmr-core/xmr-varint
 
 Create varints from numbers and strings for usage in Monero's data structures
 
@@ -7,7 +7,7 @@ Create varints from numbers and strings for usage in Monero's data structures
 ---
 
 ```ts
-import { encode_varint } from "xmr-varint";
+import { encode_varint } from "@xmr-core/xmr-varint";
 const varint = encode_varint(10);
 ```
 
@@ -16,7 +16,7 @@ const varint = encode_varint(10);
 ---
 
 ```sh
-yarn add xmr-varint
+yarn add @xmr-core/xmr-varint
 ```
 
 ## License

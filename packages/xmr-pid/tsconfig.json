@@ -1,0 +1,15 @@
+{
+	"extends": "../tsconfig.settings.json",
+
+	"compilerOptions": {
+		"outDir": "lib",
+		"rootDir": "src"
+	},
+	"references": [
+		{ "path": "../xmr-rand" },
+		{ "path": "../xmr-fast-hash" },
+		{ "path": "../xmr-constants" },
+		{ "path": "../xmr-crypto-ops" },
+		{ "path": "../xmr-str-utils" }
+	]
+}

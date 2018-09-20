@@ -1,4 +1,4 @@
-# xmr-mymonero-libs
+# @xmr-core/xmr-mymonero-libs
 
 A collection of utilities for building ontop of a MyMonero compatible API
 
@@ -15,14 +15,14 @@ A collection of utilities for building ontop of a MyMonero compatible API
 
 ---
 
-See the `xmr-cli` package for usage examples of this library.
+See the `@xmr-core/xmr-cli` package for usage examples of this library.
 
 ## Installation
 
 ---
 
 ```sh
-yarn add xmr-mymonero-libs
+yarn add @xmr-core/xmr-mymonero-libs
 ```
 
 ## License

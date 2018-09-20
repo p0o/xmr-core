@@ -29,7 +29,8 @@
 import {
 	genBorromean,
 	verifyBorromean,
-} from "xmr-transaction/libs/ringct/components/prove_range/borromean";
+} from "xmr-transaction/src/libs/ringct/components/prove_range";
+
 import { generate_parameters } from "./test_parameters";
 const { indi, P1v, P2v, xv } = generate_parameters();
 

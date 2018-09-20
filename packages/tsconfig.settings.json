@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"target": "es2017",
+		"module": "umd",
+
+		"composite": true,
+		"declaration": true,
+		"declarationMap": true,
+		"sourceMap": true,
+
+		"lib": ["es2017"],
+
+		"moduleResolution": "node",
+		"noEmitOnError": false,
+		"noImplicitAny": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"strictNullChecks": true,
+		"strictPropertyInitialization": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitThis": true,
+		"noErrorTruncation": true,
+		"pretty": true,
+		"resolveJsonModule": true,
+		"esModuleInterop": true
+	}
+}

@@ -1,4 +1,4 @@
-# xmr-address-utils
+# @xmr-core/xmr-address-utils
 
 Utilities for working with Monero addresses
 
@@ -14,7 +14,7 @@ Utilities for working with Monero addresses
 ## Usage
 
 ```ts
-import { decode_address } from "xmr-address-utils";
+import { decode_address } from "@xmr-core/xmr-address-utils";
 
 const xmrAddress =
 	"49qwWM9y7j1fvaBK684Y5sMbN8MZ3XwDLcSaqcKwjh5W9kn9qFigPBNBwzdq6TCAm2gKxQWrdZuEZQBMjQodi9cNRHuCbTr";
@@ -35,7 +35,7 @@ try {
 ---
 
 ```sh
-yarn add xmr-address-utils
+yarn add @xmr-core/xmr-address-utils
 ```
 
 ## License
