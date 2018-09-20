@@ -38,7 +38,7 @@
 		"@xmr-core/xmr-nettype-address-prefixes": "^1.0.0",
 		"@xmr-core/xmr-b58": "^1.0.0",
 		"@xmr-core/xmr-key-utils": "^1.0.0",
-		"@xmr-core/xmr-constants/address": "^1.0.0",
+		"@xmr-core/xmr-constants": "^1.0.0",
 		"@xmr-core/xmr-types": "^1.0.0"
 	},
 	"devDependencies": {

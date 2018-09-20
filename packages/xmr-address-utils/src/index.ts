@@ -11,7 +11,7 @@ import { generate_keys, pubkeys_to_string } from "@xmr-core/xmr-key-utils";
 import {
 	INTEGRATED_ID_SIZE,
 	ADDRESS_CHECKSUM_SIZE,
-} from "@xmr-core/xmr-constants/address";
+} from "@xmr-core/xmr-constants";
 import { Account } from "./types";
 import { NetType } from "@xmr-core/xmr-types";
 

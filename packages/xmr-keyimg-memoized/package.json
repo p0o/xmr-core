@@ -1,5 +1,5 @@
 {
-	"name": "@xmr-core/xmr-key-img-memoized",
+	"name": "@xmr-core/xmr-keyimg-memoized",
 	"version": "1.0.0",
 	"description": "Memoized key image generation library",
 	"main": "lib/index.js",
