@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/biginteger",
-	"version": "1.0.0",
+	"version": "0.0.1",
 	"description": "Modified biginteger for Monero operations",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -32,11 +32,11 @@
 		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
 	},
 	"dependencies": {
-		"@xmr-core/xmr-vendor": "^1.0.0",
-		"@xmr-core/xmr-varint": "^1.0.0",
-		"@xmr-core/xmr-str-utils": "^1.0.0",
-		"@xmr-core/xmr-fast-hash": "^1.0.0",
-		"@xmr-core/xmr-crypto-utils": "^1.0.0"
+		"@xmr-core/xmr-vendor": "^0.0.1",
+		"@xmr-core/xmr-varint": "^0.0.1",
+		"@xmr-core/xmr-str-utils": "^0.0.1",
+		"@xmr-core/xmr-fast-hash": "^0.0.1",
+		"@xmr-core/xmr-crypto-utils": "^0.0.1"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"
