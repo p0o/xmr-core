@@ -1,0 +1,18 @@
+{
+	"lerna": "0.0.1",
+	"packages": ["packages/*"],
+	"command": {
+		"publish": {
+			"ignoreChanges": [
+				"test/**/*",
+				"*.md",
+				"scripts",
+				"lib",
+				"tslint.json",
+				"tsconfig.json"
+			]
+		}
+	},
+	"npmClient": "yarn",
+	"useWorkspaces": true
+}
