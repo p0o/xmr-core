@@ -13,7 +13,8 @@
 		"build": "tsc",
 		"format": "find . -name '*.js*' | xargs prettier --write --config ./.prettierrc --config-precedence file-override",
 		"test": "jest",
-		"test:coverage": "jest --coverage"
+		"test:coverage": "jest --coverage",
+		"publish": "lerna publish"
 	},
 	"keywords": [
 		"monero",
