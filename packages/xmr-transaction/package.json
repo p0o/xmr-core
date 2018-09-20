@@ -34,7 +34,6 @@
 	"dependencies": {
 		"moment": "^2.22.2",
 		"@xmr-core/biginteger": "^0.0.0",
-		"@xmr-core/xmr-transaction": "^0.0.0",
 		"@xmr-core/xmr-crypto-utils": "^0.0.0",
 		"@xmr-core/xmr-str-utils": "^0.0.0",
 		"@xmr-core/xmr-money": "^0.0.0",
