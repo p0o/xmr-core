@@ -1,0 +1,21 @@
+{
+	"extends": "../tsconfig.settings.json",
+
+	"compilerOptions": {
+		"module": "commonjs",
+		"resolveJsonModule": true,
+		"outDir": "lib",
+		"rootDir": "src",
+		"lib": ["dom", "es2017"]
+	},
+
+	"references": [
+		{ "path": "../xmr-constants" },
+		{ "path": "../xmr-crypto-utils" },
+		{ "path": "../xmr-transaction" },
+		{ "path": "../xmr-money" },
+		{ "path": "../xmr-transaction" },
+		{ "path": "../xmr-fast-hash" },
+		{ "path": "../biginteger" }
+	]
+}

@@ -1,0 +1,47 @@
+{
+	"name": "@xmr-core/xmr-fast-hash",
+	"version": "0.0.8",
+	"description": "An implementation of Monero's `cn_fast_hash`",
+	"main": "lib/index.js",
+	"typings": "lib/index.d.ts",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"prepublishOnly": "tsc -b ."
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MyCryptoHQ/xmr-core.git"
+	},
+	"keywords": [
+		"xmr-core",
+		"monero",
+		"mymonero",
+		"typescript",
+		"ts",
+		"lightweight",
+		"lightwallet",
+		"wallet",
+		"crypto",
+		"script",
+		"utility",
+		"tool",
+		"xmr"
+	],
+	"author": "HenryNguyen5",
+	"license": "See LICENSE.TXT. Copyright (c) 2014-2018, MyMonero.com. All rights reserved.",
+	"bugs": {
+		"url": "https://github.com/MyCryptoHQ/xmr-core/issues"
+	},
+	"dependencies": {
+		"@xmr-core/xmr-str-utils": "^0.0.8",
+		"keccakjs": "^0.2.1"
+	},
+	"devDependencies": {
+		"typescript": "^3.0.0"
+	},
+	"homepage": "https://github.com/MyCryptoHQ/xmr-core#readme",
+	"gitHead": "47b391b73d252306a10631c73c5501aec9c43e62",
+	"publishConfig": {
+		"access": "public"
+	}
+}

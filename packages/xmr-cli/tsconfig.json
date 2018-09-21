@@ -1,0 +1,17 @@
+{
+	"extends": "../tsconfig.settings.json",
+
+	"compilerOptions": {
+		"outDir": "lib",
+		"rootDir": "src",
+		"lib": ["dom", "es2017"]
+	},
+
+	"references": [
+		{ "path": "../xmr-mymonero-libs" },
+		{ "path": "../xmr-crypto-utils" },
+		{ "path": "../xmr-transaction" },
+		{ "path": "../xmr-money" },
+		{ "path": "../xmr-str-utils" }
+	]
+}

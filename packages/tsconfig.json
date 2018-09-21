@@ -1,0 +1,18 @@
+{
+	"files": [],
+	"include": [],
+	"references": [
+		"./xmr-b58",
+		"./xmr-constants",
+		"./xmr-crypto-utils",
+		"./xmr-money",
+		"./xmr-transaction",
+		"./xmr-varint",
+		"./xmr-crypto-utils",
+		"./xmr-cli",
+		"./xmr-fast-hash",
+		"./xmr-mymonero-libs",
+		"./xmr-str-utils",
+		"./xmr-vendor"
+	]
+}

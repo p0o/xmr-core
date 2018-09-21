@@ -1,39 +1,10 @@
-import { BigInt } from "biginteger";
-import { hash_to_scalar } from "xmr-crypto-ops/hash_ops";
-import { Z } from "xmr-crypto-ops/constants";
-import { generate_key_image } from "xmr-crypto-ops/key_image";
-import { genRct, verRct, decodeRct } from "xmr-transaction/libs/ringct";
 import { ctskpkGen, populateFromBlockchain } from "./test_utils";
-import { DefaultDevice } from "xmr-device/device-default";
-import { random_keypair } from "xmr-key-utils";
-
-// Copyright (c) 2014-2018, MyMonero.com
-//
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without modification, are
-// permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice, this list of
-//	conditions and the following disclaimer.
-//
-// 2. Redistributions in binary form must reproduce the above copyright notice, this list
-//	of conditions and the following disclaimer in the documentation and/or other
-//	materials provided with the distribution.
-//
-// 3. Neither the name of the copyright holder nor the names of its contributors may be
-//	used to endorse or promote products derived from this software without specific
-//	prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-// THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import { BigInt } from "@xmr-core/biginteger";
+import { hash_to_scalar } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/hash_ops";
+import { Z } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/constants";
+import { random_keypair, DefaultDevice } from "@xmr-core/xmr-crypto-utils";
+import { generate_key_image } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/key_image";
+import { genRct, verRct, decodeRct } from "@xmr-core/xmr-transaction";
 
 it("range_proofs", async () => {
 	//Ring CT Stuff

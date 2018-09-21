@@ -1,13 +1,11 @@
-import { sendFunds } from "xmr-mymonero-libs/mymonero-send-tx";
 import { sendFundsArgs } from "../fixtures/live-sendfunds";
-import { LedgerDevice } from "xmr-device";
-import { MockApi } from "./mockApi";
-import { BigInt } from "biginteger";
+import { BigInt } from "@xmr-core/biginteger";
+import { Output } from "@xmr-core/xmr-transaction";
 import { outputsAndAmountToUseForMixinReturn } from "../fixtures/live-outputsAndAmountToUseForMixin";
-import { Output } from "xmr-types";
-import { MyMoneroApi } from "xmr-mymonero-libs/mymonero-api";
 import TransportNodeHid from "@ledgerhq/hw-transport-node-hid";
-import { DeviceMode } from "xmr-device/types";
+import { LedgerDevice, DeviceMode } from "@xmr-core/xmr-crypto-utils";
+import { sendFunds, MyMoneroApi } from "@xmr-core/xmr-mymonero-libs";
+import { MockApi } from "./mockApi";
 
 jest.setTimeout(999999999);
 const {

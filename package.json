@@ -1,80 +1,78 @@
 {
-  "name": "mymonero-core-js",
-  "version": "0.9.0",
-  "description": "The JS library containing the Monero crypto plus lightweight wallet functions behind the official MyMonero apps",
-  "main": "index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mymonero/mymonero-core-js.git"
-  },
-  "scripts": {
-    "build": "tsc",
-    "format": "find . -name '*.js*' | xargs prettier --write --config ./.prettierrc --config-precedence file-override",
-    "test": "jest",
-    "test:coverage": "jest --coverage"
-  },
-  "keywords": [
-    "monero",
-    "mymonero",
-    "javascript",
-    "js",
-    "lightweight",
-    "lightwallet",
-    "wallet",
-    "crypto",
-    "script",
-    "utility",
-    "tool"
-  ],
-  "author": "MyMonero",
-  "license": "See LICENSE.TXT. Copyright (c) 2014-2018, MyMonero.com. All rights reserved.",
-  "bugs": {
-    "url": "https://github.com/mymonero/mymonero-core-js/issues"
-  },
-  "homepage": "https://github.com/mymonero/mymonero-core-js#readme",
-  "dependencies": {
-    "@ledgerhq/hw-transport-node-hid": "^4.22.0",
-    "axios": "^0.18.0",
-    "keccakjs": "^0.2.1",
-    "moment": "^2.22.2",
-    "node-hid": "^0.7.3",
-    "u2f-api": "^1.0.6"
-  },
-  "devDependencies": {
-    "@types/node-hid": "^0.7.0",
-    "jest": "^23.1.0",
-    "ts-jest": "^23.0.1",
-    "ts-node": "^7.0.0",
-    "tsconfig-paths": "^3.4.2",
-    "typescript": "^3"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "jsx",
-      "json",
-      "ts",
-      "tsx"
-    ],
-    "globals": {
-      "ts-jest": {
-        "skipBabel": true
-      }
-    },
-    "modulePathIgnorePatterns": [
-      "dist"
-    ],
-    "transform": {
-      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
-    },
-    "modulePaths": [
-      "<rootDir>/src"
-    ],
-    "testRegex": "((\\.|/)(spec))\\.ts$",
-    "coveragePathIgnorePatterns": [
-      "cryptonote_crypto_EMSCRIPTEN",
-      "/node_modules/",
-      "__test__"
-    ]
-  }
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
+	"version": "0.0.0",
+	"description": "Various packages for Monero/CryptoNote cryptography and protocols",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MyCryptoHQ/@xmr-core/xmr-core.git"
+	},
+	"scripts": {
+		"build": "tsc",
+		"format": "find . -name '*.js*' | xargs prettier --write --config ./.prettierrc --config-precedence file-override",
+		"test": "jest",
+		"test:coverage": "jest --coverage",
+		"publish": "lerna publish"
+	},
+	"keywords": [
+		"xmr-core",
+		"monero",
+		"mymonero",
+		"typescript",
+		"ts",
+		"lightweight",
+		"lightwallet",
+		"wallet",
+		"crypto",
+		"script",
+		"utility",
+		"tool",
+		"xmr"
+	],
+	"author": "MyMonero",
+	"license": "See LICENSE.TXT. Copyright (c) 2014-2018, MyMonero.com. All rights reserved.",
+	"bugs": {
+		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
+	},
+	"homepage": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core#readme",
+	"devDependencies": {
+		"jest": "^23.1.0",
+		"lerna": "^3.4.0",
+		"ts-jest": "^23.10.0-beta.6",
+		"ts-node": "^7.0.0",
+		"tsconfig-paths": "^3.4.2",
+		"typescript": "^3"
+	},
+	"jest": {
+		"moduleFileExtensions": [
+			"js",
+			"jsx",
+			"json",
+			"ts",
+			"tsx"
+		],
+		"globals": {
+			"ts-jest": {
+				"tsConfig": "./__test__/tsconfig.json"
+			}
+		},
+		"modulePathIgnorePatterns": [
+			"dist"
+		],
+		"transform": {
+			"\\.(ts|tsx)$": "ts-jest"
+		},
+		"modulePaths": [
+			"<rootDir>/packages"
+		],
+		"testRegex": "((\\.|/)(spec))\\.ts$",
+		"coveragePathIgnorePatterns": [
+			"cryptonote_crypto_EMSCRIPTEN",
+			"/node_modules/",
+			"__test__"
+		]
+	},
+	"name": "xmr-core"
 }
