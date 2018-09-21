@@ -1,16 +1,16 @@
 import { BigInt } from "biginteger";
 import { ctskpkGen, populateFromBlockchain } from "./test_utils";
-import { SecretCommitment, RingMember } from "@xmr-core/xmr-transaction";
-import { hash_to_scalar } from "@xmr-core/xmr-crypto-utils/hash_ops";
-import { Z } from "@xmr-core/xmr-crypto-utils/constants";
-import { generate_key_image } from "@xmr-core/xmr-crypto-utils/key_image";
 import {
+	SecretCommitment,
+	RingMember,
 	genRct,
 	verRct,
 	decodeRct,
-} from "@xmr-core/xmr-transaction/libs/ringct";
-import { random_keypair } from "@xmr-core/xmr-crypto-utils";
-import { DefaultDevice } from "@xmr-core/xmr-crypto-utils/device-default";
+} from "@xmr-core/xmr-transaction";
+import { hash_to_scalar } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/hash_ops";
+import { Z } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/constants";
+import { random_keypair, DefaultDevice } from "@xmr-core/xmr-crypto-utils";
+import { generate_key_image } from "@xmr-core/xmr-crypto-utils/lib/crypto-ops/key_image";
 
 it("range_proofs", async () => {
 	//Ring CT Stuff
