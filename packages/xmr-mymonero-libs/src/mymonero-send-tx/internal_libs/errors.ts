@@ -52,12 +52,6 @@ export namespace ERR {
 
 			return Error(errStr);
 		}
-		export function submitUnknown(err: Error) {
-			return Error(
-				"Something unexpected occurred when submitting your transaction: " +
-					err,
-			);
-		}
 	}
 
 	export namespace PARSE_TRGT {

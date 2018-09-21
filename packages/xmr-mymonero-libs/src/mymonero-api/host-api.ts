@@ -10,7 +10,6 @@ import { BigInt } from "@xmr-core/biginteger";
 import { HWDevice, isRealDevice } from "@xmr-core/xmr-crypto-utils";
 import { JSONPrettyPrint } from "@xmr-core/xmr-str-utils";
 import { Output } from "@xmr-core/xmr-transaction";
-import { ERR } from "@xmr-core/xmr-mymonero-libs/src/mymonero-send-tx/internal_libs/errors";
 
 export class MyMoneroApi {
 	public static async login(address: string, privViewKey: string) {
@@ -215,7 +214,10 @@ export class MyMoneroApi {
 			);
 		} catch (e) {
 			console.error(e);
-			throw ERR.TX.submitUnknown(e);
+			return Error(
+				"Something unexpected occurred when submitting your transaction: " +
+					e,
+			);
 		}
 	}
 }
