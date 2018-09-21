@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-cli",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Basic user operations that use the mono-repo packages for its functionality",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,11 +33,11 @@
 	},
 	"dependencies": {
 		"@ledgerhq/hw-transport-node-hid": "^4.22.0",
-		"@xmr-core/xmr-crypto-utils": "^0.0.1",
-		"@xmr-core/xmr-money": "^0.0.1",
-		"@xmr-core/xmr-mymonero-libs": "^0.0.1",
-		"@xmr-core/xmr-str-utils": "^0.0.1",
-		"@xmr-core/xmr-transaction": "^0.0.1"
+		"@xmr-core/xmr-crypto-utils": "^0.0.2",
+		"@xmr-core/xmr-money": "^0.0.2",
+		"@xmr-core/xmr-mymonero-libs": "^0.0.2",
+		"@xmr-core/xmr-str-utils": "^0.0.2",
+		"@xmr-core/xmr-transaction": "^0.0.2"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"
@@ -46,5 +46,5 @@
 	"gitHead": "47b391b73d252306a10631c73c5501aec9c43e62",
 	"publishConfig": {
 		"access": "public"
-	  }
+	}
 }
