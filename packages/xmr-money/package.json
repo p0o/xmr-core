@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-money",
-	"version": "0.0.3",
+	"version": "0.0.4",
 	"description": "Helpers for formatting and parsing Moneroj",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,7 +33,7 @@
 		"url": "https://github.com/MyCryptoHQ/xmr-core/issues"
 	},
 	"dependencies": {
-		"@xmr-core/biginteger": "^0.0.3"
+		"@xmr-core/biginteger": "^0.0.4"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"
