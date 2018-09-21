@@ -1,15 +1,13 @@
 {
 	"compilerOptions": {
-		"target": "es6",
+		"target": "es5",
 		"module": "commonjs",
-
 		"composite": true,
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
 		"typeRoots": ["../../node_modules/@types", "./@types"],
 		"lib": ["es2017"],
-
 		"moduleResolution": "node",
 		"noEmitOnError": false,
 		"noImplicitAny": true,
