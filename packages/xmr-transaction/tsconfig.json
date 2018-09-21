@@ -12,6 +12,7 @@
 		{ "path": "../xmr-constants" },
 		{ "path": "../xmr-fast-hash" },
 		{ "path": "../xmr-varint" },
-		{ "path": "../xmr-vendor" }
+		{ "path": "../xmr-vendor" },
+		{ "path": "../biginteger" }
 	]
 }

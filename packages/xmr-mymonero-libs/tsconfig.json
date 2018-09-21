@@ -15,6 +15,7 @@
 		{ "path": "../xmr-transaction" },
 		{ "path": "../xmr-money" },
 		{ "path": "../xmr-transaction" },
-		{ "path": "../xmr-fast-hash" }
+		{ "path": "../xmr-fast-hash" },
+		{ "path": "../biginteger" }
 	]
 }

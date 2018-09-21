@@ -6,5 +6,5 @@
 		"rootDir": "src"
 	},
 	"include": ["./src/*", "./vendor"],
-	"references": []
+	"references": [{ "path": "../biginteger" }]
 }

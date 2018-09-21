@@ -35,9 +35,9 @@
 		"@ledgerhq/hw-transport-node-hid": "^4.22.0",
 		"@xmr-core/xmr-mymonero-libs": "^0.0.0",
 		"@xmr-core/xmr-crypto-utils": "^0.0.0",
-		"@xmr-core/xmr-crypto-utils": "^0.0.0",
 		"@xmr-core/xmr-transaction": "^0.0.0",
-		"@xmr-core/xmr-money": "^0.0.0"
+		"@xmr-core/xmr-money": "^0.0.0",
+		"@xmr-core/xmr-str-utils":"^0.0.0"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"

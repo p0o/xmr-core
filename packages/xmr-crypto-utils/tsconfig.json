@@ -11,6 +11,7 @@
 		{ "path": "../xmr-constants" },
 		{ "path": "../xmr-b58" },
 		{ "path": "../xmr-str-utils" },
-		{ "path": "../xmr-fast-hash" }
+		{ "path": "../xmr-fast-hash" },
+		{ "path": "../biginteger" }
 	]
 }
