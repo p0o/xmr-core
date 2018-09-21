@@ -17,6 +17,7 @@
 		"publish": "lerna publish"
 	},
 	"keywords": [
+		"xmr-core",
 		"monero",
 		"mymonero",
 		"typescript",
