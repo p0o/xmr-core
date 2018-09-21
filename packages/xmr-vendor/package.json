@@ -34,5 +34,9 @@
 	"devDependencies": {
 		"typescript": "^3.0.0"
 	},
-	"homepage": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core#readme"
+	"homepage": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core#readme",
+	"gitHead": "47b391b73d252306a10631c73c5501aec9c43e62",
+	"publishConfig": {
+		"access": "public"
+	  }
 }
