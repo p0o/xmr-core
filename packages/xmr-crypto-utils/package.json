@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-crypto-utils",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"description": "Core crypto operations for Monero and implementations and interfaces of various hardware devices for creating Monero transactions securely",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -32,14 +32,14 @@
 		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
 	},
 	"dependencies": {
-		"node-hid": "^0.7.3",
-		"u2f-api": "^1.0.6",
 		"@ledgerhq/hw-transport-node-hid": "^4.22.0",
-		"@xmr-core/xmr-vendor": "^0.0.0",
-		"@xmr-core/xmr-varint": "^0.0.0",
-		"@xmr-core/xmr-str-utils": "^0.0.0",
-		"@xmr-core/xmr-fast-hash": "^0.0.0",
-		"@xmr-core/biginteger": "^0.0.0"
+		"@xmr-core/biginteger": "^0.0.1",
+		"@xmr-core/xmr-fast-hash": "^0.0.1",
+		"@xmr-core/xmr-str-utils": "^0.0.1",
+		"@xmr-core/xmr-varint": "^0.0.1",
+		"@xmr-core/xmr-vendor": "^0.0.1",
+		"node-hid": "^0.7.3",
+		"u2f-api": "^1.0.6"
 	},
 	"devDependencies": {
 		"@types/node-hid": "^0.7.0",

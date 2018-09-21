@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-constants",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"description": "Declarations for working with Monero, such as address prefixes, blocktimes, and decimal places",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -32,7 +32,7 @@
 		"url": "https://github.com/MyCryptoHQ/@xmr-core/xmr-core/issues"
 	},
 	"dependencies": {
-		"@xmr-core/biginteger": "^0.0.0"
+		"@xmr-core/biginteger": "^0.0.1"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"
