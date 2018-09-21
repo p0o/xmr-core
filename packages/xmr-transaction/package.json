@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-transaction",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"description": "Create Monero transactions and check their status",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,14 +33,14 @@
 		"url": "https://github.com/MyCryptoHQ/xmr-core/issues"
 	},
 	"dependencies": {
-		"@xmr-core/biginteger": "^0.0.7",
-		"@xmr-core/xmr-constants": "^0.0.7",
-		"@xmr-core/xmr-crypto-utils": "^0.0.7",
-		"@xmr-core/xmr-fast-hash": "^0.0.7",
-		"@xmr-core/xmr-money": "^0.0.7",
-		"@xmr-core/xmr-str-utils": "^0.0.7",
-		"@xmr-core/xmr-varint": "^0.0.7",
-		"@xmr-core/xmr-vendor": "^0.0.7",
+		"@xmr-core/biginteger": "^0.0.8",
+		"@xmr-core/xmr-constants": "^0.0.8",
+		"@xmr-core/xmr-crypto-utils": "^0.0.8",
+		"@xmr-core/xmr-fast-hash": "^0.0.8",
+		"@xmr-core/xmr-money": "^0.0.8",
+		"@xmr-core/xmr-str-utils": "^0.0.8",
+		"@xmr-core/xmr-varint": "^0.0.8",
+		"@xmr-core/xmr-vendor": "^0.0.8",
 		"moment": "^2.22.2"
 	},
 	"devDependencies": {
