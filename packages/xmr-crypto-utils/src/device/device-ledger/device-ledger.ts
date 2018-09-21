@@ -80,7 +80,41 @@ export class LedgerDevice<T> implements HWDevice {
 		this.mode = DeviceMode.NONE;
 		this.has_view_key = false;
 		this.privateViewKey = this.hexString();
-		transport.decorateAppAPIMethods(this, [], "");
+		transport.decorateAppAPIMethods(
+			this,
+			[
+				"set_mode",
+				"put_key",
+				"get_public_address",
+				"get_secret_keys",
+				"derive_subaddress_public_key",
+				"get_subaddress_spend_public_key",
+				"get_subaddress",
+				"get_subaddress_secret_key",
+				"verify_keys",
+				"scalarmultKey",
+				"scalarmultBase",
+				"sc_secret_add",
+				"generate_keys",
+				"generate_key_derivation",
+				"derivation_to_scalar",
+				"derive_secret_key",
+				"derive_public_key",
+				"secret_key_to_public_key",
+				"generate_key_image",
+				"open_tx",
+				"encrypt_payment_id",
+				"ecdhEncode",
+				"ecdhDecode",
+				"mlsag_prehash",
+				"mlsag_prepare",
+				"mlsag_hash",
+				"mlsag_sign",
+				"close_tx",
+			] as any[],
+			"MOON",
+		);
+		transport.setScrambleKey("MOON");
 	}
 
 	/* ======================================================================= */
