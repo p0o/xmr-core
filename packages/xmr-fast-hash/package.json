@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-fast-hash",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "An implementation of Monero's `cn_fast_hash`",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,7 +33,7 @@
 		"url": "https://github.com/MyCryptoHQ/xmr-core/issues"
 	},
 	"dependencies": {
-		"@xmr-core/xmr-str-utils": "^0.0.4",
+		"@xmr-core/xmr-str-utils": "^0.0.5",
 		"keccakjs": "^0.2.1"
 	},
 	"devDependencies": {

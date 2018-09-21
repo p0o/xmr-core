@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-mymonero-libs",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "A collection of utilities for building ontop of a MyMonero compatible API",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,12 +33,12 @@
 		"url": "https://github.com/MyCryptoHQ/xmr-core/issues"
 	},
 	"dependencies": {
-		"@xmr-core/biginteger": "^0.0.4",
-		"@xmr-core/xmr-constants": "^0.0.4",
-		"@xmr-core/xmr-crypto-utils": "^0.0.4",
-		"@xmr-core/xmr-fast-hash": "^0.0.4",
-		"@xmr-core/xmr-money": "^0.0.4",
-		"@xmr-core/xmr-transaction": "^0.0.4",
+		"@xmr-core/biginteger": "^0.0.5",
+		"@xmr-core/xmr-constants": "^0.0.5",
+		"@xmr-core/xmr-crypto-utils": "^0.0.5",
+		"@xmr-core/xmr-fast-hash": "^0.0.5",
+		"@xmr-core/xmr-money": "^0.0.5",
+		"@xmr-core/xmr-transaction": "^0.0.5",
 		"axios": "^0.18.0"
 	},
 	"devDependencies": {

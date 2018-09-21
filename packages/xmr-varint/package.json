@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-varint",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "Create varints from numbers and strings for usage in Monero's data structures",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
@@ -33,7 +33,7 @@
 		"url": "https://github.com/MyCryptoHQ/xmr-core/issues"
 	},
 	"dependencies": {
-		"@xmr-core/biginteger": "^0.0.4"
+		"@xmr-core/biginteger": "^0.0.5"
 	},
 	"devDependencies": {
 		"typescript": "^3.0.0"

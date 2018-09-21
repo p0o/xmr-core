@@ -1,6 +1,6 @@
 {
 	"name": "@xmr-core/xmr-vendor",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"description": "A container library that holds external dependencies that have been modified for usage in Monero transaction creation / validation",
 	"main": "lib/index.js",
 	"typings": "lib/index.d.ts",
